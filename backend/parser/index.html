@@ -1,31 +1,72 @@
 <!DOCTYPE html>
-<html>  
-    <head>
-        <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<html>
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <style>
         .mermaid {
             font-family: 'Arial';
-            background: rgb(206, 18, 18);
+            background: white;
             border: 1px solid #ddd;
             border-radius: 8px;
             padding: 20px;
             margin: 10px 0;
         }
     </style>
-    </head>
-    <body>  
-        <p>abuba</p>
-<div class="mermaid">
-    graph TD
-    A[Начало] --> B{Условие}
-    B -->|Да| C[Действие 1]
-    B -->|Нет| D[Действие 2]
-    C --> E[Конец]
-    D --> E
+</head>
+
+<body>
+    <div class="mermaid">
+graph TD
+    Start([program qq]) --> Const[const PI = 3.1415926]
+    Const --> Var[var num1, num2, i: integer...]
+    Var --> Num1Assign[num1 := 12 div 2]
+    Num1Assign --> Case{case num1}
+    Case -->|1,2,3,4,5| SwitchWorks[/Writeln 'Switch works'/]
+    Case -->|else| SwitchNo[/Writeln 'Switch no works'/]
+    SwitchWorks --> If1{5 mod 3 > 0}
+    SwitchNo --> If1
+    If1 -->|true| Yes1[/Writeln 'Yes,if 1'/]
+    If1 -->|false| No1[/Writeln 'No,else 1'/]
+    Yes1 --> If2{5 mod 3 = 0}
+    No1 --> If2
+    If2 -->|true| Yes2[/Writeln 'Yes,if 2'/]
+    If2 -->|false| No2[/Writeln 'No,else 2'/]
+    Yes2 --> Res2Assign[res2 := 'Hello world']
+    No2 --> Res2Assign
+    Res2Assign --> Num1Assign2[num1 := 2]
+    Num1Assign2 --> WritelnNum1[/Writeln 'From table ', num1/]
+    WritelnNum1 --> If3{PI <> num1}
+    If3 -->|true| Pim[/Writeln 'Pim'/]
+    Pim --> If4{PI <> num1}
+    If4 -->|true| Pam[/Writeln 'Pam'/]
+    If3 -->|false| Pum[/Writeln 'Pum'/]
+    Pam --> ForLoop[↻ for i:=1 to 8]
+    Pum --> ForLoop
+    
+    ForLoop --> Write3[/Write '3'/]
+    Write3 --> ForLoopExit{ i <= 8 }
+    ForLoopExit -->|true| ForLoop
+    ForLoopExit -->|false| WhileLoop
+    
+    WhileLoop --> WhileCond{num1 < 6}
+    WhileCond -->|true| WriteYes[/Write 'Yes'/]
+    WriteYes --> IncNum1[num1 := num1 + 1]
+    IncNum1 --> WhileLoop
+    WhileCond -->|false| RepeatLoop
+    
+    RepeatLoop --> Write3_2[/Write '3'/]
+    Write3_2 --> IncNum1_2[num1 := num1 + 1]
+    IncNum1_2 --> UntilCond{num1 < 7}
+    UntilCond -->|false| RepeatLoop
+    UntilCond -->|true| End([End])
 </div>
 
-<script>
-    mermaid.initialize({ startOnLoad: true });
-</script>
-    </body>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+        });
+    </script>
+</body>
+
 </html>
