@@ -26,7 +26,7 @@ public:
         while(head[i].getValue()!=")"){
             if(head[i].getType()=="TYPEINTEGER"||head[i].getType()=="TYPEREAL"
             ||head[i].getType()=="TYPESTRING"||head[i].getType()=="TYPECHAR"){
-                while(count!=(lists.size()-1)){
+                while(count!=(static_cast<int>(lists.size()-1))){
                     t.Change(lists[count].getValue(),argue[count+interval].getValue(),head[i].getType());
                     count++;
                 }

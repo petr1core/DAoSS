@@ -13,15 +13,20 @@
 static int i=0;
 class StatementExpression : public Expression {
 private:
+    int i1;
     std::vector<Token> list;
 public:
-    StatementExpression(){cout << list.size();}
     StatementExpression(std::vector<Token> _list)
-    {list=std::move(_list);}
+    {
+        i1=++i;
+        list=std::move(_list);
+    }
     StatementExpression(const StatementExpression& ex){
+        i1=++i;
         this->list=ex.list;
     }
     StatementExpression& operator=(const StatementExpression& other) {
+        i1=++i;
         this->list=other.list;
         return *this;
     }
@@ -31,7 +36,7 @@ public:
         for(int j=0;j<tab;j++){
             cout<<"   ";
         }
-        std::cout<<"StateExpression "<<++i<<" = ";
+        std::cout<<"StateExpression "<<i1<<" = ";
         for(auto token:list){
           std::cout<<token.getValue()<<" ";
         }

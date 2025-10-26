@@ -7,14 +7,19 @@
 #include <vector>
 #include "Expression.h"
 #include "../Token.h"
+static int c=0;
 class CaseOf: public Expression {
 private:
+    int c1;
     Token value;
     vector<std::pair<vector<Token>,vector<Expression*>>> body;
     int globalPosCase;
 public:
-    CaseOf(){value=Token();};
+    CaseOf(){
+        c1=++c;
+        value=Token();};
     CaseOf(int pos, vector<Token>list){
+        c1=++c;
         doSwitch(pos,list);
     }
     Token getVal(){return value;}
@@ -49,8 +54,8 @@ public:
                    (list[globalPosCase].getType()=="CYCLEWHILE")||
                    (list[globalPosCase].getType()=="CYCLEDOWHILE"))
                 {
-                    ConditionExpression* cx =new ConditionExpression(globalPosCase,list);
-                    globalPosCase=cx->getGlobalPos();
+                    auto* cx =new ConditionExpression(globalPosCase,list);
+                    globalPosCase=ConditionExpression::getGlobalPos();
                     expressionList.push_back(cx);
                 }
                 else{
@@ -58,7 +63,7 @@ public:
                         localList.push_back(list[globalPosCase]);
                         globalPosCase++;
                     }
-                    StatementExpression* rx= new StatementExpression(localList);
+                    auto* rx= new StatementExpression(localList);
                     expressionList.push_back(rx);
                     localList.clear();
                     globalPosCase++;
@@ -72,7 +77,39 @@ public:
         }
         globalPosCase++;
     }
-    void print(int tab)override{}
+    void print(int tab)override{
+        for(int j=0;j<tab;j++){
+            cout<<"   ";
+        }
+        std::cout<<"CaseOf "<<c1<<" of "<<value.getValue()<<" =";
+        std::cout<<endl;
+
+        if(!body.empty())
+        {
+            ++tab;
+            for(auto token2:body)
+            {
+                for(int j=0;j<tab;j++){
+                    std::cout<<"   ";
+                }
+                std::cout<<"in case:";
+                for(auto token3:token2.first){
+                    std::cout<<" "<< token3.getValue();
+                }
+                std::cout<<std::endl;
+                for(int j=0;j<tab;j++){
+                    std::cout<<"   ";
+                }
+                std::cout<<"corresponds to:";
+                for(auto token3:token2.second){
+                    std::cout<<"   ";
+                    token3->print(tab);
+                }
+                std::cout<<std::endl;
+            }
+        }
+        --tab;
+    }
     int getPos(){return globalPosCase;}
 };
 

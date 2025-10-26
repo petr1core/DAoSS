@@ -4,51 +4,63 @@
 
 #ifndef FUNCTION_H
 #define FUNCTION_H
+
 #include "Expression.h"
 #include "../Token.h"
 #include "ConditionExpression.h"
 #include "StatementExpression.h"
 #include <utility>
 #include <vector>
-class Function: public Expression {
+
+static int f = 0;
+
+class Function : public Expression {
 private:
+    int f1;
     Token name;
-    std::vector<Expression*> expressionList;
+    std::vector<Expression *> expressionList;
     std::vector<Token> declaration;
     std::vector<Token> localList;
     int globalPosFun;
 public:
-    Function(int pos, vector<Token> list){
-        doFunction(pos,list);
+    Function(int pos, vector<Token> list) {
+        f1 = ++f;
+        globalPosFun = pos;
+        doFunction(std::move(list));
     }
-    Function( const Function& ex){
-        this->declaration=ex.declaration;
-        this->expressionList=ex.expressionList;
+
+    Function(const Function &ex) {
+        f1 = ++f;
+        this->declaration = ex.declaration;
+        this->expressionList = ex.expressionList;
     }
-    void doFunction(int pos, vector<Token> list){
-        globalPosFun=pos;
-        while(list[globalPosFun].getType() != "SEMICOLON"){
+
+    void doFunction(vector<Token> list) {
+        while (list[globalPosFun].getType() != "SEMICOLON") {
             declaration.push_back(list[globalPosFun]);
             globalPosFun++;
         }
         name = declaration[1];
-        globalPosFun++; globalPosFun++;
-        while(list[globalPosFun].getType() != "ENDofCycle"){
-            if(((list[globalPosFun].getType() == "CONDITION")) || //если хоть какую-то в нем вложенность находим
-               (list[globalPosFun].getType() == "CYCLEFOR") || // хоть вложенное условие, хоть вложенный цикл, то создаём новый объект
-               (list[globalPosFun].getType() == "CYCLEWHILE") || // не забываем про static переменную, она указывает новое место где мы окажемся
-               (list[globalPosFun].getType() == "CYCLEDOWHILE"))//поднявшись обратно наверх от вложенного объекта
+        globalPosFun++;
+        globalPosFun++;
+        while (list[globalPosFun].getType() != "ENDofCycle") {
+            if (((list[globalPosFun].getType() == "CONDITION")) || //если хоть какую-то в нем вложенность находим
+                (list[globalPosFun].getType() == "CYCLEFOR") ||
+                // хоть вложенное условие, хоть вложенный цикл, то создаём новый объект
+                (list[globalPosFun].getType() == "CYCLEWHILE") ||
+                // не забываем про static переменную, она указывает новое место где мы окажемся
+                (list[globalPosFun].getType() == "CYCLEDOWHILE"))//поднявшись обратно наверх от вложенного объекта
             {
-                ConditionExpression* cx = new ConditionExpression(globalPosFun, list);
-                globalPosFun=cx->getGlobalPos();
+                auto *cx = new ConditionExpression(globalPosFun, list);
+                globalPosFun = cx->getGlobalPos();
                 expressionList.push_back(cx);
-            }
-            else
-            {
-                while(list[globalPosFun].getType() != "SEMICOLON"){ //если вложенности нет или мы с ней уже закончили, то формируем обычные выражения
+            } else {
+                while (list[globalPosFun].getType() !=
+                       "SEMICOLON") { //если вложенности нет или мы с ней уже закончили, то формируем обычные выражения
                     localList.push_back(list[globalPosFun]);
-                    globalPosFun++;}
-                StatementExpression* rx= new StatementExpression(localList);
+                    globalPosFun++;
+                }
+                auto *rx = new StatementExpression(localList);
                 expressionList.push_back(rx);
                 localList.clear();
                 globalPosFun++;
@@ -57,11 +69,36 @@ public:
         globalPosFun++;
         return;
     }
-    Token getName(){return name;}
-    vector<Expression*> getBody(){ return expressionList;}
-    vector<Token> getHead(){return declaration;}
-    void print(int tab) override{}
-    int getPos(){ return globalPosFun;}
+
+    Token getName() { return name; }
+
+    vector<Expression *> getBody() { return expressionList; }
+
+    vector<Token> getHead() { return declaration; }
+
+    void print(int tab) override {
+        for (int j = 0; j < tab; j++) {
+            cout << "   ";
+        }
+        std::cout << "Function " << f1 << " = ";
+        for (auto token: declaration) {
+            if (token.getValue() != "function") {
+                std::cout << token.getValue() << " ";
+            }
+        }
+        std::cout << endl;
+
+        if (!expressionList.empty()) {
+            ++tab;
+            for (auto token2: expressionList) {
+                std::cout << "   ";
+                token2->print(tab);
+            }
+        }
+        --tab;
+    }
+
+    int getPos() const { return globalPosFun; }
 };
 
 
