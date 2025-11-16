@@ -1,0 +1,333 @@
+---
+config:
+  theme: dark
+  layout: dagre
+---
+classDiagram
+direction TB
+    class BaseEntity {
+	    + Id : Guid
+	    + CreatedAt : DateTime
+	    + UpdatedAt : DateTime?
+    }
+    class VersionedEntity {
+	    + VersionIndex : Int
+	    + Id : Guid
+	    + Author : User
+	    + Message : String
+    }
+    class Suggestion {
+	    + ReviewItemId : Guid
+	    + ReviewItem : ReviewItem
+	    + LinkedChangeSetId : Guid?
+	    + LinkedChangeSet : ChangeSet
+	    + Decision : string
+	    + DecidedBy : Guid?
+	    + DecidedByUser : User
+	    + DecidedAt : DateTime?
+	    + Note : string
+	    + LinkReviewItem(ReviewItem reviewItem)
+	    + SetDecision(string decision, User decidedBy)
+	    + ChangeStatus(string status)
+	    + Validate()
+    }
+    class ReviewItem {
+	    + ProjectId : Guid
+	    + Review : Review
+	    + Kind : string
+	    + AnchorType : string
+	    + AnchorRef : string
+	    + Body : string
+	    + Status : string
+	    + CreatedBy : Guid
+	    + CreatedByUser : User
+	    + AttachReview(Review review)
+	    + MarkResolved(User user)
+	    + MarkOpen(User user)
+	    + AddComment(Comment comment)
+	    + UpdateBody(string body)
+    }
+    class ChangeSet {
+	    + Scope : string
+	    + BaseSourceFileVersionId : Guid?
+	    + BaseSourceFileVersion : SourceFileVersion
+	    + BaseDiagramVersionId : Guid?
+	    + BaseDiagramVersion : DiagramVersion
+	    + Status : string
+	    + Title : string
+	    + Description : string
+	    + AttachSourceVersion(SourceFileVersion version)
+	    + AttachDiagramVersion(DiagramVersion version)
+	    + AddItem(ChangeItem item)
+	    + Merge(ChangeSet other)
+	    + SetStatus(string status)
+    }
+    class User {
+	    + Email : string
+	    + Name : string
+	    + PasswordHash : string
+	    + AuthProvider : string
+	    + AuthSubject : string
+	    + AuthMetadata : string
+	    + NotifyEnabled : bool
+	    + IsActive : bool
+	    + LastLoginAt : DateTime?
+	    + SetPassword(string hash)
+	    + UpdateProfile(string name, string email)
+	    + Disable()
+	    + Enable()
+	    + MarkLastLogin(DateTime timestamp)
+	    + SetNotifications(bool enabled)
+    }
+    class Review {
+	    + ProjectId : Guid
+	    + project : Project
+	    + TargetType : string
+	    + TargetId : Guid
+	    + Status : string
+	    + CreatedBy : Guid
+	    + CreatedByUser : User
+	    + AttachProject(Project project)
+	    + SetTarget(string targetType, Guid targetId)
+	    + Open(User creator)
+	    + Close(User closer)
+	    + AddItem(ReviewItem item)
+	    + ValidateStatusTransition(string newStatus)
+    }
+    class Comment {
+	    + ReviewItemId : Guid
+	    + ReviewItem : ReviewItem
+	    + Body : string
+	    + AuthorId : Guid
+	    + Author : User
+	    + AttachToReviewItem(ReviewItem item)
+	    + AssignAuthor(User author)
+	    + Edit(string body, User editor)
+    }
+    class ChangeItem {
+	    + ChangeSetId : Guid
+	    + ChangeSet : ChangeSet
+	    + ItemType : string
+	    + Target : string
+	    + PayloadJson : string
+	    + MappingBefore : string
+	    + MappingAfter : string
+	    + AttachChangeSet(ChangeSet changeSet)
+	    + Apply()
+	    + Revert()
+	    + SetPayload(string payloadJson)
+	    + Describe()
+    }
+    class SyncAction {
+	    + FromScope : string
+	    + ToScope : string
+	    + AppliedAt : DateTime
+	    + ActorId : Guid
+	    + Actor : User
+	    + DetailsJson : string
+	    + ResultStatus : string
+	    + AssignActor(User actor)
+	    + MarkApplied(DateTime appliedAt)
+	    + SetResult(string status, string detailsJson)
+	    + Describe()
+    }
+    class AuditLog {
+	    + ProjectId : Guid?
+	    + Project : Project
+	    + ActorId : Guid?
+	    + Actor : User
+	    + Action : string
+	    + TargetType : string
+	    + TargetId : Guid?
+	    + At : DateTime
+	    + MetaJson : string
+	    + RecordTarget(Guid targetId, string targetType)
+	    + AttachActor(User actor)
+	    + SetMetadata(string metaJson)
+	    + RenderMessage()
+    }
+    class ProjectMember {
+	    + ProjectId : Guid
+	    + Project : Project
+	    + UserId : Guid
+	    + User : User
+	    + Role : string
+	    + InvitedAt : DateTime?
+	    + JoinedAt : DateTime?
+	    + AssignRole(string role)
+	    + AttachProject(Project project)
+	    + AttachUser(User user)
+	    + Invite(DateTime invitedAt)
+	    + Revoke()
+    }
+    class Project {
+	    + Name: string
+	    + Description: string
+	    + OwnerId: Guid
+	    + Owner: User
+	    + DefaultLanguageId: Guid
+	    + DefaultLanguage: Language
+	    + Visibility: string
+	    + AssignOwner(User owner)
+	    + SetLanguage(Language language)
+	    + ChangeVisibility(string visibility)
+	    + AttachLatestVersions(SourceFileVersion? source, DiagramVersion? diagram)
+    }
+    class Language {
+	    + Code: string
+	    + Name: string
+	    + VersionHint: string
+	    + FileExtensions: string
+	    + CommentMarkerOpen: string
+	    + CommentMarkerClose: string
+	    + SetVersioningHint(string hint)
+	    + SupportsFile(string extension)
+	    + DefineMarkers(string commentOpen, string commentClose)
+	    + Validate()
+    }
+    class SourceFile {
+	    + ProjectId: Guid
+	    + Project: Project
+	    + Path: string
+	    + LanguageId: Guid
+	    + Language: Language
+	    + LatestVersionId: Guid
+	    + LatestVersion: SourceFileVersion
+	    + AttachProject(Project project)
+	    + AssignLanguage(Language language)
+	    + SetLatestVersion(SourceFileVersion version)
+	    + DefineRegion(CodeRegion region)
+	    + Move(string newPath)
+    }
+    class Diagram {
+	    + PrijectId: Guid
+	    + Project: Project
+	    + RegionId: Guid
+	    + Region: CodeRegion
+	    + Name: string
+	    + LatestVersionId: Guid
+	    + LatestVersion: SourceFileVersion
+	    + Status: string
+	    + AttachProject(Project project)
+	    + AddNode(DiagramNode node)
+	    + AddEdge(DiagramEdge edge)
+	    + SetLatestVersion(DiagramVersion version)
+	    + ValidateConsistency()
+    }
+    class CodeRegion {
+	    + SourceFileId: Guid
+	    + SourceFile: SourceFile
+	    + StartLine: int
+	    + EndLine: int
+	    + TagName: string
+	    + RegionType: string
+	    + AttachSourceFile(SourceFile file)
+	    + SetSpan(int startLine, int endLine)
+	    + Rename(string tagName)
+	    + ToCodeSnippet(SourceFileVersion version)
+    }
+    class SourceFileVersion {
+	    + SourceFileId: Guid
+	    + SourceFile: SourceFile
+	    + Content: string
+	    + SetContent(string content)
+	    + Diff(SourceFileVersion other)
+	    + GetLines(int startLine, int endLine)
+	    + ComputeChecksum()
+    }
+    class CodeMapping {
+	    + RegionId: Guid
+	    + Region: CodeRegion
+	    + ElementUid: string
+	    + SourceFileVersionId: Guid
+	    + SourceFileVersion: SourceFileVersion
+	    + StartLine: int
+	    + EndLine: int
+	    + MappingConfidence: decimal
+	    + LinkRegion(CodeRegion region)
+	    + AttachSourceVersion(SourceFileVersion version)
+	    + SetElement(string elementUid)
+	    + ToMappingDescriptor()
+    }
+    class DiagramVersion {
+	    + DiagramId: Guid
+	    + Diagram: Diagram
+	    + JsonSnapshot: string
+	    + Snapshot(Diagram diagram)
+	    + Restore()
+	    + Compare(DiagramVersion other)
+	    + ValidateJson()
+    }
+    class DiagramNode {
+	    + Uid: string
+	    + Type: string
+	    + X: double
+	    + Y: double
+	    + Width: double
+	    + Height: double
+	    + Text: string
+	    + Meta: Dictionary
+	    + Move(double x, double y)
+	    + Resize(double width, double height)
+	    + Rename(string text)
+	    + SetMeta(IDictionary meta)
+    }
+    class DiagramEdge {
+	    + Uid: string
+	    + FromNodeUid: string
+	    + ToNodeUid: string
+	    + Label: string
+	    + Condition: string
+	    + Meta: Dictionary
+	    + Connect(string fromNodeUid, string toNodeUid)
+	    + Retype(string type)
+	    + Label(string label)
+	    + SetMeta(IDictionary meta)
+    }
+
+	<<BaseEntity>> Suggestion
+	<<BaseEntity>> ReviewItem
+	<<BaseEntity>> ChangeSet
+	<<BaseEntity>> User
+	<<BaseEntity>> Review
+	<<BaseEntity>> Comment
+	<<BaseEntity>> ChangeItem
+	<<BaseEntity>> SyncAction
+	<<BaseEntity>> AuditLog
+	<<BaseEntity>> ProjectMember
+	<<BaseEntity>> Project
+	<<BaseEntity>> Language
+	<<BaseEntity>> SourceFile
+	<<BaseEntity>> Diagram
+	<<BaseEntity>> CodeRegion
+	<<VersionedEntity>> SourceFileVersion
+	<<BaseEntity>> CodeMapping
+	<<VersionedEntity>> DiagramVersion
+
+    BaseEntity <|-- VersionedEntity
+    Suggestion "0..1" --* "1" ReviewItem
+    Suggestion "1" -- "1" ReviewItem
+    Suggestion "0..*" -- "1" ChangeSet
+    Suggestion "0..*" -- "1" User
+    Review "1" -- "1..*" ReviewItem
+    Review "0..*" -- "1" User
+    ReviewItem "1" -- "0..*" Comment
+    ChangeSet "1" -- "1..*" ChangeItem
+    User "1" -- "0..*" SyncAction
+    User "1" -- "0..*" AuditLog
+    User "1" --* "0..*" ProjectMember
+    SyncAction "0..*" -- "1*" Project
+    ProjectMember "1..N" -- "1" Project
+    Language "1..K" -- "1" Project
+    Project "1" -- "0..*" SourceFile
+    Project "1" -- "1..*" Diagram
+    SourceFile "1" -- "0..*" CodeRegion
+    SourceFile "1" -- "1..*" SourceFileVersion
+    SourceFileVersion "1" -- "0..*" CodeMapping
+    CodeRegion "1" -- "0..*" CodeMapping
+    CodeMapping "0..*" -- "1" DiagramVersion
+    Diagram "1" *-- "1..*" DiagramVersion
+    Diagram "1" -- "0..*" DiagramNode
+    Diagram "1" -- "0..*" DiagramEdge
+    Diagram <..> SourceFile 
+    Project "0..1" -- "0..*" AuditLog
