@@ -1,0 +1,189 @@
+@startuml ERD
+!theme plain
+
+' ======= Entities =======
+
+entity "users" as users {
+  * id : UUID
+  --
+  login : String(320) NOT NULL
+  password_hash : String NOT NULL
+  auth_provider : String(32) NOT NULL
+  is_active : Boolean NOT NULL DEFAULT true
+  notify_enabled : Boolean NOT NULL DEFAULT true
+  last_seen : DateTime NOT NULL DEFAULT now()
+  created_at : DateTime NOT NULL DEFAULT now()
+}
+
+entity "projects" as projects {
+  * id : UUID
+  --
+  name : String(320) NOT NULL
+  description : String NOT NULL
+  owner_id : UUID NOT NULL    ' FK -> users.id
+  created_at : DateTime NOT NULL DEFAULT now()
+}
+
+entity "language" as language {
+  * id : UUID
+  --
+  code : String(8) NOT NULL UNIQUE
+  name : String(32) NOT NULL
+  versioning_hint : String(32)
+  file_extensions : String(256)
+  comment_marker_open : String(64)
+  comment_marker_close : String(64)
+}
+
+entity "project_members" as project_members {
+  * id : UUID
+  --
+  project_id : UUID NOT NULL UNIQUE   ' FK -> projects.id
+  user_id : UUID NOT NULL UNIQUE      ' FK -> users.id
+  role : String(16) NOT NULL          ' 'owner' | 'reviewer'
+  assigned_by : UUID NULLABLE         ' FK -> users.id
+}
+
+entity "source_files" as source_files {
+  * id : UUID
+  --
+  project_id : UUID NOT NULL UNIQUE   ' FK -> projects.id
+  path : String(1024) NOT NULL UNIQUE
+  language_id : UUID NOT NULL         ' FK -> language.id
+  latest_version_id : UUID NOT NULL   ' FK -> source_file_versions.id
+  created_at : DateTime NOT NULL DEFAULT now()
+}
+
+entity "source_file_versions" as source_file_versions {
+  * id : UUID
+  --
+  source_file_id : UUID NOT NULL UNIQUE   ' FK -> source_files.id
+  version_index : Int NOT NULL UNIQUE
+  content : String NOT NULL
+  author_id : UUID NOT NULL               ' FK -> users.id
+  created_at : DateTime DEFAULT now()
+  message : String(300)
+}
+
+entity "code_regions" as code_regions {
+  * id : UUID
+  --
+  source_file_id : UUID NOT NULL      ' FK -> source_files.id
+  start_line : Int NOT NULL
+  end_line : Int NOT NULL
+  tag_name : String(100)
+  region_type : String(16)            ' e.g. 'flowchart'
+}
+
+entity "diagrams" as diagrams {
+  * id : UUID
+  --
+  project_id : UUID NOT NULL          ' FK -> projects.id
+  region_id : UUID NOT NULL UNIQUE    ' FK -> code_regions.id
+  name : String(200) NOT NULL
+  latest_version_id : UUID NOT NULL   ' FK -> diagram_versions.id
+  created_at : DateTime NOT NULL DEFAULT now()
+  updated_at : DateTime NOT NULL DEFAULT now()
+}
+
+entity "diagram_versions" as diagram_versions {
+  * id : UUID
+  --
+  diagram_id : UUID NOT NULL UNIQUE   ' FK -> diagrams.id
+  version_index : Int NOT NULL UNIQUE
+  json_snapshot : JSON NOT NULL
+  author_id : UUID NOT NULL           ' FK -> users.id
+  created_at : DateTime NOT NULL DEFAULT now()
+  message : String(300)
+}
+
+entity "reviews" as reviews {
+  * id : UUID
+  --
+  project_id : UUID NOT NULL          ' FK -> projects.id
+  target_type : String(24) NOT NULL   ' 'diagram_version' | 'source_file_version'
+  target_id : UUID NOT NULL           ' polymorphic via target_type
+  status : String(16) NOT NULL DEFAULT 'open'  ' 'open' | 'closed' | 'rejected'
+  created_by : UUID NOT NULL          ' FK -> users.id
+  created_at : DateTime NOT NULL DEFAULT now()
+}
+
+entity "review_items" as review_items {
+  * id : UUID
+  --
+  review_id : UUID NOT NULL           ' FK -> reviews.id
+  kind : String(16) NOT NULL          ' 'comment' | 'issue'
+  anchor_type : String(8) NOT NULL    ' 'code' | 'diagram'
+  anchor_ref : String(512) NOT NULL   ' file:{id}@v{version}:{line..} | diagram:{id}@v{version}:{element}
+  body : String NOT NULL
+  status : String(16) NOT NULL DEFAULT 'open'  ' 'open' | 'resolved'
+  created_by : UUID NOT NULL          ' FK -> users.id
+  created_at : DateTime NOT NULL DEFAULT now()
+}
+
+entity "comments" as comments {
+  * id : UUID
+  --
+  review_item_id : UUID NOT NULL      ' FK -> review_items.id
+  body : String NOT NULL
+  author_id : UUID NOT NULL           ' FK -> users.id
+  created_at : DateTime NOT NULL
+}
+
+entity "audit_log" as audit_log {
+  * id : UUID
+  --
+  project_id : UUID                   ' FK -> projects.id
+  actor_id : UUID                     ' FK -> users.id
+  action : String(64) NOT NULL
+  target_type : String(24) NOT NULL   ' polymorphic
+  target_id : UUID                    ' polymorphic id
+  at : DateTime NOT NULL DEFAULT now()
+  meta_json : JSON
+}
+
+' ======= Relationships (crows foot with explicit PK→FK labels) =======
+
+users ||--o{ projects : "PK users.id → \nFK projects.owner_id"
+
+projects ||--o{ project_members : "PK projects.id → \nFK project_members.project_id"
+users ||--o{ project_members : "PK users.id → \nFK project_members.user_id"
+users ||--o{ project_members : "PK users.id → \nFK project_members.assigned_by"
+
+projects ||--o{ source_files : "PK projects.id → \nFK source_files.project_id"
+language ||--o{ source_files : "PK language.id → \nFK source_files.language_id"
+
+source_files ||--o{ source_file_versions : "PK source_files.id → \nFK source_file_versions.source_file_id"
+users ||--o{ source_file_versions : "PK users.id → \nFK source_file_versions.author_id"
+
+source_files ||--o{ code_regions : "PK source_files.id → \nFK code_regions.source_file_id"
+
+projects ||--o{ diagrams : "PK projects.id → \nFK diagrams.project_id"
+code_regions ||--|| diagrams : "PK code_regions.id → \nFK diagrams.region_id (unique)"
+
+diagrams ||--o{ diagram_versions : "PK diagrams.id → \nFK diagram_versions.diagram_id"
+users ||--o{ diagram_versions : "PK users.id → \nFK diagram_versions.author_id"
+
+' ссылки на "latest_version_id"
+source_file_versions ||--|| source_files : "PK source_file_versions.id → \nFK source_files.latest_version_id"
+diagram_versions ||--|| diagrams : "PK diagram_versions.id → \nFK diagrams.latest_version_id"
+
+projects ||--o{ reviews : "PK projects.id → \nFK reviews.project_id"
+users ||--o{ reviews : "PK users.id → \nFK reviews.created_by"
+
+' Полиморфные цели ревью (показаны как альтернативные связи)
+diagram_versions ||..o{ reviews : "as target_id when\n target_type='diagram_version'"
+source_file_versions ||..o{ reviews : "as target_id when\n target_type='source_file_version'"
+
+reviews ||--o{ review_items : "PK reviews.id → \nFK review_items.review_id"
+users ||--o{ review_items : "PK users.id → \nFK review_items.created_by"
+
+review_items ||--o{ comments : "PK review_items.id → \nFK comments.review_item_id"
+users ||--o{ comments : "PK users.id → \nFK comments.author_id"
+
+projects ||..o{ audit_log : "PK projects.id → \nFK audit_log.project_id"
+users ||..o{ audit_log : "PK users.id → \nFK audit_log.actor_id"
+diagram_versions ||..o{ audit_log : "polymorphic target_id (optional)"
+source_file_versions ||..o{ audit_log : "polymorphic target_id (optional)"
+
+@enduml
