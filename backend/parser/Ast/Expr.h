@@ -27,7 +27,34 @@ struct RealLiteral : Expr {
     void accept(Visitor &v) override;
 };
 
-enum class BinOpKind { Add, Sub, Mul, Div, Mod, And, Or, Xor, Lt, Gt, Le, Ge, Eq, Ne };
+struct UnaryOp : Expr {
+    std::string op;
+    bool postfix{false};
+    std::unique_ptr<Expr> operand;
+    void accept(Visitor &v) override;
+};
+
+enum class BinOpKind {
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Mod,
+    And,
+    Or,
+    Xor,
+    BitAnd,
+    BitOr,
+    BitXor,
+    Shl,
+    Shr,
+    Lt,
+    Gt,
+    Le,
+    Ge,
+    Eq,
+    Ne
+};
 
 struct BinaryOp : Expr {
     BinOpKind op{BinOpKind::Add};
@@ -36,8 +63,10 @@ struct BinaryOp : Expr {
     void accept(Visitor &v) override;
 };
 
+struct CallExpr : Expr {
+    std::string callee;
+    std::vector<std::unique_ptr<Expr>> arguments;
+    void accept(Visitor &v) override;
+};
+
 #endif // AST_EXPR_H
-
-
-
-
