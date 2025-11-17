@@ -6,7 +6,7 @@
 #define FUNCTION_H
 
 #include "Expression.h"
-#include "../Token.h"
+#include "../Scripts/Token.h"
 #include "ConditionExpression.h"
 #include "StatementExpression.h"
 #include <utility>

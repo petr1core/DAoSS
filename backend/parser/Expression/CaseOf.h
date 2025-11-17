@@ -6,7 +6,7 @@
 #define CASEOF_H
 #include <vector>
 #include "Expression.h"
-#include "../Token.h"
+#include "../Scripts/Token.h"
 static int c=0;
 class CaseOf: public Expression {
 private:

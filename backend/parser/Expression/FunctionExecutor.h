@@ -5,11 +5,11 @@
 #define FUNCTIONALLOCATOR_H
 #include <utility>
 #include <vector>
-#include "../Token.h"
+#include "../Scripts/Token.h"
 #include "Expression.h"
 #include "Function.h"
 #include "Procedure.h"
-class FunctionExecutor: public Expression{
+class FunctionExecutor{//:public Expression{
 private:
     vector<Expression*> expressionList;
     string ans;
@@ -39,9 +39,6 @@ public:
             }
             i++;
         }
-    }
-    void print(int tab) override{
-
     }
 };
 

@@ -7,7 +7,7 @@
 #include "Expression.h"
 #include <bits/stdc++.h>
 #include "stdexcept"
-#include "../Token.h"
+#include "../Scripts/Token.h"
 static int y=0;
 static int posofEndofIf=0; //только для вложенных случаев нужен
 class ConditionExpression: public Expression{
@@ -19,6 +19,9 @@ private:
 public:
     ConditionExpression(const ConditionExpression& other) = default;
     static int getGlobalPos(){return posofEndofIf;}
+    ConditionExpression() {
+        y1=++y;
+    }
     ConditionExpression(int pos, vector<Token>list){
         y1=++y;
         doCondition(pos,list);
@@ -29,6 +32,10 @@ public:
     std::pair<vector<Token>, vector<Expression*>> getBody() {
         std::pair<vector<Token>, vector<Expression*>> condAndList(condition, expressionList);
         return condAndList;
+    }
+    // Add method to add body expressions
+    void addBodyExpression(Expression* expr) {
+        expressionList.push_back(expr);
     }
     void doCondition(int pos, vector<Token>list){
         posofEndofIf=pos;
@@ -44,17 +51,19 @@ public:
                 if(((list[posofEndofIf].getType()=="CONDITION"))|| //если хоть какую-то в нем вложенность находим
                    (list[posofEndofIf].getType()=="CYCLEFOR")|| // хоть вложенное условие, хоть вложенный цикл, то создаём новый объект
                    (list[posofEndofIf].getType()=="CYCLEWHILE")|| // не забываем про static переменную, она указывает новое место где мы окажемся
-                   (list[posofEndofIf].getType()=="CYCLEDOWHILE"))//поднявшись обратно наверх от вложенного объекта
+                   (list[posofEndofIf].getType()=="CYCLEDOWHILE")||
+                   (list[posofEndofIf].getType()=="UNCONDITION"))//поднявшись обратно наверх от вложенного объекта
                 {
-                        ConditionExpression* cx = new ConditionExpression(posofEndofIf,list);
-                        posofEndofIf=cx->getGlobalPos();
-                        expressionList.push_back(cx);
+                    ConditionExpression* cx = new ConditionExpression(posofEndofIf,list);
+                    posofEndofIf=cx->getGlobalPos();
+                    expressionList.push_back(cx);
                 }
                 else
                 {
                     while(list[posofEndofIf].getType()!="SEMICOLON"){ //если вложенности нет или мы с ней уже закончили, то формируем обычные выражения
                         localList.push_back(list[posofEndofIf]);
-                        posofEndofIf++;}
+                        posofEndofIf++;
+                    }
                     StatementExpression* rx= new StatementExpression(localList);
                     expressionList.push_back(rx);
                     localList.clear();
@@ -68,7 +77,10 @@ public:
         if(list[posofEndofIf].getType()=="UNCONDITION"){
             condition.push_back(list[posofEndofIf]);
             while(list[posofEndofIf].getType()!="BEGIN")
-            { posofEndofIf++;} posofEndofIf++;
+            {
+                posofEndofIf++;
+            }
+            posofEndofIf++;
             // те же шаги, что и при condition, но уже в цикле до ENDofCycle
             while(list[posofEndofIf].getType()!="ENDofCycle"){
                 if(((list[posofEndofIf].getType()=="CONDITION"))||
@@ -184,6 +196,5 @@ public:
        --tab;
     }
 };
-
 
 #endif //CONDITIONEXPRESSION_H
