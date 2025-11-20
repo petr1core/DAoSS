@@ -1,5 +1,5 @@
 //
-// Minimal AST core for Pascal → C++ → Flowchart pipeline
+// Minimal AST core for C++ → JSON
 //
 
 #ifndef AST_CORE_H
@@ -22,6 +22,8 @@ struct AstNode {
     SourceRange range{};
     virtual ~AstNode() = default;
     virtual void accept(Visitor &v) = 0;
+    //virtual void printTree(int indent = 0) const = 0;
 };
 
 #endif // AST_CORE_H
+

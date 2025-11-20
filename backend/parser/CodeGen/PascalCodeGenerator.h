@@ -18,7 +18,7 @@ private:
     }
 
     // Убираем лишние кавычки и точки с запятой
-    std::string cleanStatement(const std::string& stmt) {
+    std::string cleanStatement(const std::string &stmt) {
         std::string result = stmt;
 
         // Убираем точку с запятой в конце если есть
@@ -34,7 +34,7 @@ private:
         return result;
     }
 
-    void generateConstantBlock(const nlohmann::json& constants) {
+    void generateConstantBlock(const nlohmann::json &constants) {
         if (!constants.empty()) {
             out << getIndent() << "const\n";
             indentLevel++;
@@ -49,7 +49,7 @@ private:
         }
     }
 
-    void generateVariableBlock(const nlohmann::json& variables) {
+    void generateVariableBlock(const nlohmann::json &variables) {
         if (!variables.empty()) {
             out << getIndent() << "var\n";
             indentLevel++;
@@ -64,9 +64,9 @@ private:
         }
     }
 
-    void generateFunctionBlock(const nlohmann::json& functions) {
+    void generateFunctionBlock(const nlohmann::json &functions) {
         for (auto it = functions.begin(); it != functions.end(); ++it) {
-            const auto& func = it.value();
+            const auto &func = it.value();
 
             if (func.contains("declaration") && func.contains("body")) {
                 std::string declaration = cleanStatement(func["declaration"]);
@@ -83,26 +83,7 @@ private:
         }
     }
 
-    void generateProcedureBlock(const nlohmann::json& procedures) {
-        for (auto it = procedures.begin(); it != procedures.end(); ++it) {
-            const auto& proc = it.value();
-
-            if (proc.contains("declaration") && proc.contains("body")) {
-                std::string declaration = cleanStatement(proc["declaration"]);
-                out << getIndent() << declaration << ";\n";
-
-                out << getIndent() << "begin\n";
-                indentLevel++;
-
-                generateBody(proc["body"]);
-
-                indentLevel--;
-                out << getIndent() << "end;\n\n";
-            }
-        }
-    }
-
-    void generateMainBlock(const nlohmann::json& mainBlock) {
+    void generateMainBlock(const nlohmann::json &mainBlock) {
         // Собираем все statements в правильном порядке
         std::vector<std::pair<int, nlohmann::json>> orderedStatements;
 
@@ -116,15 +97,15 @@ private:
 
         // Сортируем по индексу
         std::sort(orderedStatements.begin(), orderedStatements.end(),
-                  [](const auto& a, const auto& b) { return a.first < b.first; });
+                  [](const auto &a, const auto &b) { return a.first < b.first; });
 
         // Генерируем в правильном порядке
-        for (const auto& [index, statement] : orderedStatements) {
+        for (const auto &[index, statement]: orderedStatements) {
             generateStatement(statement);
         }
     }
 
-    void generateBody(const nlohmann::json& body) {
+    void generateBody(const nlohmann::json &body) {
         if (body.contains("mainBlock")) {
             generateMainBlock(body["mainBlock"]);
         } else if (body.is_object()) {
@@ -137,7 +118,7 @@ private:
         }
     }
 
-    void generateStatement(const nlohmann::json& statement) {
+    void generateStatement(const nlohmann::json &statement) {
         if (!statement.is_object() || !statement.contains("type")) return;
 
         std::string type = statement["type"];
@@ -147,19 +128,16 @@ private:
                 std::string value = cleanStatement(statement["value"]);
                 out << getIndent() << value << ";\n";
             }
-        }
-        else if (type == "if" || type == "while" || type == "for" || type == "until") {
+        } else if (type == "if" || type == "while" || type == "for" || type == "until") {
             generateConditionalStatement(statement);
-        }
-        else if (type == "caseOf") {
+        } else if (type == "caseOf") {
             generateCaseStatement(statement);
-        }
-        else if (type == "else") {
+        } else if (type == "else") {
             generateElseStatement(statement);
         }
     }
 
-    void generateConditionalStatement(const nlohmann::json& statement) {
+    void generateConditionalStatement(const nlohmann::json &statement) {
         std::string type = statement["type"];
 
         if (type == "if") {
@@ -189,8 +167,7 @@ private:
             } else {
                 out << "\n";
             }
-        }
-        else if (type == "while") {
+        } else if (type == "while") {
             std::string condition = cleanStatement(statement["condition"]);
             // Убираем лишний "while" если он уже есть в условии
             if (condition.find("while ") == 0) {
@@ -210,8 +187,7 @@ private:
 
             indentLevel--;
             out << getIndent() << "end;\n";
-        }
-        else if (type == "for") {
+        } else if (type == "for") {
             std::string condition = cleanStatement(statement["condition"]);
             // Убираем лишний "for" если он уже есть в условии
             if (condition.find("for ") == 0) {
@@ -231,8 +207,7 @@ private:
 
             indentLevel--;
             out << getIndent() << "end;\n";
-        }
-        else if (type == "until") {
+        } else if (type == "until") {
             out << getIndent() << "repeat\n";
             out << getIndent() << "begin\n";
             indentLevel++;
@@ -254,7 +229,7 @@ private:
         }
     }
 
-    void generateElseStatement(const nlohmann::json& statement) {
+    void generateElseStatement(const nlohmann::json &statement) {
         out << getIndent() << "else\n";
         out << getIndent() << "begin\n";
         indentLevel++;
@@ -267,16 +242,16 @@ private:
         out << getIndent() << "end;\n";
     }
 
-    void generateCaseStatement(const nlohmann::json& statement) {
+    void generateCaseStatement(const nlohmann::json &statement) {
         if (!statement.contains("compareValue") || !statement.contains("body")) return;
 
         std::string compareValue = cleanStatement(statement["compareValue"]);
         out << getIndent() << "case " << compareValue << " of\n";
         indentLevel++;
 
-        const auto& body = statement["body"];
+        const auto &body = statement["body"];
         for (auto it = body.begin(); it != body.end(); ++it) {
-            const auto& branch = it.value();
+            const auto &branch = it.value();
 
             if (branch.contains("conditionValues") && branch.contains("todo")) {
                 std::string conditionValues = cleanStatement(branch["conditionValues"]);
@@ -315,7 +290,7 @@ private:
 public:
     PascalCodeGenerator() = default;
 
-    std::string generatePascal(const nlohmann::json& jsonData) {
+    std::string generatePascal(const nlohmann::json &jsonData) {
         out.str("");
         out.clear();
         indentLevel = 0;
@@ -325,7 +300,7 @@ public:
                 throw std::runtime_error("Invalid JSON structure: missing 'program'");
             }
 
-            const auto& program = jsonData["program"];
+            const auto &program = jsonData["program"];
 
             if (!program.contains("name")) {
                 throw std::runtime_error("Invalid JSON structure: missing program name");
@@ -335,27 +310,23 @@ public:
                 throw std::runtime_error("Invalid JSON structure: missing 'sections'");
             }
 
-            const auto& sections = program["sections"];
+            const auto &sections = program["sections"];
 
             // Заголовок программы
             std::string programName = cleanStatement(program["name"]);
             out << programName << ";\n\n";
 
             // Генерируем блоки в правильном порядке Pascal
+            if (sections.contains("functionBlock")) {
+                generateFunctionBlock(sections["functionBlock"]);
+            }
+
             if (sections.contains("constantBlock")) {
                 generateConstantBlock(sections["constantBlock"]);
             }
 
             if (sections.contains("variableBlock")) {
                 generateVariableBlock(sections["variableBlock"]);
-            }
-
-            if (sections.contains("functionBlock")) {
-                generateFunctionBlock(sections["functionBlock"]);
-            }
-
-            if (sections.contains("procedureBlock")) {
-                generateProcedureBlock(sections["procedureBlock"]);
             }
 
             // Основной блок программы
@@ -369,7 +340,7 @@ public:
             indentLevel--;
             out << "end.\n";
 
-        } catch (const std::exception& e) {
+        } catch (const std::exception &e) {
             std::cerr << "Error generating Pascal code: " << e.what() << std::endl;
             return "Error: " + std::string(e.what());
         }

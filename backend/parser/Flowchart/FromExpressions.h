@@ -17,6 +17,7 @@ static int layer = 0;  //слой, глубина рекурсии
 class FlowchartFromExpressions {
 public:
     int tmpCondId[3] = {-1, -1, -1}; //tmp массив, преимущественно для if/else конструкций
+
     FlowchartFromExpressions() = default;
 
     std::string build(const std::vector<Expression *> &exprs) {
@@ -195,6 +196,7 @@ private:
         }
         return s;
     }
+
     std::string tokensToLine(Token t) {
         std::string s;
         if (!s.empty())

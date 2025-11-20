@@ -1,5 +1,3 @@
-// Expressions hierarchy
-
 #ifndef AST_EXPR_H
 #define AST_EXPR_H
 
@@ -7,6 +5,28 @@
 
 struct Expr : AstNode {};
 
+// Добавляем новые узлы выражений
+struct TernaryOp : Expr {
+    std::unique_ptr<Expr> condition;
+    std::unique_ptr<Expr> thenExpr;
+    std::unique_ptr<Expr> elseExpr;
+    void accept(Visitor &v) override;
+};
+
+struct SizeofExpr : Expr {
+    std::unique_ptr<Expr> expression;
+    bool isType;
+    void accept(Visitor &v) override;
+};
+
+struct MemberAccessExpr : Expr {
+    std::unique_ptr<Expr> object;
+    std::string member;
+    bool isPointerAccess{false}; // для -> оператора
+    void accept(Visitor &v) override;
+};
+
+// Существующие узлы...
 struct Identifier : Expr {
     std::string name;
     void accept(Visitor &v) override;
@@ -35,31 +55,23 @@ struct UnaryOp : Expr {
 };
 
 enum class BinOpKind {
-    Add,
-    Sub,
-    Mul,
-    Div,
-    Mod,
-    And,
-    Or,
-    Xor,
-    BitAnd,
-    BitOr,
-    BitXor,
-    Shl,
-    Shr,
-    Lt,
-    Gt,
-    Le,
-    Ge,
-    Eq,
-    Ne
+    Add, Sub, Mul, Div, Mod,
+    And, Or, Xor,
+    BitAnd, BitOr, BitXor,
+    Shl, Shr,
+    Lt, Gt, Le, Ge, Eq, Ne
 };
 
 struct BinaryOp : Expr {
     BinOpKind op{BinOpKind::Add};
     std::unique_ptr<Expr> left;
     std::unique_ptr<Expr> right;
+    void accept(Visitor &v) override;
+};
+
+struct ArrayAccessExpr : Expr {
+    std::unique_ptr<Expr> array;
+    std::unique_ptr<Expr> index;
     void accept(Visitor &v) override;
 };
 
