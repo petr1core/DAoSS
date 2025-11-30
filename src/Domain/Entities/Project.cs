@@ -7,6 +7,7 @@ public class Project : BaseEntity
 	public Guid OwnerId { get; set; }
 	public Guid DefaultLanguageId { get; set; }
 	public string Visibility { get; set; } = "private";
+	public string? RequiredReviewersRules { get; set; } // JSON строка с правилами ревью
 }
 
 

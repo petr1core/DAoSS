@@ -15,11 +15,15 @@ public static class DependencyInjection
 		services.AddScoped<IUserRepository, UserRepository>();
 		services.AddScoped<ISourceFileRepository, SourceFileRepository>();
 		services.AddScoped<IReviewRepository, ReviewRepository>();
+		services.AddScoped<IReviewItemRepository, ReviewItemRepository>();
 		services.AddScoped<ICommentRepository, CommentRepository>();
 		services.AddScoped<ILanguageRepository, LanguageRepository>();
 		services.AddScoped<IProjectMemberRepository, ProjectMemberRepository>();
+		services.AddScoped<IInvitationRepository, InvitationRepository>();
 		services.AddScoped<IUnitOfWork, UnitOfWork>();
 		services.AddScoped<IAuthService, AuthService>();
+		services.AddScoped<IInvitationService, InvitationService>();
+		services.AddScoped<IReviewService, ReviewService>();
 		return services;
 	}
 }

@@ -20,6 +20,13 @@ public class ReviewRepository : EfRepository<Review>, IReviewRepository
 			.Where(r => r.ProjectId == projectId)
 			.ToListAsync(cancellationToken);
 	}
+
+	public async System.Threading.Tasks.Task<IReadOnlyList<Review>> GetByTargetAsync(string targetType, Guid targetId, System.Threading.CancellationToken cancellationToken = default)
+	{
+		return await _dbContext.Set<Review>()
+			.Where(r => r.TargetType == targetType && r.TargetId == targetId)
+			.ToListAsync(cancellationToken);
+	}
 }
 
 

@@ -52,12 +52,26 @@ public class ProjectsController : ControllerBase
 		public Guid OwnerId { get; set; }
 		public Guid DefaultLanguageId { get; set; }
 		public string Visibility { get; set; } = "private";
+		public string? RequiredReviewersRules { get; set; } // JSON строка с правилами ревью, например: [{"Role":"Admin","Count":2},{"Role":"Owner"}]
 	}
 
 	[HttpPost]
 	[Authorize] // создание проекта доступно авторизованным
 	public async Task<ActionResult<Project>> Create([FromBody] ProjectCreateUpdateDto dto, CancellationToken ct)
 	{
+		// Валидация JSON формата правил ревью (если указано)
+		if (!string.IsNullOrWhiteSpace(dto.RequiredReviewersRules))
+		{
+			try
+			{
+				System.Text.Json.JsonSerializer.Deserialize<List<object>>(dto.RequiredReviewersRules);
+			}
+			catch (System.Text.Json.JsonException)
+			{
+				return BadRequest(new { message = "RequiredReviewersRules must be a valid JSON array" });
+			}
+		}
+
 		var entity = new Project
 		{
 			Id = Guid.NewGuid(),
@@ -66,6 +80,7 @@ public class ProjectsController : ControllerBase
 			OwnerId = dto.OwnerId,
 			DefaultLanguageId = dto.DefaultLanguageId,
 			Visibility = string.IsNullOrWhiteSpace(dto.Visibility) ? "private" : dto.Visibility,
+			RequiredReviewersRules = dto.RequiredReviewersRules,
 			CreatedAt = DateTime.UtcNow
 		};
 		await _projects.AddAsync(entity, ct);
@@ -89,11 +104,25 @@ public class ProjectsController : ControllerBase
 		var existing = await _projects.GetByIdAsync(id, ct);
 		if (existing is null) return NotFound();
 
+		// Валидация JSON формата правил ревью (если указано)
+		if (!string.IsNullOrWhiteSpace(dto.RequiredReviewersRules))
+		{
+			try
+			{
+				System.Text.Json.JsonSerializer.Deserialize<List<object>>(dto.RequiredReviewersRules);
+			}
+			catch (System.Text.Json.JsonException)
+			{
+				return BadRequest(new { message = "RequiredReviewersRules must be a valid JSON array" });
+			}
+		}
+
 		existing.Name = dto.Name;
 		existing.Description = dto.Description;
 		existing.OwnerId = dto.OwnerId;
 		existing.DefaultLanguageId = dto.DefaultLanguageId;
 		existing.Visibility = string.IsNullOrWhiteSpace(dto.Visibility) ? existing.Visibility : dto.Visibility;
+		existing.RequiredReviewersRules = dto.RequiredReviewersRules;
 		existing.UpdatedAt = DateTime.UtcNow;
 
 		await _projects.UpdateAsync(existing, ct);

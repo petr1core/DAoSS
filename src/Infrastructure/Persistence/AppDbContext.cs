@@ -17,6 +17,7 @@ public class AppDbContext : DbContext
 	public DbSet<Review> Reviews => Set<Review>();
 	public DbSet<Language> Languages => Set<Language>();
 	public DbSet<ProjectMember> ProjectMembers => Set<ProjectMember>();
+	public DbSet<Invitation> Invitations => Set<Invitation>();
 	public DbSet<SourceFileVersion> SourceFileVersions => Set<SourceFileVersion>();
 	public DbSet<DiagramVersion> DiagramVersions => Set<DiagramVersion>();
 	public DbSet<ReviewItem> ReviewItems => Set<ReviewItem>();

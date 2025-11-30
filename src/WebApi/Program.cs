@@ -83,9 +83,12 @@ builder.Services
 	});
 builder.Services.AddAuthorization(options =>
 {
-	options.AddPolicy("ProjectRead", p => p.Requirements.Add(new ProjectRoleRequirement("reviewer", "owner")));
-	options.AddPolicy("ProjectWrite", p => p.Requirements.Add(new ProjectRoleRequirement("reviewer", "owner")));
-	options.AddPolicy("ProjectAdmin", p => p.Requirements.Add(new ProjectRoleRequirement("owner")));
+	// ProjectRead: для публичных проектов - любой авторизованный (public), для приватных - только участники
+	options.AddPolicy("ProjectRead", p => p.Requirements.Add(new ProjectRoleRequirement("public", "reviewer", "admin", "owner")));
+	// ProjectWrite: для публичных проектов - любой авторизованный (public), для приватных - только участники
+	options.AddPolicy("ProjectWrite", p => p.Requirements.Add(new ProjectRoleRequirement("public", "reviewer", "admin", "owner")));
+	// ProjectAdmin: только admin и owner (не зависит от видимости)
+	options.AddPolicy("ProjectAdmin", p => p.Requirements.Add(new ProjectRoleRequirement("admin", "owner")));
 });
 builder.Services.AddScoped<IAuthorizationHandler, ProjectRoleHandler>();
 
