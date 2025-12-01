@@ -53,6 +53,9 @@ inline void CppVarDecl::accept(CppVisitor &v) { v.visit(*this); }
 inline void CppAssignStmt::accept(CppVisitor &v) { v.visit(*this); }
 
 // Declarations
+inline void CppConstructorDecl::accept(CppVisitor &v) { v.visit(*this); }
+inline void CppMethodDecl::accept(CppVisitor &v) { v.visit(*this); }
+inline void CppOperatorDecl::accept(CppVisitor &v) { v.visit(*this); }
 inline void CppFunctionDecl::accept(CppVisitor &v) { v.visit(*this); }
 inline void CppTemplateDecl::accept(CppVisitor &v) { v.visit(*this); }
 inline void CppClassDecl::accept(CppVisitor &v) { v.visit(*this); }

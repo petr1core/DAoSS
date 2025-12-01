@@ -23,6 +23,11 @@ struct CppTemplateParameter {
     std::string defaultValue; // для non-type параметров
     bool isPack{false};
 };
+struct CppInitializer {
+    std::string memberName;    // Имя члена (или базового класса)
+    std::unique_ptr<CppExpr> value; // Выражение инициализации
+    bool isBaseClass;          // true для базовых классов, false для полей
+};
 
 // Функции
 struct CppFunctionDecl : CppDecl {
@@ -49,12 +54,36 @@ struct CppTemplateDecl : CppDecl {
 struct CppClassDecl : CppDecl {
     std::string name;
     std::vector<std::string> baseClasses;
+    std::vector<CppAccessSpecifier> baseAccess;
     CppDeclList members;
     bool isStruct{false}; // struct vs class
-
+    bool isUnion {false};
     void accept(CppVisitor &v) override;
 };
+// Методы классов
+struct CppMethodDecl : CppDecl {
+    std::string returnType;
+    std::string name;
+    std::vector<CppParameter> parameters;
+    std::unique_ptr<CppCompoundStmt> body;
+    bool isVirtual = false;
+    bool isOverride = false;
+    bool isConst = false;
+    bool isStatic = false;
+    CppAccessSpecifier access;
+    void accept(CppVisitor &v) override;
 
+};
+
+struct CppConstructorDecl :  CppDecl {
+    std::string name;
+    std::vector<CppParameter> parameters;
+    std::vector<CppInitializer> initializers;
+    std::unique_ptr<CppCompoundStmt> body;
+    CppAccessSpecifier access;
+    void accept(CppVisitor &v) override;
+
+};
 // Поля классов
 struct CppFieldDecl : CppDecl {
     std::string typeName;
@@ -105,6 +134,16 @@ struct CppEnumDecl : CppDecl {
     std::vector<std::pair<std::string, std::unique_ptr<CppExpr>>> enumerators;
     bool isScoped{false}; // enum class
     void accept(CppVisitor &v) override;
+};
+struct CppOperatorDecl : CppDecl {
+    std::string returnType;
+    std::string operatorSymbol;
+    std::vector<CppParameter> parameters;
+    std::unique_ptr<CppCompoundStmt> body;
+    bool isConst = false;
+    CppAccessSpecifier access;
+    void accept(CppVisitor &v) override;
+
 };
 
 // Препроцессор

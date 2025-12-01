@@ -512,7 +512,88 @@ public:
         indentLevel--;
         indentLevel--;
     }
+    void visit(CppMethodDecl& decl) override {
+        printNode("CppMethodDecl", accessSpecifierToString(decl.access) + ": " +
+                                   decl.returnType + " " + decl.name +
+                                   (decl.isVirtual ? " virtual" : "") +
+                                   (decl.isOverride ? " override" : "") +
+                                   (decl.isConst ? " const" : "")+
+                                   (decl.isStatic ? " static" : ""));
 
+        indentLevel++;
+
+        printNode("Parameters");
+        indentLevel++;
+        for (auto& param : decl.parameters) {
+            printNode("Parameter", param.typeName + " " + param.name +
+                                   (param.defaultValue.empty() ? "" : " = " + param.defaultValue));
+        }
+        indentLevel--;
+
+        if (decl.body) {
+            printNode("Body");
+            decl.body->accept(*this);
+        }
+        indentLevel--;
+    }
+
+    void visit(CppOperatorDecl& decl) override {
+        printNode("CppOperatorDecl", accessSpecifierToString(decl.access) + ": " +
+                                     decl.returnType + " operator" + decl.operatorSymbol +
+                                     (decl.isConst ? " const" : ""));
+        indentLevel++;
+
+        printNode("Parameters");
+        indentLevel++;
+        for (auto& param : decl.parameters) {
+            printNode("Parameter", param.typeName + " " + param.name +
+                                   (param.defaultValue.empty() ? "" : " = " + param.defaultValue));
+        }
+        indentLevel--;
+
+        if (decl.body) {
+            printNode("Body");
+            decl.body->accept(*this);
+        }
+        indentLevel--;
+    }
+    void visit(CppConstructorDecl& decl) override {
+        printNode("CppConstructorDecl", accessSpecifierToString(decl.access) + ": " + decl.name);
+        indentLevel++;
+
+        printNode("Parameters");
+        indentLevel++;
+        for (auto& param : decl.parameters) {
+            printNode("Parameter", param.typeName + " " + param.name +
+                                   (param.defaultValue.empty() ? "" : " = " + param.defaultValue));
+        }
+        indentLevel--;
+
+        if (!decl.initializers.empty()) {
+            printNode("Initializers");
+            indentLevel++;
+            for (auto& init : decl.initializers) {
+                std::string initStr = init.memberName;
+                if (init.isBaseClass) {
+                    initStr = "base " + initStr;
+                }
+                if (init.value) {
+                    initStr += "(";
+                    std::cout<<"TODO: добавить вывод выражения инициализации ";
+                    initStr += "...";
+                    initStr += ")";
+                }
+                printNode("Initializer", initStr);
+            }
+            indentLevel--;
+        }
+
+        if (decl.body) {
+            printNode("Body");
+            decl.body->accept(*this);
+        }
+        indentLevel--;
+    }
     void visit(CppFieldDecl& decl) override {
         printNode("CppFieldDecl", accessSpecifierToString(decl.access) + ": " +
                   decl.typeName + " " + decl.name +

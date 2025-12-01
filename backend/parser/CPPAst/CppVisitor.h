@@ -21,7 +21,7 @@ struct CppBreakStmt; struct CppContinueStmt; struct CppIfStmt;
 struct CppWhileStmt; struct CppDoWhileStmt; struct CppForStmt;
 struct CppRangeForStmt; struct CppSwitchStmt; struct CppCaseStmt;
 struct CppDefaultStmt; struct CppTryStmt; struct CppCatchStmt;
-struct CppVarDecl; struct CppAssignStmt;
+struct CppVarDecl; struct CppAssignStmt; struct CppMethodDecl; struct CppOperatorDecl; struct CppConstructorDecl;
 
 struct CppFunctionDecl; struct CppTemplateDecl; struct CppClassDecl;
 struct CppFieldDecl; struct CppNamespaceDecl; struct CppUsingDecl;
@@ -74,6 +74,9 @@ struct CppVisitor {
     virtual void visit(CppAssignStmt&) = 0;
 
     // Declarations
+    virtual void visit(CppConstructorDecl&) = 0;
+    virtual void visit(CppOperatorDecl&) = 0;
+    virtual void visit(CppMethodDecl&) = 0;
     virtual void visit(CppFunctionDecl&) = 0;
     virtual void visit(CppTemplateDecl&) = 0;
     virtual void visit(CppClassDecl&) = 0;
