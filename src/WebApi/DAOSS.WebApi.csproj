@@ -4,8 +4,8 @@
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Application\DAOSS.Application.csproj" />
-    <ProjectReference Include="..\Infrastructure\DAOSS.Infrastructure.csproj" />
+    <ProjectReference Include="Application\DAOSS.Application.csproj" />
+    <ProjectReference Include="Infrastructure\DAOSS.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.*" />
@@ -14,7 +14,16 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.*" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Application\**" />
+    <Compile Remove="Repositories\**" />
+    <Compile Remove="Services\**" />
+    <Compile Remove="Persistence\**" />
+    <Compile Remove="Infrastructure\**" />
+    <Compile Remove="Domain\**" />
   </ItemGroup>
 </Project>
 

@@ -24,6 +24,11 @@ public static class DependencyInjection
 		services.AddScoped<IAuthService, AuthService>();
 		services.AddScoped<IInvitationService, InvitationService>();
 		services.AddScoped<IReviewService, ReviewService>();
+		
+		// HttpClient для ParserService
+		services.AddHttpClient(nameof(ParserService));
+		services.AddScoped<IParserService, ParserService>();
+		
 		return services;
 	}
 }

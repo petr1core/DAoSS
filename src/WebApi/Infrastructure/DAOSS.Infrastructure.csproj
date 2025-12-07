@@ -17,6 +17,16 @@
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.1.2" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.*" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.*" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Persistence\**\*.cs" />
+    <Compile Include="..\Repositories\**\*.cs" />
+    <Compile Include="..\Services\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="**\*.Designer.cs" />
   </ItemGroup>
 </Project>
 

@@ -40,6 +40,7 @@ builder.Services.AddSwaggerGen(c =>
 	});
 });
 builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor();
 
 // Database: PostgreSQL (Env → appsettings fallback)
 var configuration = builder.Configuration;
@@ -58,7 +59,10 @@ var connectionString = string.IsNullOrWhiteSpace(connFromConfig)
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 	options.UseNpgsql(connectionString));
+
+// Добавление Infrastructure сервисов (включая репозитории)
 builder.Services.AddInfrastructure();
+
 // AuthN/AuthZ (JWT)
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var key = jwtSection.GetValue<string>("Key") ?? "dev_secret_key_change_me_please_1234567890";
@@ -90,7 +94,14 @@ builder.Services.AddAuthorization(options =>
 	// ProjectAdmin: только admin и owner (не зависит от видимости)
 	options.AddPolicy("ProjectAdmin", p => p.Requirements.Add(new ProjectRoleRequirement("admin", "owner")));
 });
-builder.Services.AddScoped<IAuthorizationHandler, ProjectRoleHandler>();
+
+// Явная регистрация с фабрикой для отладки
+builder.Services.AddScoped<IAuthorizationHandler>(sp =>
+{
+	var memberRepo = sp.GetRequiredService<DAOSS.Application.Repositories.IProjectMemberRepository>();
+	var projectRepo = sp.GetRequiredService<DAOSS.Application.Repositories.IProjectRepository>();
+	return new ProjectRoleHandler(memberRepo, projectRepo);
+});
 
 var app = builder.Build();
 
