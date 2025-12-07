@@ -5,13 +5,14 @@
 #ifndef LEXER_H
 #define LEXER_H
 #include <iostream>
+#include <iomanip>
 #include <regex>
 #include <vector>
 #include <string>
 #include "Token.h"
 
-enum types{
-    PASCAL, C, CPP
+enum class LangType{
+    LANG_PASCAL, LANG_C, LANG_CPP
 };
 class Lexer {
 private:
@@ -21,22 +22,33 @@ private:
     std::string copy_input_string;
     // Вектор всех возможных типов слов в ПаскальАБС/C/C++
     std::vector<std::pair<std::string, std::string> > vector;
-    int pos = 0;
+    size_t pos = 0;
 
 public:
-    Lexer(const std::string &input_string, types type) {
+    Lexer(const std::string &input_string, LangType type) {
         this->input_string = input_string;
         copy_input_string = input_string;
+        
+        // DEBUG: показать первые 30 байт в HEX
+        std::cout << "[LEXER] Input length: " << input_string.length() << std::endl;
+        std::cout << "[LEXER] First 30 bytes HEX: ";
+        for (size_t i = 0; i < std::min(size_t(30), input_string.length()); i++) {
+            std::cout << std::hex << std::setw(2) << std::setfill('0') 
+                      << (int)(unsigned char)input_string[i] << " ";
+        }
+        std::cout << std::dec << std::endl;
+        std::cout << "[LEXER] First 30 chars: \"" << input_string.substr(0, 30) << "\"" << std::endl;
+        
         switch (type){
-            case PASCAL:
+            case LangType::LANG_PASCAL:
                 vector =getTokenTypePascal();
                 while (hasNext()) {}
                 break;
-            case C:
+            case LangType::LANG_C:
                 vector =getTokenTypeC();
                 while (hasNext2()) {}
                 break;
-            case CPP:
+            case LangType::LANG_CPP:
                 vector =getTokenTypeCPlusPlus();
                 while (hasNext3()) {}
                 break;
@@ -47,20 +59,57 @@ public:
     }
 
     bool hasNext() {
+        if (pos >= input_string.length()) return false;
+        
+        const std::string& s = input_string;
+        
+        // 1. Сначала пропускаем пробелы и переводы строк
+        while (pos < s.length() && (s[pos] == ' ' || s[pos] == '\t' || s[pos] == '\n' || s[pos] == '\r')) {
+            pos++;
+        }
+        if (pos >= s.length()) return false;
+        
+        // DEBUG: показать первые 50 символов от текущей позиции
+        if (tokenList.size() < 5) {
+            std::cout << "[LEXER DEBUG] pos=" << pos << ", remaining: \"" 
+                      << input_string.substr(pos, 50) << "...\"" << std::endl;
+        }
+        
+        // 2. Затем проверяем паттерны (исключая SPACE, так как пробелы уже пропущены)
         for (const auto &item: vector) {
-            const std::string s = input_string;
+            if (item.first == "SPACE") continue; // Пробелы уже обработаны
+            
             std::regex rgx("^" + item.second);
             std::smatch match;
-            if (std::regex_search(s.begin() + pos, s.end(), match, rgx)) {
-                std::string res = static_cast<std::string>(match[0]);
-                pos += res.length();
-                if (item.first != "SPACE") {
-                    tokenList.emplace_back(item.first, res, pos - res.length());
+            std::string remaining = s.substr(pos);
+            if (std::regex_search(remaining, match, rgx)) {
+                // КРИТИЧНО: проверяем, что совпадение начинается в позиции 0 (начало remaining строки)
+                if (match.position() != 0) {
+                    continue; // Совпадение не в начале - пропускаем этот паттерн
                 }
+                
+                std::string res = static_cast<std::string>(match[0]);
+                if (res.empty()) {
+                    continue; // Пустое совпадение - пропускаем
+                }
+                
+                // DEBUG: показать совпадение
+                if (tokenList.size() < 10) {
+                    std::cout << "[LEXER DEBUG] pos=" << pos << ", char='"<< (pos < s.length() ? s[pos] : '?') 
+                              << "', Matched pattern \"" << item.second 
+                              << "\" -> type=" << item.first << ", value=\"" << res << "\"" << std::endl;
+                }
+                
+                pos += res.length();
+                tokenList.emplace_back(item.first, res, pos - res.length());
                 return true;
             }
         }
-        return false;
+        
+        // 3. Если ничего не найдено, выводим предупреждение и пропускаем символ
+        std::cout << "[LEXER WARNING] Unknown character: '" << s[pos] << "' at position " << pos << std::endl;
+        pos++;
+        return true;
     }
     bool hasNext2() {
         if (pos >= input_string.length()) return false;
@@ -588,36 +637,58 @@ public:
     }
     static std::vector<std::pair<std::string, std::string>> getTokenTypePascal() {
         return {
-            {"CONST", "const"},
-            {"VAR", "var"},
-            {"INC","to"},
-            {"DEC","downto"},
-            {"THEN", "then"},
-            {"DO", "do"},
-            {"OF", "of"},
-            {"MOD", "mod"},
-            {"DIV", "div"},
-            {"PLUS", "[\+]"},
-            {"MINUS","[-]"},
-            {"MULTI","[\*]"},
-            {"SWITCH", "case"},
-            {"FUNCTION", "function"},
-            {"PROCEDURE","procedure"},
-            {"BEGIN", "begin"},
+            // TITLE должен быть первым, так как он более специфичный паттерн
+            {"TITLE", "program [A-Za-z0-9_]+"},
+            // Разделители проверяем ДО ключевых слов
+            {"SEMICOLON", ";"},
+            {"COLON", ":"},
+            {"COMMA", ","},
+            {"OPENPARENTHESES", "[(]"},
+            {"CLOSEPARENTHESES", "[)]"},
+            {"OPENSQUARE", "[\\[]"},
+            {"CLOSESQUARE", "[\\]]"},
+            // Ключевые слова с границами слова
+            {"FUNCTION", "\\bfunction\\b"},
+            {"PROCEDURE","\\bprocedure\\b"},
+            {"CONST", "\\bconst\\b"},
+            {"VAR", "\\bvar\\b"},
+            {"INC","\\bto\\b"},
+            {"DEC","\\bdownto\\b"},
+            {"THEN", "\\bthen\\b"},
+            {"DO", "\\bdo\\b"},
+            {"OF", "\\bof\\b"},
+            {"MOD", "\\bmod\\b"},
+            {"DIV", "\\bdiv\\b"},
+            {"SWITCH", "\\bcase\\b"},
+            {"BEGIN", "\\bbegin\\b"},
             {"ENDofCycle", "end;"},
-            {"ENDofPROGRAM", "end[\.]"},
-            {"ENDofIF","end"},
-            {"TYPEINTEGER", "integer"},
-            {"TYPEREAL", "real"},
-            {"TYPESTRING", "string"},
-            {"TYPECHAR", "char"},
-            {"TYPEBOOLEAN", "boolean"},
-            {"VALUEREAL", "[0-9]+\.[0-9]+"},
-            {"VALUEINTEGER", "[0-9]+"},
-            {"VALUECHAR", "['][A-Za-z0-9][']"},
-            {"VALUESTRING", "['][A-Za-z0-9!?,\.: _-]+[']"},
-            {"VALUEBOOLEANTrue", "True"},
-            {"VALUEBOOLEANFalse", "False"},
+            {"ENDofPROGRAM", "end[\\.]"},
+            {"ENDofIF","\\bend\\b"},
+            {"TYPEINTEGER", "\\binteger\\b"},
+            {"TYPEREAL", "\\breal\\b"},
+            {"TYPESTRING", "\\bstring\\b"},
+            {"TYPECHAR", "\\bchar\\b"},
+            {"TYPEBOOLEAN", "\\bboolean\\b"},
+            {"CONDITION", "\\bif\\b"},
+            {"UNCONDITION", "\\belse\\b"},
+            {"WRITELN","\\bWriteln\\b"},
+            {"READLN","\\bReadln\\b"},
+            {"WRITE", "\\bWrite\\b"},
+            {"READ", "\\bRead\\b"},
+            {"CYCLEFOR", "\\bfor\\b"},
+            {"CYCLEWHILE", "\\bwhile\\b"},
+            {"CYCLEDOWHILE","\\brepeat\\b"},
+            {"UNTIL","\\buntil\\b"},
+            {"AND", "\\band\\b"},
+            {"OR", "\\bor\\b"},
+            {"NOT", "\\bnot\\b"},
+            {"XOR", "\\bxor\\b"},
+            {"VALUEBOOLEANTrue", "\\bTrue\\b"},
+            {"VALUEBOOLEANFalse", "\\bFalse\\b"},
+            // Операторы
+            {"PLUS", "[+]"},
+            {"MINUS","[-]"},
+            {"MULTI","[*]"},
             {"ASSIGN", ":="},
             {"JGE", ">="},
             {"JLE", "<="},
@@ -625,28 +696,12 @@ public:
             {"JG", ">"},
             {"JL", "<"},
             {"JE", "="},
-            {"AND", "and"},
-            {"OR", "or"},
-            {"NOT", "not"},
-            {"XOR", "xor"},
-            {"COLON", ":"},
-            {"COMMA", ","},
-            {"SEMICOLON", ";"},
-            {"TITLE", "program [A-Za-z0-9_]+"},
-            {"OPENPARENTHESES", "[(]"},
-            {"CLOSEPARENTHESES", "[)]"},
-            {"OPENSQUARE", "[\[]"},
-            {"CLOSESQUARE", "[\]]"},
-            {"CONDITION", "if"},
-            {"UNCONDITION", "else"},
-            {"WRITELN","Writeln"},
-            {"READLN","Readln"},
-            {"WRITE", "Write"},
-            {"READ", "Read"},
-            {"CYCLEFOR", "for"},
-            {"CYCLEWHILE", "while"},
-            {"CYCLEDOWHILE","repeat"},
-            {"UNTIL","until"},
+            // Литералы
+            {"VALUEREAL", "[0-9]+\\.[0-9]+"},
+            {"VALUEINTEGER", "[0-9]+"},
+            {"VALUECHAR", "['][A-Za-z0-9][']"},
+            {"VALUESTRING", "['][A-Za-z0-9!?,\\.: _-]+[']"},
+            // Идентификаторы и пробелы в конце
             {"VARIABLE", "[a-z0-9A-Z_-]+"},
             {"SPACE", "[ \t\n]"}
         };

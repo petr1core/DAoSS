@@ -1,0 +1,16 @@
+{
+  "server": {
+    "port": 8080,
+    "host": "0.0.0.0"
+  },
+  "jwt": {
+    "secret": "DaehLytkwbnnjfypS1YZADihusW4JmzzQb9Hxv0F",
+    "issuer": "daoss-dev",
+    "audience": "daoss-client"
+  }
+}
+
+
+
+
+

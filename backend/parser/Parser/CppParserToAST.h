@@ -24,7 +24,7 @@
 class CppParserToAST {
 public:
     std::unique_ptr<CppProgram> parse(const std::string &code) {
-        Lexer lexer(code, types::CPP);
+        Lexer lexer(code, LangType::LANG_CPP);
         tokens = lexer.getTokenList();
         lexer.printTokenList();
 

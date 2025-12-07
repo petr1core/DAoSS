@@ -1,0 +1,10 @@
+# CMake generation dependency list for this directory.
+C:/Program Files (x86)/Cmake/cmake-3.31.0-rc3/share/cmake-3.31/Modules/CMakePackageConfigHelpers.cmake
+C:/Program Files (x86)/Cmake/cmake-3.31.0-rc3/share/cmake-3.31/Modules/ExternalProject.cmake
+C:/Program Files (x86)/Cmake/cmake-3.31.0-rc3/share/cmake-3.31/Modules/ExternalProject/shared_internal_commands.cmake
+C:/Program Files (x86)/Cmake/cmake-3.31.0-rc3/share/cmake-3.31/Modules/GNUInstallDirs.cmake
+C:/Program Files (x86)/Cmake/cmake-3.31.0-rc3/share/cmake-3.31/Modules/WriteBasicConfigVersionFile.cmake
+D:/Obisidian Vaults/main/Учеба/ПАПС/DAOSS gh/src/parser/Parser/backend/parser/json-3.12.0/CMakeLists.txt
+D:/Obisidian Vaults/main/Учеба/ПАПС/DAOSS gh/src/parser/Parser/backend/parser/json-3.12.0/cmake/config.cmake.in
+D:/Obisidian Vaults/main/Учеба/ПАПС/DAOSS gh/src/parser/Parser/backend/parser/json-3.12.0/cmake/nlohmann_jsonConfigVersion.cmake.in
+D:/Obisidian Vaults/main/Учеба/ПАПС/DAOSS gh/src/parser/Parser/backend/parser/json-3.12.0/cmake/pkg-config.pc.in

@@ -5,26 +5,30 @@
 #ifndef CASEOF_H
 #define CASEOF_H
 #include <vector>
+#include <iostream>
+#include <stdexcept>
 #include "Expression.h"
 #include "../Scripts/Token.h"
+#include "ConditionExpression.h"
+#include "StatementExpression.h"
 static int c=0;
 class CaseOf: public Expression {
 private:
     int c1;
     Token value;
-    vector<std::pair<vector<Token>,vector<Expression*>>> body;
+    std::vector<std::pair<std::vector<Token>,std::vector<Expression*>>> body;
     int globalPosCase;
 public:
     CaseOf(){
         c1=++c;
         value=Token();};
-    CaseOf(int pos, vector<Token>list){
+    CaseOf(int pos, std::vector<Token>list){
         c1=++c;
         doSwitch(pos,list);
     }
     Token getVal(){return value;}
-    vector<std::pair<vector<Token>,vector<Expression*>>> getBody(){return body;}
-    void doSwitch(int pos, vector<Token>list){
+    std::vector<std::pair<std::vector<Token>,std::vector<Expression*>>> getBody(){return body;}
+    void doSwitch(int pos, std::vector<Token>list){
         globalPosCase=pos;
         globalPosCase++;
         value=list[globalPosCase];
@@ -33,9 +37,9 @@ public:
         globalPosCase++;
         globalPosCase++;
         globalPosCase++;
-        vector<Expression*>expressionList; //для хранения действий при определённом кейсе
-        vector<Token>localList;
-        vector<Token>argueList;//условия вхождения в кейс
+        std::vector<Expression*>expressionList; //для хранения действий при определённом кейсе
+        std::vector<Token>localList;
+        std::vector<Token>argueList;//условия вхождения в кейс
         while(list[globalPosCase].getType()!="ENDofCycle")
         {
             while(list[globalPosCase].getType()!="COLON")
@@ -55,7 +59,7 @@ public:
                    (list[globalPosCase].getType()=="CYCLEDOWHILE"))
                 {
                     auto* cx =new ConditionExpression(globalPosCase,list);
-                    globalPosCase=ConditionExpression::getGlobalPos();
+                    globalPosCase=cx->getGlobalPos();
                     expressionList.push_back(cx);
                 }
                 else{
@@ -79,10 +83,10 @@ public:
     }
     void print(int tab)override{
         for(int j=0;j<tab;j++){
-            cout<<"   ";
+            std::cout<<"   ";
         }
         std::cout<<"CaseOf "<<c1<<" of "<<value.getValue()<<" =";
-        std::cout<<endl;
+        std::cout<<std::endl;
 
         if(!body.empty())
         {

@@ -4,9 +4,10 @@
 #ifndef CONDITIONEXPRESSION_H
 #define CONDITIONEXPRESSION_H
 #include <vector>
+#include <iostream>
+#include <utility>
+#include <stdexcept>
 #include "Expression.h"
-#include <bits/stdc++.h>
-#include "stdexcept"
 #include "../Scripts/Token.h"
 static int y=0;
 static int posofEndofIf=0; //только для вложенных случаев нужен
@@ -22,22 +23,22 @@ public:
     ConditionExpression() {
         y1=++y;
     }
-    ConditionExpression(int pos, vector<Token>list){
+    ConditionExpression(int pos, std::vector<Token>list){
         y1=++y;
         doCondition(pos,list);
     }
 
-    vector<Token> getCondition(){return condition;}
-    void setCondition(vector<Token> con){this->condition=con;}
-    std::pair<vector<Token>, vector<Expression*>> getBody() {
-        std::pair<vector<Token>, vector<Expression*>> condAndList(condition, expressionList);
+    std::vector<Token> getCondition(){return condition;}
+    void setCondition(std::vector<Token> con){this->condition=con;}
+    std::pair<std::vector<Token>, std::vector<Expression*>> getBody() {
+        std::pair<std::vector<Token>, std::vector<Expression*>> condAndList(condition, expressionList);
         return condAndList;
     }
     // Add method to add body expressions
     void addBodyExpression(Expression* expr) {
         expressionList.push_back(expr);
     }
-    void doCondition(int pos, vector<Token>list){
+    void doCondition(int pos, std::vector<Token>list){
         posofEndofIf=pos;
         if(list[posofEndofIf].getType()=="CONDITION")
         {
@@ -173,7 +174,7 @@ public:
     }
     void print(int tab) override{
         for(int j=0;j<tab;j++){
-            cout<<"   ";
+            std::cout<<"   ";
         }
        std::cout<<"ConditionExpression "<<y1<<" = ";
        if(condition[0].getValue()!="else"){
@@ -181,9 +182,9 @@ public:
            {
                std::cout<<token.getValue()<<" ";
            }
-           std::cout<<endl;
+           std::cout<<std::endl;
        }
-       else{std::cout<<"else"<<endl;}
+       else{std::cout<<"else"<<std::endl;}
        if(!expressionList.empty())
        {
            ++tab;

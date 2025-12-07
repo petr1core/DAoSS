@@ -11,14 +11,16 @@
 #include <stdexcept>
 #include <cctype>
 #include <algorithm>
+#include <unordered_set>
 #include "../Ast/Expr.h"
 #include "../Ast/Stmt.h"
+#include "../Ast/ExprAcceptImpl.h"
 #include "../Scripts/Lexer.h"
 
 class CParserToAST {
 public:
     std::unique_ptr<Program> parse(const std::string &code) {
-        Lexer lexer(code, types::C);
+        Lexer lexer(code, LangType::LANG_C);
         tokens = lexer.getTokenList();
         //lexer.printTokenList();
         // Фильтруем пробелы и комментарии, если они вдруг остались

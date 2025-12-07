@@ -22,14 +22,14 @@ class PascalToJSON {
 public:
     PascalToJSON() = default;
 
-    std::string build(const std::vector<Expression *> &exprs, const std::string& name) {
+    std::string build(const std::vector<std::pair<Expression *, std::string>> &exprsWithChapters, const std::string& name) {
         nlohmann::json jsonOutput;
 
         // Основная структура программы
         nlohmann::json program;
 
         program["name"] = name;
-        program["sections"] = processProgramExpressions(exprs);
+        program["sections"] = processProgramExpressions(exprsWithChapters);
 
         jsonOutput["program"] = program;
 
@@ -38,7 +38,7 @@ public:
 
 private:
     // Основной метод для верхнего уровня программы
-    nlohmann::json processProgramExpressions(const std::vector<Expression *> &exprs) {
+    nlohmann::json processProgramExpressions(const std::vector<std::pair<Expression *, std::string>> &exprsWithChapters) {
         int index = 0;
         nlohmann::json sections = nlohmann::json::object();
 
@@ -48,16 +48,20 @@ private:
         sections["variableBlock"] = nlohmann::json::object();
         sections["mainBlock"] = nlohmann::json::object();
 
-        for(Expression* e : exprs) {
+        for(const auto& exprPair : exprsWithChapters) {
+            Expression* e = exprPair.first;
+            const std::string& chapter = exprPair.second;
             std::string exprName = "expr" + std::to_string(index);
 
             if (auto sx = dynamic_cast<StatementExpression *>(e)) {
                 std::string state = tokensToLine(sx->getList());
-                if (isConstantDeclaration(state)) {
+                // Используем метаданные chapter вместо анализа строки
+                if (chapter == "Const") {
                     sections["constantBlock"][exprName] = state + ";";
-                } else if (isVariableDeclaration(state)) {
+                } else if (chapter == "Var") {
                     sections["variableBlock"][exprName] = state + ";";
                 } else {
+                    // Body или другие секции - попадают в mainBlock
                     nlohmann::json js = nlohmann::json::object();
                     js["type"] = (sx->getList().front().getValue() == "Writeln" || sx->getList().front().getValue() == "Write" ||
                                   sx->getList().front().getValue() == "Readln" || sx->getList().front().getValue() == "Read")

@@ -9,6 +9,7 @@
 #include "../Scripts/json.hpp"
 #include "../Ast/Expr.h"
 #include "../Ast/Stmt.h"
+#include "../Ast/ExprAcceptImpl.h"
 
 using json = nlohmann::json;
 

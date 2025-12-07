@@ -1,0 +1,6 @@
+D:/Obisidian Vaults/main/Учеба/ПАПС/DAOSS gh/src/parser/Parser/backend/parser/build/CMakeFiles/parser-server.dir
+D:/Obisidian Vaults/main/Учеба/ПАПС/DAOSS gh/src/parser/Parser/backend/parser/build/CMakeFiles/INSTALL.dir
+D:/Obisidian Vaults/main/Учеба/ПАПС/DAOSS gh/src/parser/Parser/backend/parser/build/CMakeFiles/ALL_BUILD.dir
+D:/Obisidian Vaults/main/Учеба/ПАПС/DAOSS gh/src/parser/Parser/backend/parser/build/CMakeFiles/ZERO_CHECK.dir
+D:/Obisidian Vaults/main/Учеба/ПАПС/DAOSS gh/src/parser/Parser/backend/parser/build/json/CMakeFiles/INSTALL.dir
+D:/Obisidian Vaults/main/Учеба/ПАПС/DAOSS gh/src/parser/Parser/backend/parser/build/json/CMakeFiles/ALL_BUILD.dir

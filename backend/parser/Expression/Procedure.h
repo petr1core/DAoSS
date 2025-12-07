@@ -11,6 +11,7 @@
 #include "StatementExpression.h"
 #include <utility>
 #include <vector>
+#include <iostream>
 
 static int p = 0;
 
@@ -23,7 +24,7 @@ private:
     std::vector<Token> localList;
     int globalPosProc;
 public:
-    Procedure(int pos, vector<Token> list) {
+    Procedure(int pos, std::vector<Token> list) {
         p1 = ++p;
         doProcedure(pos, list);
     }
@@ -34,7 +35,7 @@ public:
         this->expressionList = ex.expressionList;
     }
 
-    void doProcedure(int pos, vector<Token> list) {
+    void doProcedure(int pos, std::vector<Token> list) {
         globalPosProc = pos;
         while (list[globalPosProc].getType() != "SEMICOLON") {
             declaration.push_back(list[globalPosProc]);
@@ -69,15 +70,15 @@ public:
         return;
     }
 
-    vector<Expression *> getBody() { return expressionList; }
+    std::vector<Expression *> getBody() { return expressionList; }
 
-    vector<Token> getHead() { return declaration; }
+    std::vector<Token> getHead() { return declaration; }
 
     Token getName() { return name; }
 
     void print(int tab) override {
         for (int j = 0; j < tab; j++) {
-            cout << "   ";
+            std::cout << "   ";
         }
         std::cout << "Procedure " << p1 << " = ";
         for (auto token: declaration) {
@@ -85,7 +86,7 @@ public:
                 std::cout << token.getValue() << " ";
             }
         }
-        std::cout << endl;
+        std::cout << std::endl;
 
         if (!expressionList.empty()) {
             ++tab;

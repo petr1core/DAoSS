@@ -6,9 +6,9 @@
 #define RUNNABLEEXPRESSION_H
 #include <utility>
 #include <vector>
+#include <iostream>
+#include <stdexcept>
 #include "Expression.h"
-#include<bits/stdc++.h>
-#include "stdexcept"
 #include "../Scripts/Token.h"
 static int i=0;
 class StatementExpression : public Expression {
@@ -30,17 +30,17 @@ public:
         this->list=other.list;
         return *this;
     }
-    vector<Token>getList(){return list;}
+    std::vector<Token>getList(){return list;}
     void add(Token t){list.push_back(t);}
     void print(int tab) override{
         for(int j=0;j<tab;j++){
-            cout<<"   ";
+            std::cout<<"   ";
         }
         std::cout<<"StateExpression "<<i1<<" = ";
         for(auto token:list){
           std::cout<<token.getValue()<<" ";
         }
-        std::cout<<endl;
+        std::cout<<std::endl;
     }
 };
 #endif //RUNNABLEEXPRESSION_H
