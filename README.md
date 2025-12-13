@@ -200,3 +200,21 @@ cd src/parser/build
 - `src/WebApi/Infrastructure/README.md` — доступ к данным и интеграции
 - `src/WebApi/README.md` — контроллеры и точка входа
 - `PARSER_API_TESTING.md` — документация по тестированию парсера
+
+
+# Скрипт запуска проекта
+
+## Базовый запуск
+```.\start-all.ps1```
+
+## С полной подготовкой (сборка + миграции)
+```.\start-all.ps1 -BuildParser -BuildBackend -UpdateMigrations```
+
+## Только сборка парсера
+```.\start-all.ps1 -BuildParser```
+
+## Только миграции
+```.\start-all.ps1 -UpdateMigrations```
+
+## Комбинация всех флагов
+```.\start-all.ps1 -BuildParser -BuildBackend -UpdateMigrations -Verbose -AddGitToPath```
