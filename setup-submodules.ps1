@@ -154,12 +154,8 @@ try {
                 exit 1
             }
             Write-Info ""
-<<<<<<< HEAD
         }
         else {
-=======
-        } else {
->>>>>>> a55af2c (added powershell instruments)
             Write-Error-Custom "Ошибка: Git не найден в PATH."
             Write-Info ""
             Write-Info "Варианты решения:"
@@ -173,12 +169,8 @@ try {
             Write-Info ""
             exit 1
         }
-<<<<<<< HEAD
     }
     else {
-=======
-    } else {
->>>>>>> a55af2c (added powershell instruments)
         Write-Verbose-Custom "Git найден в PATH: $($gitCommand.Source)"
     }
     Write-Info ""
@@ -220,7 +212,6 @@ try {
             if ($switchResult.Success) {
                 if ($switchResult.AlreadyOnBranch) {
                     Write-Success "✓ backend_and_parser уже на ветке backend_and_parser"
-<<<<<<< HEAD
                 }
                 else {
                     Write-Success "✓ backend_and_parser $($switchResult.Message)"
@@ -254,96 +245,10 @@ try {
         Write-Info ""
     }
     else {
-=======
-                } else {
-                    Write-Success "✓ backend_and_parser $($switchResult.Message)"
-                }
-            } else {
-                Write-Error-Custom "Ошибка: $($switchResult.Message)"
-                exit 1
-            }
-        } catch {
-            Write-Error-Custom "Критическая ошибка при работе с backend_and_parser: $_"
-            exit 1
-        } finally {
-            Pop-Location
-        }
-        Write-Info ""
-    } else {
->>>>>>> a55af2c (added powershell instruments)
         Write-Warning-Custom "Директория backend_and_parser не найдена, пропускаем..."
         Write-Info ""
     }
 
-<<<<<<< HEAD
-    # Шаг 3: Переключение вложенного подмодуля src/parser/Parser на ветку http-server_wip
-    $nestedSubmodulePath = "backend_and_parser\src\parser\Parser"
-    if (Test-Path "backend_and_parser") {
-        # Проверяем, инициализирован ли подмодуль
-        if (-not (Test-Path $nestedSubmodulePath)) {
-            Write-Warning-Custom "Директория $nestedSubmodulePath не найдена."
-            Write-Info "Попытка инициализации подмодулей backend_and_parser..."
-            Push-Location "backend_and_parser"
-            try {
-                $submoduleResult = git submodule update --init --recursive 2>&1
-                if ($LASTEXITCODE -eq 0) {
-                    Write-Success "✓ Подмодули backend_and_parser инициализированы"
-                }
-                else {
-                    Write-Warning-Custom "Не удалось инициализировать подмодули:"
-                    if ($Verbose) {
-                        Write-Host $submoduleResult
-                    }
-                }
-            }
-            finally {
-                Pop-Location
-            }
-        }
-        
-        if (Test-Path $nestedSubmodulePath) {
-            Write-Info "Шаг 3: Переключение вложенного подмодуля Parser на ветку http-server_wip..."
-            Push-Location $nestedSubmodulePath
-            
-            try {
-                if (-not (Test-GitRepository)) {
-                    Write-Warning-Custom "Предупреждение: Parser не является git репозиторием."
-                    Write-Info "Возможно, подмодуль не был правильно инициализирован."
-                    Write-Info "Попробуйте выполнить вручную:"
-                    Write-Info "  cd backend_and_parser"
-                    Write-Info "  git submodule update --init --recursive"
-                }
-                else {
-                    $switchResult = Switch-ToBranch -BranchName "http-server_wip" -Context "Parser"
-                    if ($switchResult.Success) {
-                        if ($switchResult.AlreadyOnBranch) {
-                            Write-Success "✓ Parser уже на ветке http-server_wip"
-                        }
-                        else {
-                            Write-Success "✓ Parser $($switchResult.Message)"
-                        }
-                    }
-                    else {
-                        Write-Warning-Custom "Предупреждение: $($switchResult.Message). Продолжаем работу..."
-                    }
-                }
-            }
-            catch {
-                Write-Warning-Custom "Предупреждение при работе с Parser: $_. Продолжаем работу..."
-            }
-            finally {
-                Pop-Location
-            }
-            Write-Info ""
-        }
-        else {
-            Write-Warning-Custom "Директория $nestedSubmodulePath не найдена после инициализации, пропускаем..."
-            Write-Info ""
-        }
-    }
-    else {
-        Write-Warning-Custom "Директория backend_and_parser не найдена, пропускаем..."
-=======
     # Шаг 3: Переключение вложенного подмодуля src/parser/Parser на ветку main
     $nestedSubmodulePath = "backend_and_parser\src\parser\Parser"
     if (Test-Path $nestedSubmodulePath) {
@@ -373,7 +278,6 @@ try {
         Write-Info ""
     } else {
         Write-Warning-Custom "Директория $nestedSubmodulePath не найдена, пропускаем..."
->>>>>>> a55af2c (added powershell instruments)
         Write-Info ""
     }
 
