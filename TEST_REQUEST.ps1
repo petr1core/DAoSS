@@ -13,6 +13,32 @@ param(
     [string]$Endpoint = "parse"
 )
 
+# Обход проверки SSL сертификатов для работы вне домена
+$skipCertCheck = $false
+if ($PSVersionTable.PSVersion.Major -ge 7) {
+    # PowerShell 7+ поддерживает -SkipCertificateCheck
+    $skipCertCheck = $true
+} else {
+    # Windows PowerShell 5.1: отключаем проверку сертификатов через callback
+    if (-not ([System.Management.Automation.PSTypeName]'TrustAllCertsPolicy').Type) {
+        Add-Type @"
+            using System.Net;
+            using System.Security.Cryptography.X509Certificates;
+            public class TrustAllCertsPolicy : ICertificatePolicy {
+                public bool CheckValidationResult(
+                    ServicePoint srvPoint, X509Certificate certificate,
+                    WebRequest request, int certificateProblem) {
+                    return true;
+                }
+            }
+"@
+        [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12 -bor [System.Net.SecurityProtocolType]::Tls11 -bor [System.Net.SecurityProtocolType]::Tls
+    }
+    # Отключаем Keep-Alive для избежания проблем с закрытием соединения
+    [System.Net.ServicePointManager]::DefaultConnectionLimit = 1
+}
+
 # Код Pascal в одной строке с экранированными кавычками
 $pascalCode = @"
 program qq;
@@ -120,29 +146,75 @@ begin
 end.
 "@
 
-# Формирование JSON тела запроса
-$body = @{
+# Формирование JSON тела запроса с правильной кодировкой UTF-8
+$bodyObject = @{
     code = $pascalCode
     language = "pascal"
-} | ConvertTo-Json
+}
+$body = $bodyObject | ConvertTo-Json -Depth 10 -Compress
+$bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($body)
 
 # Заголовки
 $headers = @{
-    "Authorization" = "Bearer $token"
-    "Content-Type" = "application/json"
+    "Authorization" = "Bearer $Token"
+    "Content-Type" = "application/json; charset=utf-8"
     "accept" = "application/json"
 }
 
 # Отправка запроса
 try {
-    $response = Invoke-RestMethod -Uri $url -Method Post -Headers $headers -Body $body
-    $response | ConvertTo-Json -Depth 10
+    if ($skipCertCheck) {
+        # PowerShell 7+
+        $response = Invoke-RestMethod -Uri $Url -Method Post -Headers $headers -Body $bodyBytes -SkipCertificateCheck -ContentType "application/json; charset=utf-8"
+    } else {
+        # Windows PowerShell 5.1 - используем WebRequest для лучшего контроля
+        $request = [System.Net.HttpWebRequest]::Create($Url)
+        $request.Method = "POST"
+        $request.ContentType = "application/json; charset=utf-8"
+        $request.Accept = "application/json"
+        $request.Headers.Add("Authorization", "Bearer $Token")
+        $request.ContentLength = $bodyBytes.Length
+        $request.Timeout = 30000
+        $request.KeepAlive = $false
+        
+        $requestStream = $request.GetRequestStream()
+        $requestStream.Write($bodyBytes, 0, $bodyBytes.Length)
+        $requestStream.Close()
+        
+        try {
+            $response = $request.GetResponse()
+            $responseStream = $response.GetResponseStream()
+            $reader = New-Object System.IO.StreamReader($responseStream, [System.Text.Encoding]::UTF8)
+            $responseBody = $reader.ReadToEnd()
+            $reader.Close()
+            $responseStream.Close()
+            $response.Close()
+            
+            $responseBody | ConvertFrom-Json | ConvertTo-Json -Depth 10
+        } finally {
+            if ($requestStream) { $requestStream.Dispose() }
+            if ($responseStream) { $responseStream.Dispose() }
+            if ($reader) { $reader.Dispose() }
+        }
+    }
 } catch {
     Write-Host "Ошибка: $_" -ForegroundColor Red
-    if ($_.Exception.Response) {
-        $reader = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())
-        $responseBody = $reader.ReadToEnd()
-        Write-Host "Response: $responseBody" -ForegroundColor Yellow
+    Write-Host "Тип ошибки: $($_.Exception.GetType().FullName)" -ForegroundColor Yellow
+    if ($_.Exception.InnerException) {
+        Write-Host "Внутренняя ошибка: $($_.Exception.InnerException.Message)" -ForegroundColor Yellow
     }
+    if ($_.Exception.Response) {
+        try {
+            $errorStream = $_.Exception.Response.GetResponseStream()
+            $errorReader = New-Object System.IO.StreamReader($errorStream, [System.Text.Encoding]::UTF8)
+            $errorBody = $errorReader.ReadToEnd()
+            $errorReader.Close()
+            $errorStream.Close()
+            Write-Host "Response Body: $errorBody" -ForegroundColor Yellow
+        } catch {
+            Write-Host "Не удалось прочитать тело ответа об ошибке" -ForegroundColor Yellow
+        }
+    }
+    exit 1
 }
 
