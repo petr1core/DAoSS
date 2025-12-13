@@ -11,8 +11,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 if(MSVC)
     add_compile_options(/W4 /WX-)
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+    # Определяем Windows 10 для поддержки httplib     КОСТЫЛЬ!!!!
+    add_compile_definitions(_WIN32_WINNT=0x0A00)
 else()
     add_compile_options(-Wall -Wextra -Wpedantic)
+    # Для MinGW тоже определяем Windows 10
+    add_compile_definitions(_WIN32_WINNT=0x0A00)     КОСТЫЛЬ!!!!
 endif()
 
 # Путь к исходным файлам парсера
