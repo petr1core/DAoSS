@@ -68,4 +68,9 @@ node_modules/
 # JetBrains Rider caches
 .idea/.idea.*
 
+# Diff files
+*.diff
+
+# Parser submodule build directory
+src/parser/Parser/backend/parser/build/
 
