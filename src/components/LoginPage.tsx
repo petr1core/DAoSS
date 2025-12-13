@@ -33,7 +33,6 @@ function LoginPage({ onLogin }: LoginPageProps) {
     try {
       const token = await api.login(username, password);
       setToken(token);
-
       // Получаем информацию о пользователе
       const userInfo = await api.getMe();
       onLogin(userInfo.name || username);
@@ -52,7 +51,6 @@ function LoginPage({ onLogin }: LoginPageProps) {
     try {
       const token = await api.register(email, password, name || undefined, username || undefined);
       setToken(token);
-
       // Получаем информацию о пользователе
       const userInfo = await api.getMe();
       onLogin(userInfo.name || name || email);

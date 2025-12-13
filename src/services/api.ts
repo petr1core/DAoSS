@@ -290,7 +290,6 @@ async function fetchWithAuth<T>(url: string, options: RequestInit = {}): Promise
       // Вызываем событие для обновления состояния авторизации
       window.dispatchEvent(new CustomEvent('auth:logout'));
     }
-
     return handleResponse<T>(response);
   } catch (error) {
     if (error instanceof TypeError && error.message.includes('fetch')) {
