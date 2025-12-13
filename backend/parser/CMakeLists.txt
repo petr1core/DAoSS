@@ -11,12 +11,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 if(MSVC)
     add_compile_options(/W4 /WX-)
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-    # Определяем Windows 10 для поддержки httplib
-    add_compile_definitions(_WIN32_WINNT=0x0A00 WINVER=0x0A00)
 else()
     add_compile_options(-Wall -Wextra -Wpedantic)
-    # Для MinGW тоже определяем Windows 10
-    add_compile_definitions(_WIN32_WINNT=0x0A00 WINVER=0x0A00)
 endif()
 
 # Путь к исходным файлам парсера
@@ -47,6 +43,13 @@ endif()
 
 # Создаем исполняемый файл
 add_executable(parser-server "${MAIN_SOURCE}")
+
+# Определяем версию Windows и отключаем файловую систему в httplib для совместимости с MinGW
+target_compile_definitions(parser-server PRIVATE
+    WINVER=0x0A00
+    _WIN32_WINNT=0x0A00
+    CPPHTTPLIB_NO_FILE_SYSTEM      # убирает mmap/файлы, значит не нужен CreateFile2
+)
 
 # Добавляем include директории
 target_include_directories(parser-server PRIVATE
