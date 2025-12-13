@@ -1,4 +1,4 @@
-# Скрипт для последовательного запуска всех модулей проекта
+﻿# Скрипт для последовательного запуска всех модулей проекта
 # Запускает: Parser -> Backend -> Frontend
 #
 # Параметры:
@@ -47,22 +47,8 @@ function Write-Verbose-Custom {
 # Функция для сборки парсера
 function Build-Parser {
     param([string]$ParserPath)
-    # Сначала проверяем, доступен ли компилятор уже в PATH
-    # Проверяем MSVC (cl.exe)
-    $clCommand = Get-Command cl -ErrorAction SilentlyContinue
-    if ($clCommand) {
-        Write-Verbose-Custom "Найден MSVC в PATH: $($clCommand.Source)"
-        return @{ Type = "MSVC"; Generator = ""; SetupScript = $null }
-    }
     
-    # Проверяем MinGW (g++) в PATH
-    $gppCommand = Get-Command g++ -ErrorAction SilentlyContinue
-    if ($gppCommand) {
-        Write-Verbose-Custom "Найден MinGW g++ в PATH: $($gppCommand.Source)"
-        return @{ Type = "MinGW"; Generator = "MinGW Makefiles"; SetupScript = $null }
-    }
-    
-    # Если не в PATH, ищем MSVC через vswhere или стандартные пути
+    Write-Info "=== Сборка Parser ==="
     
     $buildDir = Join-Path $ParserPath "build"
     
@@ -92,38 +78,44 @@ function Build-Parser {
         return $false
     }
     
-    Push-Location $buildDir
+    try {
+        # Создаем директорию build, если её нет
+        if (-not (Test-Path $buildDir)) {
+            Write-Info "Создаю директорию build..."
+            New-Item -ItemType Directory -Path $buildDir -Force | Out-Null
+        }
         
-    # Генерируем CMake файлы
-    Write-Info "Генерирую CMake файлы..."
-    $cmakeResult = & cmake .. 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error-Custom "Ошибка при генерации CMake файлов:"
-        Write-Host $cmakeResult -ForegroundColor Red
+        Push-Location $buildDir
+        
+        # Генерируем CMake файлы
+        Write-Info "Генерирую CMake файлы..."
+        $cmakeResult = & cmake .. 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error-Custom "Ошибка при генерации CMake файлов:"
+            Write-Host $cmakeResult -ForegroundColor Red
+            Pop-Location
+            return $false
+        }
+        
+        # Собираем проект
+        Write-Info "Собираю проект..."
+        $buildResult = & cmake --build . --config Release 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error-Custom "Ошибка при сборке проекта:"
+            Write-Host $buildResult -ForegroundColor Red
+            Pop-Location
+            return $false
+        }
+        
+        Pop-Location
+        Write-Success "✓ Parser успешно собран"
+        return $true
+        
+    } catch {
+        Write-Error-Custom "Критическая ошибка при сборке Parser: $_"
         Pop-Location
         return $false
     }
-        
-    # Собираем проект
-    Write-Info "Собираю проект..."
-    $buildResult = & cmake --build . --config Release 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error-Custom "Ошибка при сборке проекта:"
-        Write-Host $buildResult -ForegroundColor Red
-        Pop-Location
-        return $false
-    }
-        
-    Pop-Location
-    Write-Success "✓ Parser успешно собран"
-    return $true
-        
-}
-catch {
-    Write-Error-Custom "Критическая ошибка при сборке Parser: $_"
-    Pop-Location
-    return $false
-}
 }
 
 # Функция для сборки бэкенда
@@ -179,16 +171,16 @@ function Update-BackendMigrations {
     $dotnetCommand = Get-Command dotnet -ErrorAction SilentlyContinue
     if (-not $dotnetCommand) {
         Write-Error-Custom "Ошибка: .NET SDK не найден. Установите .NET SDK для применения миграций."
-        # Для MSVC: настраиваем окружение через vcvars64.bat (если нужно)
-        if ($compiler.Type -eq "MSVC" -and $compiler.SetupScript) {
-            Write-Verbose-Custom "Настраиваю окружение MSVC через vcvars64.bat..."
-            # Создаем временный batch файл для настройки окружения и запуска cmake
-            $tempBat = Join-Path $env:TEMP "setup_msvc_$([System.Guid]::NewGuid().ToString('N')).bat"
-            @"
-@echo off
-call "$($compiler.SetupScript)"
-cmake ..
-if %ERRORLEVEL% NEQ 0 exit /b %ERRORLEVEL%
+        return $false
+    }
+    
+    # Проверяем наличие dotnet ef
+    $efCommand = & dotnet ef --version 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error-Custom "Ошибка: dotnet ef не найден. Установите EF Core tools:"
+        Write-Info "  dotnet tool install --global dotnet-ef"
+        return $false
+    }
     
     try {
         Push-Location $BackendPath
@@ -600,4 +592,3 @@ try {
     Write-Info ""
     Write-Success "Все модули остановлены."
 }
-
