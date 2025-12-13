@@ -292,4 +292,487 @@ Swagger уже подключён в Dev-окружении. Это удобны
 
 Все эти нововведения интегрированы в существующую архитектуру и следуют принципам разделения ответственности между слоями.
 
+## 10) Работа с Git подмодулями
+
+Проект использует Git подмодули для организации кода. Это репозиторий является подмодулем основного проекта и содержит вложенный подмодуль Parser.
+
+### Клонирование с подмодулями
+
+При первом клонировании основного репозитория:
+
+```bash
+git clone --recurse-submodules <URL_репозитория>
+```
+
+Если репозиторий уже склонирован без подмодулей:
+
+```bash
+git submodule update --init --recursive
+```
+
+### Автоматическая настройка подмодулей
+
+Используйте скрипт из корня проекта:
+
+```powershell
+# Из корня DAoSS/
+.\setup-submodules.ps1 -AddGitToPath
+```
+
+Скрипт автоматически:
+- Инициализирует все подмодули (включая вложенные)
+- Переключает `backend_and_parser` на ветку `backend_and_parser`
+- Переключает вложенный подмодуль `Parser` на ветку `http-server_wip`
+- Инициализирует подмодули внутри `backend_and_parser`
+
+### Ручная настройка подмодулей
+
+```bash
+# Инициализация подмодулей первого уровня
+git submodule update --init --recursive
+
+# Переключение на нужную ветку
+git checkout backend_and_parser
+
+# Инициализация вложенных подмодулей
+cd src/parser/Parser
+git submodule update --init --recursive
+git checkout http-server_wip
+```
+
+### Проблемы с вложенными подмодулями
+
+**Проблема:** После клонирования вложенный подмодуль Parser не инициализирован.
+
+**Решение:**
+1. Используйте скрипт `setup-submodules.ps1` — он автоматически обрабатывает вложенные подмодули
+2. Или вручную:
+   ```bash
+   cd backend_and_parser
+   git submodule update --init --recursive
+   ```
+
+**Почему это происходит:** `git submodule update --init --recursive` из корня инициализирует только подмодули первого уровня. Вложенные подмодули нужно инициализировать отдельно после переключения на нужную ветку.
+
+### Обновление подмодулей
+
+```bash
+# Обновить все подмодули до последних коммитов
+git submodule update --remote --recursive
+
+# Обновить конкретный подмодуль
+cd backend_and_parser
+git submodule update --remote src/parser/Parser
+```
+
+## 11) Скрипты автоматизации
+
+Проект включает PowerShell скрипты для автоматизации рутинных задач.
+
+### setup-submodules.ps1
+
+Скрипт для настройки Git подмодулей.
+
+**Расположение:** корень проекта `DAoSS/`
+
+**Параметры:**
+- `-Verbose` — подробный вывод операций
+- `-AddGitToPath` — автоматически добавить Git в PATH (если Git не найден)
+
+**Использование:**
+```powershell
+# Базовое использование
+.\setup-submodules.ps1
+
+# С автоматическим добавлением Git в PATH
+.\setup-submodules.ps1 -AddGitToPath
+
+# С подробным выводом
+.\setup-submodules.ps1 -Verbose
+```
+
+**Что делает:**
+1. Проверяет наличие Git в PATH
+2. Инициализирует все подмодули рекурсивно
+3. Переключает `backend_and_parser` на ветку `backend_and_parser`
+4. Инициализирует подмодули внутри `backend_and_parser`
+5. Переключает `Parser` на ветку `http-server_wip`
+
+### start-all.ps1
+
+Скрипт для последовательного запуска всех модулей проекта.
+
+**Расположение:** корень проекта `DAoSS/`
+
+**Параметры:**
+- `-Verbose` — подробный вывод операций
+- `-AddGitToPath` — автоматически добавить Git в PATH
+- `-BuildParser` — собрать Parser перед запуском (cmake + build)
+- `-BuildBackend` — собрать Backend перед запуском (dotnet build)
+- `-UpdateMigrations` — применить миграции базы данных перед запуском Backend
+
+**Использование:**
+```powershell
+# Базовый запуск (требует, чтобы всё уже было собрано)
+.\start-all.ps1
+
+# Полный запуск с подготовкой
+.\start-all.ps1 -BuildParser -BuildBackend -UpdateMigrations
+
+# Только сборка парсера
+.\start-all.ps1 -BuildParser
+
+# Только миграции
+.\start-all.ps1 -UpdateMigrations
+
+# С подробным выводом
+.\start-all.ps1 -Verbose -BuildParser -BuildBackend -UpdateMigrations
+```
+
+**Порядок выполнения:**
+1. Сборка Parser (если `-BuildParser`)
+2. Запуск Parser (порт 8080)
+3. Применение миграций (если `-UpdateMigrations`)
+4. Сборка Backend (если `-BuildBackend`)
+5. Запуск Backend (порты 5143/7143)
+6. Запуск Frontend (порт 5173)
+
+**Особенности:**
+- Все ошибки выводятся в реальном времени
+- При завершении процесса с ошибкой выводится полный лог
+- При Ctrl+C все процессы корректно останавливаются
+
+## 12) Нюансы работы с миграциями
+
+### Когда применять миграции
+
+- **При первом запуске проекта** — обязательно применить все миграции
+- **После получения изменений из репозитория** — если были добавлены новые миграции
+- **После создания новой миграции** — применить её к базе данных
+
+### Применение миграций
+
+**Через скрипт:**
+```powershell
+.\start-all.ps1 -UpdateMigrations
+```
+
+**Вручную:**
+```bash
+cd src/WebApi
+dotnet ef database update --project DAOSS.WebApi.csproj
+```
+
+### Создание новой миграции
+
+```bash
+cd src/WebApi
+dotnet ef migrations add <ИмяМиграции> --project DAOSS.WebApi.csproj
+```
+
+**Важно:** Имя миграции должно быть описательным, например: `AddUserEmailIndex`, `UpdateProjectSchema`.
+
+### Проблемы с миграциями
+
+**Проблема:** Ошибка "No migrations found"
+
+**Решение:**
+- Убедитесь, что находитесь в правильной директории (`src/WebApi`)
+- Проверьте, что файлы миграций существуют в `Infrastructure/Migrations/`
+
+**Проблема:** Ошибка подключения к базе данных
+
+**Решение:**
+- Проверьте строку подключения в `appsettings.Development.json`
+- Убедитесь, что PostgreSQL запущен
+- Проверьте права доступа пользователя БД
+
+**Проблема:** Конфликт миграций
+
+**Решение:**
+- Если миграция уже применена, но код пытается применить её снова — это нормально, EF Core пропустит
+- Если нужно откатить миграцию:
+  ```bash
+  dotnet ef database update <ПредыдущаяМиграция> --project DAOSS.WebApi.csproj
+  ```
+
+### Работа с несколькими окружениями
+
+Для разных окружений используйте разные строки подключения:
+
+- **Development:** `appsettings.Development.json`
+- **Production:** `appsettings.Production.json` или переменные окружения
+
+Применяйте миграции отдельно для каждого окружения.
+
+## 13) Нюансы работы с парсером
+
+### Порядок запуска
+
+**Важно:** Парсер должен быть запущен **перед** Backend, так как Backend делает HTTP запросы к парсеру при инициализации некоторых сервисов.
+
+**Правильный порядок:**
+1. Parser (порт 8080)
+2. Backend (порты 5143/7143)
+3. Frontend (порт 5173)
+
+### Проблемы с портами
+
+**Проблема:** Порт 8080 занят
+
+**Проверка:**
+```bash
+# Windows
+netstat -ano | findstr :8080
+
+# Linux/macOS
+lsof -i :8080
+```
+
+**Решение:**
+- Остановите процесс, занимающий порт
+- Или измените порт парсера (требует изменения в Backend)
+
+**Проблема:** Backend не может подключиться к парсеру
+
+**Проверка:**
+- Убедитесь, что парсер запущен
+- Проверьте URL в настройках Backend (по умолчанию `http://localhost:8080`)
+- Проверьте firewall/брандмауэр
+
+### Отладка парсера
+
+**Логи:**
+- Парсер выводит все логи в консоль
+- Ошибки парсинга возвращаются в ответе API
+- HTTP ошибки логируются в консоль
+
+**Тестирование:**
+```bash
+curl http://localhost:8080/api/validate/simple \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{"code":"program Test; begin end.","language":"pascal"}'
+```
+
+**Проверка работоспособности:**
+- Парсер должен отвечать на запросы
+- Проверьте, что JWT токен валиден
+- Убедитесь, что код на поддерживаемом языке
+
+### Сборка парсера
+
+**Требования:**
+- CMake 3.15+
+- C++ компилятор с поддержкой C++17
+
+**Автоматическая сборка:**
+```powershell
+.\start-all.ps1 -BuildParser
+```
+
+**Ручная сборка:**
+```bash
+cd src/parser/Parser
+mkdir build && cd build
+cmake ..
+cmake --build . --config Release
+```
+
+## 14) Нюансы работы с базой данных
+
+### Настройка строки подключения
+
+**Файлы конфигурации:**
+- `src/WebApi/appsettings.Development.json` — для локальной разработки
+- `src/WebApi/appsettings.json` — значения по умолчанию
+
+**Формат строки подключения:**
+```
+Host=localhost;Port=5432;Database=daoss;Username=postgres;Password=your_password
+```
+
+**Переменные окружения:**
+- `POSTGRES_HOST`
+- `POSTGRES_PORT`
+- `POSTGRES_DB`
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+
+### Работа с несколькими БД
+
+Для разных окружений используйте разные базы данных:
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Port=5432;Database=daoss_dev;Username=postgres;Password=dev_password"
+  }
+}
+```
+
+**Важно:** Применяйте миграции отдельно для каждой БД.
+
+### Резервное копирование
+
+**Создание бэкапа:**
+```bash
+pg_dump -h localhost -U postgres -d daoss > backup.sql
+```
+
+**Восстановление:**
+```bash
+psql -h localhost -U postgres -d daoss < backup.sql
+```
+
+### Проверка подключения
+
+```bash
+# Проверить, что PostgreSQL запущен
+# Windows
+pg_ctl status
+
+# Linux
+sudo systemctl status postgresql
+
+# macOS
+brew services list | grep postgresql
+
+# Подключиться к БД
+psql -h localhost -U postgres -d daoss
+```
+
+## 15) Отладка и troubleshooting
+
+### Частые ошибки и их решения
+
+**Ошибка:** "Unable to connect to database"
+
+**Решение:**
+- Проверьте, что PostgreSQL запущен
+- Проверьте строку подключения
+- Проверьте права доступа пользователя
+
+**Ошибка:** "Migration already applied"
+
+**Решение:**
+- Это нормально, EF Core пропускает уже применённые миграции
+- Если нужно применить заново, сначала откатите миграцию
+
+**Ошибка:** "Parser service unavailable"
+
+**Решение:**
+- Убедитесь, что парсер запущен на порту 8080
+- Проверьте URL в настройках Backend
+- Проверьте логи парсера
+
+**Ошибка:** "JWT token invalid"
+
+**Решение:**
+- Проверьте, что токен не истёк
+- Убедитесь, что используется правильный секретный ключ
+- Проверьте формат токена
+
+### Логи и где их искать
+
+**Backend:**
+- Логи выводятся в консоль при запуске через `dotnet run`
+- В Production можно настроить логирование в файл через `appsettings.Production.json`
+
+**Parser:**
+- Все логи выводятся в консоль
+- Ошибки парсинга возвращаются в ответе API
+
+**Frontend:**
+- Логи в консоли браузера (F12)
+- Логи сборки в терминале
+
+### Проверка работоспособности компонентов
+
+**Backend:**
+```bash
+# Проверить, что API отвечает
+curl http://localhost:5143/api/auth/me \
+  -H "Authorization: Bearer <token>"
+```
+
+**Parser:**
+```bash
+# Проверить, что парсер отвечает
+curl http://localhost:8080/api/validate/simple \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{"code":"program Test; begin end.","language":"pascal"}'
+```
+
+**Frontend:**
+- Откройте `http://localhost:5173` в браузере
+- Проверьте консоль браузера на ошибки
+
+**База данных:**
+```bash
+# Подключиться к БД и проверить таблицы
+psql -h localhost -U postgres -d daoss
+\dt  # Список таблиц
+```
+
+## 16) Работа с ветками
+
+### Какие ветки используются
+
+- **Основной проект:** ветка `main` или `frontend_wip` (зависит от репозитория)
+- **Backend (`backend_and_parser`):** ветка `backend_and_parser`
+- **Parser (`src/parser/Parser`):** ветка `http-server_wip`
+
+### Переключение между ветками
+
+**Автоматическое переключение:**
+```powershell
+.\setup-submodules.ps1
+```
+
+**Ручное переключение:**
+```bash
+# В основном репозитории
+git checkout <ветка>
+
+# В подмодуле backend_and_parser
+cd backend_and_parser
+git checkout backend_and_parser
+
+# Во вложенном подмодуле Parser
+cd src/parser/Parser
+git checkout http-server_wip
+```
+
+### Синхронизация изменений
+
+**Получение изменений:**
+```bash
+# В основном репозитории
+git pull
+
+# Обновить подмодули до коммитов, указанных в основном репозитории
+git submodule update --recursive
+
+# Обновить подмодули до последних коммитов в их ветках
+git submodule update --remote --recursive
+```
+
+**Отправка изменений:**
+```bash
+# В подмодуле
+cd backend_and_parser
+git add .
+git commit -m "Описание изменений"
+git push origin backend_and_parser
+
+# В основном репозитории (обновить ссылку на подмодуль)
+cd ..
+git add backend_and_parser
+git commit -m "Update backend_and_parser submodule"
+git push
+```
+
+**Важно:** При работе с подмодулями изменения нужно коммитить в каждом репозитории отдельно, а затем обновлять ссылку в родительском репозитории.
 

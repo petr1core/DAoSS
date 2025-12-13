@@ -7,7 +7,7 @@ Backend — .NET 8, 3-tier архитектура
 ## Структура каталогов
 
 ```
-DAOSS gh/
+backend_and_parser/
 └─ src/
    ├─ WebApi/                 // Веб-API (контроллеры, Program.cs)
    │  ├─ Domain/              // Доменная модель (сущности)
@@ -23,21 +23,23 @@ DAOSS gh/
    │  ├─ Controllers/         // API контроллеры
    │  ├─ Services/            // Реализации сервисов (AuthService, ParserService, ...)
    │  └─ Repositories/        // Реализации репозиториев
-   └─ parser/                 // Парсер-сервис (C++)
-      └─ Parser/backend/parser/
-         ├─ main.cpp          // HTTP сервер парсера (порт 8080), эндпоинты /api/parse, /api/validate ....
-         ├─ Ast/              // AST структуры для C/C++ (Expr, Stmt, Visitor)
-         ├─ Auth/             // JWT валидация (JwtValidator)
-         ├─ CodeGen/          // Генераторы кода (CCodeGenerator, CppCodeGenerator, PascalCodeGenerator)
-         ├─ CPPAst/           // AST структуры для C++ (CppAst, CppDecl, CppExpr, CppStmt)
-         ├─ Expression/       // Выражения для Pascal (Function, Procedure, StatementExpression)
-         ├─ Flowchart/        // Экспорт в JSON для блок-схем (ExporterJson, FromExpressions)
-         ├─ Parser/           // Парсеры для языков (PascalParserToExpression, CParserToAST, CppParserToAST, ErrorCollector)
-         ├─ Scripts/          // Вспомогательные компоненты (Lexer, Token, Stack, SearchTreeTable)
-         ├─ thirdparty/       // Внешние библиотеки (httplib.h, jwt-cpp.hpp)
-         ├─ json-3.12.0/      // Библиотека nlohmann/json для работы с JSON
-         ├─ build/            // Сборочные файлы CMake и скомпилированные бинарники
-         └─ CMakeLists.txt    // Конфигурация сборки CMake
+   └─ parser/
+      └─ Parser/              // Парсер-сервис (C++) - Git подмодуль
+         ├─ backend/
+         │  └─ parser/
+         │     ├─ main.cpp    // HTTP сервер парсера (порт 8080)
+         │     ├─ Ast/        // AST структуры для C/C++
+         │     ├─ CodeGen/    // Генераторы кода
+         │     ├─ CPPAst/     // AST структуры для C++
+         │     ├─ Expression/ // Выражения для Pascal
+         │     ├─ Flowchart/  // Экспорт в JSON для блок-схем
+         │     ├─ Parser/     // Парсеры для языков
+         │     ├─ Scripts/    // Вспомогательные компоненты
+         │     ├─ thirdparty/ // Внешние библиотеки
+         │     ├─ json-3.12.0/ // Библиотека nlohmann/json
+         │     ├─ build/      // Сборочные файлы CMake
+         │     └─ CMakeLists.txt
+         └─ README.md         // Документация парсера
 ```
 
 **Подробнее о каждом слое:**
@@ -46,14 +48,64 @@ DAOSS gh/
 - `Infrastructure/README.md` — доступ к данным и внешние интеграции
 - `WebApi/README.md` — контроллеры и точка входа
 
-## Сборка и запуск
+## Настройка подмодулей
 
-### Бэкенд (WebApi)
+Этот репозиторий является подмодулем основного проекта и содержит вложенный подмодуль Parser.
 
-Из корня `DAOSS gh`:
+### Автоматическая настройка
+
+Используйте скрипт из корня проекта:
+
+```powershell
+# Из корня DAoSS/
+.\setup-submodules.ps1 -AddGitToPath
+```
+
+Скрипт автоматически:
+- Инициализирует все подмодули (включая вложенные)
+- Переключает `backend_and_parser` на ветку `backend_and_parser`
+- Переключает `Parser` на ветку `http-server_wip`
+
+### Ручная настройка
 
 ```bash
-dotnet build DAOSS.sln
+# Инициализация подмодулей
+git submodule update --init --recursive
+
+# Переключение на нужные ветки
+git checkout backend_and_parser
+cd src/parser/Parser
+git checkout http-server_wip
+```
+
+## Сборка и запуск
+
+### Автоматический запуск
+
+Используйте скрипт из корня проекта:
+
+```powershell
+# Из корня DAoSS/
+.\start-all.ps1 -BuildParser -BuildBackend -UpdateMigrations
+```
+
+### Ручной запуск
+
+#### Бэкенд (WebApi)
+
+Из корня `backend_and_parser`:
+
+```bash
+# Восстановление зависимостей
+dotnet restore src/WebApi/DAOSS.WebApi.csproj
+
+# Сборка
+dotnet build src/WebApi/DAOSS.WebApi.csproj --configuration Release
+
+# Применение миграций
+dotnet ef database update --project src/WebApi/DAOSS.WebApi.csproj
+
+# Запуск
 dotnet run --project src/WebApi/DAOSS.WebApi.csproj
 ```
 
@@ -61,17 +113,21 @@ WebApi запускается на портах:
 - HTTP: `http://localhost:5143`
 - HTTPS: `https://localhost:7143`
 
-### Парсер-сервис (C++)
+#### Парсер-сервис (C++)
 
 Парсер-сервис должен быть запущен отдельно на порту **8080**:
 
 ```bash
-cd src/parser/build
-./parser-server 8080
+cd src/parser/Parser
+mkdir build && cd build
+cmake ..
+cmake --build . --config Release
+./parser-server 8080  # или parser-server.exe на Windows
 ```
 
 **Важно:** Сначала запустите парсер-сервис, затем WebApi, так как WebApi делает HTTP запросы к парсер-сервису.
 
+Подробнее о парсере см. [src/parser/Parser/README.md](src/parser/Parser/README.md)  
 Подробнее о тестировании парсера см. [PARSER_API_TESTING.md](PARSER_API_TESTING.md)
 
 ## Архитектура слоёв
@@ -192,29 +248,93 @@ cd src/parser/build
 - Все эндпоинты защищены авторизацией и проверкой прав доступа
 - Реализации репозиториев и сервисов физически находятся в WebApi, но логически относятся к Infrastructure слою
 
+## Работа с миграциями
+
+### Применение миграций
+
+Используйте скрипт из корня проекта:
+
+```powershell
+.\start-all.ps1 -UpdateMigrations
+```
+
+Или вручную:
+
+```bash
+cd src/WebApi
+dotnet ef database update --project DAOSS.WebApi.csproj
+```
+
+### Создание новой миграции
+
+```bash
+cd src/WebApi
+dotnet ef migrations add <ИмяМиграции> --project DAOSS.WebApi.csproj
+```
+
+### Откат миграции
+
+```bash
+cd src/WebApi
+dotnet ef database update <ПредыдущаяМиграция> --project DAOSS.WebApi.csproj
+```
+
+## Скрипты автоматизации
+
+### setup-submodules.ps1
+
+Скрипт для настройки Git подмодулей (находится в корне проекта).
+
+**Параметры:**
+- `-Verbose` — подробный вывод
+- `-AddGitToPath` — автоматически добавить Git в PATH
+
+**Использование:**
+```powershell
+# Из корня DAoSS/
+.\setup-submodules.ps1 -AddGitToPath
+```
+
+### start-all.ps1
+
+Скрипт для последовательного запуска всех модулей проекта (находится в корне проекта).
+
+**Параметры:**
+- `-Verbose` — подробный вывод
+- `-AddGitToPath` — автоматически добавить Git в PATH
+- `-BuildParser` — собрать Parser перед запуском
+- `-BuildBackend` — собрать Backend перед запуском
+- `-UpdateMigrations` — применить миграции базы данных
+
+**Использование:**
+```powershell
+# Из корня DAoSS/
+# Базовый запуск
+.\start-all.ps1
+
+# С полной подготовкой (сборка + миграции)
+.\start-all.ps1 -BuildParser -BuildBackend -UpdateMigrations
+
+# Только сборка парсера
+.\start-all.ps1 -BuildParser
+
+# Только миграции
+.\start-all.ps1 -UpdateMigrations
+
+# Комбинация всех флагов
+.\start-all.ps1 -BuildParser -BuildBackend -UpdateMigrations -Verbose -AddGitToPath
+```
+
 ## Документация
 
+### Основная документация
+- [Some explanations.md](Some%20explanations.md) — нюансы работы с бэкендом
+- [Parser README.md](src/parser/Parser/README.md) — документация парсер-сервиса
+- [PARSER_API_TESTING.md](PARSER_API_TESTING.md) — документация по тестированию парсера
+
+### Документация слоёв
 Каждый слой проекта содержит README с подробным описанием:
 - `src/WebApi/Domain/README.md` — доменные сущности
 - `src/WebApi/Application/README.md` — интерфейсы и DTOs
 - `src/WebApi/Infrastructure/README.md` — доступ к данным и интеграции
 - `src/WebApi/README.md` — контроллеры и точка входа
-- `PARSER_API_TESTING.md` — документация по тестированию парсера
-
-
-# Скрипт запуска проекта
-
-## Базовый запуск
-```.\start-all.ps1```
-
-## С полной подготовкой (сборка + миграции)
-```.\start-all.ps1 -BuildParser -BuildBackend -UpdateMigrations```
-
-## Только сборка парсера
-```.\start-all.ps1 -BuildParser```
-
-## Только миграции
-```.\start-all.ps1 -UpdateMigrations```
-
-## Комбинация всех флагов
-```.\start-all.ps1 -BuildParser -BuildBackend -UpdateMigrations -Verbose -AddGitToPath```
