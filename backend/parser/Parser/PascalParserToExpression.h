@@ -40,12 +40,10 @@ public:
     }
     // Парсинг без выполнения - только структура
     void parseOnly() {
-        std::cout << "[PARSER] parseOnly started, tokenList size: " << tokenList.size() << std::endl;
         try {
             initDeclaration();
-            std::cout << "[PARSER] initDeclaration completed successfully" << std::endl;
         } catch (const std::exception& e) {
-            std::cout << "[PARSER] Exception in initDeclaration: " << e.what() << std::endl;
+            std::cerr << "[PARSER] Exception in initDeclaration: " << e.what() << std::endl;
             throw;
         }
         // Не вызываем calc.ChangeEquation - только парсим структуру
@@ -100,10 +98,7 @@ public:
     std::string getTitle() { return title; }
 
     void initDeclaration() {
-        std::cout << "[PARSER] initDeclaration started, currentPos: " << currentPos << std::endl;
-        
         if (isTypeToken("TITLE")) {
-            std::cout << "[PARSER] Found TITLE" << std::endl;
             // Извлекаем только имя программы из токена "program <name>"
             std::string titleValue = tokenList[currentPos].getValue();
             // Убираем "program " в начале, оставляем только имя
@@ -112,43 +107,34 @@ public:
             } else {
                 setTitle(titleValue); // Fallback: если формат неожиданный
             }
-            std::cout << "[PARSER] Title extracted: " << title << std::endl;
             // Пропускаем токен TITLE и точку с запятой
             currentPos++; // Пропускаем токен TITLE
             if (isTypeToken("SEMICOLON")) {
                 currentPos++; // Пропускаем SEMICOLON после названия программы
             }
         }
-        std::cout << "[PARSER] Checking FUNCTION, currentPos: " << currentPos << std::endl;
         if (isTypeToken("FUNCTION")) {
-            std::cout << "[PARSER] Found FUNCTION" << std::endl;
             auto *sw = new Function(currentPos, tokenList);
             currentPos = sw->getPos();
             std::pair t{sw, "Var"};
             calc.add(sw);
             expressionList.emplace_back(t);
         }
-        std::cout << "[PARSER] Checking PROCEDURE, currentPos: " << currentPos << std::endl;
         if (isTypeToken("PROCEDURE")) {
-            std::cout << "[PARSER] Found PROCEDURE" << std::endl;
             auto *sw = new Procedure(currentPos, tokenList);
             currentPos = sw->getPos();
             std::pair t{sw, "Var"};
             calc.add(sw);
             expressionList.emplace_back(t);
         }
-        std::cout << "[PARSER] Checking CONST, currentPos: " << currentPos << std::endl;
         if (isTypeToken("CONST")) {
-            std::cout << "[PARSER] Found CONST" << std::endl;
             currentPos++;
             while (!isTypeToken("VAR") && !isTypeToken("BEGIN") && !isTypeToken("ENDofPROGRAM")) {
                 initRowStatement("Const");
                 if (currentPos >= tokenList.size()) break;
             }
         }
-        std::cout << "[PARSER] Checking VAR, currentPos: " << currentPos << std::endl;
         if (isTypeToken("VAR")) {
-            std::cout << "[PARSER] Found VAR" << std::endl;
             currentPos++;
             while (!isTypeToken("BEGIN") && !isTypeToken("ENDofPROGRAM")) {
                 initRowStatement("Var");
@@ -156,9 +142,7 @@ public:
             }
             currentPos++;
         }
-        std::cout << "[PARSER] Calling initBegin, currentPos: " << currentPos << std::endl;
         initBegin();
-        std::cout << "[PARSER] initDeclaration finished" << std::endl;
         return;
     }
 
@@ -169,20 +153,15 @@ public:
     }
 
     void initRowStatement(const std::string& chapter) {//метод чтобы строчку кода (не условие и не цикл) переводить в StatementExpression
-        std::cout << "[PARSER] initRowStatement started, chapter: " << chapter << ", currentPos: " << currentPos << std::endl;
-        
         // Проверяем, не пустое ли тело (сразу END)
         if (isTypeToken("ENDofPROGRAM")) {
-            std::cout << "[PARSER] Found ENDofPROGRAM immediately, skipping" << std::endl;
             return;
         }
         
         while (!isTypeToken("SEMICOLON") && !isTypeToken("ENDofPROGRAM")) {
             if (currentPos >= tokenList.size()) {
-                std::cout << "[PARSER] ERROR: Reached end of tokens without finding SEMICOLON or ENDofPROGRAM" << std::endl;
-                return;
+                throw std::runtime_error("Reached end of tokens without finding SEMICOLON or ENDofPROGRAM");
             }
-            std::cout << "[PARSER] Adding token to localList: " << tokenList[currentPos].getType() << " [" << tokenList[currentPos].getValue() << "]" << std::endl;
             localList.push_back(tokenList[currentPos]);
             currentPos++;
         }
@@ -201,29 +180,26 @@ public:
             currentPos++;
         }
         
-        std::cout << "[PARSER] initRowStatement finished, currentPos: " << currentPos << std::endl;
         return;
     }
 
     void initBegin() {
-        std::cout << "[PARSER] initBegin started, currentPos: " << currentPos << std::endl;
         std::vector<Token> condition;
         int iterations = 0;
+        const int MAX_ITERATIONS = 100; // Уменьшено с 1000 для быстрого обнаружения проблем
+        
         while (!isTypeToken("ENDofPROGRAM")) {
-            iterations++;
-            if (iterations > 1000) {
-                std::cout << "[PARSER] ERROR: Too many iterations in initBegin loop!" << std::endl;
-                throw std::runtime_error("Infinite loop detected in initBegin");
+            // Ранняя проверка: если вышли за границы токенов, сразу выбрасываем ошибку
+            if (currentPos >= tokenList.size()) {
+                throw std::runtime_error("Reached end of tokens without finding ENDofPROGRAM");
             }
-            std::cout << "[PARSER] initBegin iteration " << iterations << ", currentPos: " << currentPos;
-            if (currentPos < tokenList.size()) {
-                std::cout << ", token: " << tokenList[currentPos].getType() << " [" << tokenList[currentPos].getValue() << "]" << std::endl;
-            } else {
-                std::cout << ", PAST END OF TOKENS" << std::endl;
+            
+            iterations++;
+            if (iterations > MAX_ITERATIONS) {
+                throw std::runtime_error("Too many iterations in initBegin loop - possible infinite loop or invalid syntax");
             }
             
             if (isTypeToken("SWITCH")) {
-                std::cout << "[PARSER] Found SWITCH" << std::endl;
                 auto *sw = new CaseOf(currentPos, tokenList);
                 currentPos = sw->getPos();
                 std::pair t{sw, "Body"};
@@ -232,25 +208,20 @@ public:
             }
             if ((isTypeToken("CONDITION")) || (isTypeToken("UNCONDITION")) || (isTypeToken("CYCLEFOR")) ||
                 (isTypeToken("CYCLEWHILE")) || (isTypeToken("CYCLEDOWHILE"))) {
-                std::cout << "[PARSER] Found condition/cycle" << std::endl;
                 auto *cx = new ConditionExpression(currentPos, tokenList);
                 currentPos = cx->getGlobalPos();
                 std::pair t = {cx, "Body"};
                 expressionList.push_back(t);
                 continue;
-
             } else {
-                std::cout << "[PARSER] Parsing row statement" << std::endl;
                 initRowStatement("Body");
             }
         }
-        std::cout << "[PARSER] initBegin finished" << std::endl;
         return;
     }
 
     bool isTypeToken(const std::string &typeToken) {
         if (currentPos >= tokenList.size()) {
-            std::cout << "[PARSER] isTypeToken: currentPos (" << currentPos << ") >= tokenList.size() (" << tokenList.size() << ")" << std::endl;
             return false;
         }
         return tokenList[currentPos].getType() == typeToken;
