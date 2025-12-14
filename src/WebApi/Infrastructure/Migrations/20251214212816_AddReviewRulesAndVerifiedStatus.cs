@@ -32,52 +32,11 @@ namespace DAOSS.Infrastructure.Migrations
                 type: "boolean",
                 nullable: false,
                 defaultValue: false);
-
-            // Обновляем существующие записи: меняем статусы на новые
-            // "open" -> "changes_requested", "closed" -> "approved", "rejected" -> "changes_requested"
-            migrationBuilder.Sql(@"
-                UPDATE ""Reviews""
-                SET ""Status"" = CASE 
-                    WHEN ""Status"" = 'closed' THEN 'approved'
-                    WHEN ""Status"" = 'open' THEN 'changes_requested'
-                    WHEN ""Status"" = 'rejected' THEN 'changes_requested'
-                    ELSE 'changes_requested'
-                END
-            ");
-
-            // Удаляем старый CHECK constraint если он существует (PostgreSQL)
-            migrationBuilder.Sql(@"
-                ALTER TABLE ""Reviews""
-                DROP CONSTRAINT IF EXISTS ""CK_Reviews_Status"";
-            ");
-
-            // Добавляем новый CHECK constraint для статусов
-            migrationBuilder.Sql(@"
-                ALTER TABLE ""Reviews""
-                ADD CONSTRAINT ""CK_Reviews_Status"" 
-                CHECK (""Status"" IN ('approved', 'changes_requested'));
-            ");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            // Удаляем CHECK constraint
-            migrationBuilder.Sql(@"
-                ALTER TABLE ""Reviews""
-                DROP CONSTRAINT IF EXISTS ""CK_Reviews_Status"";
-            ");
-
-            // Восстанавливаем старые статусы (обратное преобразование)
-            migrationBuilder.Sql(@"
-                UPDATE ""Reviews""
-                SET ""Status"" = CASE 
-                    WHEN ""Status"" = 'approved' THEN 'closed'
-                    WHEN ""Status"" = 'changes_requested' THEN 'open'
-                    ELSE 'open'
-                END
-            ");
-
             // Удаляем добавленные колонки
             migrationBuilder.DropColumn(
                 name: "IsVerified",
@@ -93,5 +52,3 @@ namespace DAOSS.Infrastructure.Migrations
         }
     }
 }
-
-

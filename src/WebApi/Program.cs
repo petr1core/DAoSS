@@ -70,7 +70,8 @@ var connectionString = string.IsNullOrWhiteSpace(connFromConfig)
 	: connFromConfig;
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-	options.UseNpgsql(connectionString));
+	options.UseNpgsql(connectionString, npgsqlOptions => 
+		npgsqlOptions.MigrationsAssembly("DAOSS.Infrastructure")));
 
 // Добавление Infrastructure сервисов (включая репозитории)
 builder.Services.AddInfrastructure();

@@ -25,9 +25,6 @@
     <Compile Include="..\Repositories\**\*.cs" />
     <Compile Include="..\Services\**\*.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="**\*.Designer.cs" />
-  </ItemGroup>
 </Project>
 
 
