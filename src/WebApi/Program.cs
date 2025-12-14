@@ -42,6 +42,18 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
 
+// CORS configuration
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy("AllowFrontend", policy =>
+	{
+		policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5173")
+			.AllowAnyMethod()
+			.AllowAnyHeader()
+			.AllowCredentials();
+	});
+});
+
 // Database: PostgreSQL (Env → appsettings fallback)
 var configuration = builder.Configuration;
 var host = Environment.GetEnvironmentVariable("POSTGRES_HOST") ?? "localhost";
@@ -110,6 +122,9 @@ if (app.Environment.IsDevelopment())
 	app.UseSwagger();
 	app.UseSwaggerUI();
 }
+
+// CORS должен быть до Authentication/Authorization
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
