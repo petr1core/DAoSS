@@ -117,6 +117,14 @@ builder.Services.AddScoped<IAuthorizationHandler>(sp =>
 
 var app = builder.Build();
 
+// Автоматическое применение миграций при старте (только в Development)
+if (app.Environment.IsDevelopment())
+{
+	using var scope = app.Services.CreateScope();
+	var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+	db.Database.Migrate();
+}
+
 if (app.Environment.IsDevelopment())
 {
 	app.UseSwagger();
