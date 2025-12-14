@@ -44,6 +44,56 @@ function Write-Verbose-Custom {
     }
 }
 
+# Цвета для вывода логов модулей
+$script:ModuleColors = @{
+    "Parser"   = "Magenta"
+    "Backend"  = "Yellow"
+    "Frontend" = "Cyan"
+}
+
+# Маппинг цветов PowerShell на ConsoleColor для быстрого вывода
+$script:ColorMap = @{
+    "Black"       = [ConsoleColor]::Black
+    "DarkBlue"    = [ConsoleColor]::DarkBlue
+    "DarkGreen"   = [ConsoleColor]::DarkGreen
+    "DarkCyan"    = [ConsoleColor]::DarkCyan
+    "DarkRed"     = [ConsoleColor]::DarkRed
+    "DarkMagenta" = [ConsoleColor]::DarkMagenta
+    "DarkYellow"  = [ConsoleColor]::DarkYellow
+    "Gray"        = [ConsoleColor]::Gray
+    "DarkGray"    = [ConsoleColor]::DarkGray
+    "Blue"        = [ConsoleColor]::Blue
+    "Green"       = [ConsoleColor]::Green
+    "Cyan"        = [ConsoleColor]::Cyan
+    "Red"         = [ConsoleColor]::Red
+    "Magenta"     = [ConsoleColor]::Magenta
+    "Yellow"      = [ConsoleColor]::Yellow
+    "White"       = [ConsoleColor]::White
+}
+
+# Быстрая функция для цветного вывода (использует прямой доступ к консоли)
+function Write-FastColor {
+    param(
+        [string]$Message,
+        [string]$ForegroundColor = "White",
+        [switch]$NoNewline
+    )
+    
+    $originalColor = [Console]::ForegroundColor
+    $consoleColor = $script:ColorMap[$ForegroundColor]
+    if ($null -eq $consoleColor) {
+        $consoleColor = [ConsoleColor]::White
+    }
+    
+    [Console]::ForegroundColor = $consoleColor
+    if ($NoNewline) {
+        [Console]::Write($Message)
+    } else {
+        [Console]::WriteLine($Message)
+    }
+    [Console]::ForegroundColor = $originalColor
+}
+
 # Функция для сборки парсера
 function Build-Parser {
     param([string]$ParserPath)
@@ -310,19 +360,41 @@ function Start-Module {
     $errorBuilder = New-Object System.Text.StringBuilder
     
     # Обработчики событий для перехвата вывода
-    $moduleName = $Name
+    # Используем прямой доступ к консоли для максимальной производительности
+    $color = $script:ModuleColors[$Name]
+    $consoleColor = $script:ColorMap[$color]
+    if ($null -eq $consoleColor) {
+        $consoleColor = [ConsoleColor]::White
+    }
+    
     $outputEvent = Register-ObjectEvent -InputObject $process -EventName OutputDataReceived -Action {
         if ($EventArgs.Data) {
-            [void]$Event.MessageData.AppendLine($EventArgs.Data)
+            [void]$Event.MessageData.Builder.AppendLine($EventArgs.Data)
+            
+            # Быстрый вывод через прямой доступ к консоли
+            $originalColor = [Console]::ForegroundColor
+            $prefix = "[$($Event.MessageData.Name)]"
+            [Console]::ForegroundColor = $Event.MessageData.ConsoleColor
+            [Console]::Write($prefix + " ")
+            [Console]::ForegroundColor = $originalColor
+            [Console]::WriteLine($EventArgs.Data)
         }
-    } -MessageData $outputBuilder
+    } -MessageData @{ Builder = $outputBuilder; Name = $Name; Color = $color; ConsoleColor = $consoleColor }
     
     $errorEvent = Register-ObjectEvent -InputObject $process -EventName ErrorDataReceived -Action {
         if ($EventArgs.Data) {
-            [void]$Event.MessageData.AppendLine($EventArgs.Data)
-            Write-Host "[$moduleName ERROR] $($EventArgs.Data)" -ForegroundColor Red
+            [void]$Event.MessageData.Builder.AppendLine($EventArgs.Data)
+            
+            # Быстрый вывод через прямой доступ к консоли
+            $originalColor = [Console]::ForegroundColor
+            $prefix = "[$($Event.MessageData.Name) ERROR]"
+            [Console]::ForegroundColor = $Event.MessageData.ConsoleColor
+            [Console]::Write($prefix + " ")
+            [Console]::ForegroundColor = [ConsoleColor]::Red
+            [Console]::WriteLine($EventArgs.Data)
+            [Console]::ForegroundColor = $originalColor
         }
-    } -MessageData $errorBuilder
+    } -MessageData @{ Builder = $errorBuilder; Name = $Name; Color = $color; ConsoleColor = $consoleColor }
     
     try {
         Write-Info "Запускаю $Name..."
