@@ -1,0 +1,4 @@
+<resources>
+    <!-- Оставляем пустую подпись под иконкой, чтобы не мешала -->
+    <string name="app_name"></string>
+</resources>

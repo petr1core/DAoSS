@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="member_roles">
+        <item>Reviewer</item>
+        <item>Admin</item>
+    </string-array>
+    <string-array name="member_roles_add">
+        <item>reviewer</item>
+        <item>admin</item>
+    </string-array>
+</resources>
+
