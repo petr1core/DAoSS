@@ -1,10 +1,69 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { api } from '../services/api';
 import '../../styles.css';
 import './FlowchartEditor.css';
 
 function FlowchartEditor() {
   const editorRef = useRef<HTMLDivElement>(null);
   const scriptLoadedRef = useRef(false);
+  const [searchParams] = useSearchParams();
+  const [fileLoaded, setFileLoaded] = useState(false);
+  const [fileName, setFileName] = useState<string | null>(null);
+
+  // Загрузка файла из URL параметров
+  useEffect(() => {
+    const fileId = searchParams.get('fileId');
+    const projectId = searchParams.get('projectId');
+
+    if (fileId && projectId && !fileLoaded) {
+      loadFileAndGenerateDiagram(projectId, fileId);
+    }
+  }, [searchParams, fileLoaded]);
+
+  const loadFileAndGenerateDiagram = async (projectId: string, fileId: string) => {
+    try {
+      // Получаем информацию о файле
+      const file = await api.getSourceFile(projectId, fileId);
+      setFileName(file.path);
+
+      // Получаем версии файла
+      const versions = await api.getSourceFileVersions(projectId, fileId);
+      if (versions.length === 0) {
+        console.warn('Файл не имеет версий');
+        return;
+      }
+
+      // Находим последнюю версию
+      const latestVersion = versions.reduce((latest, current) => 
+        current.versionIndex > latest.versionIndex ? current : latest
+      );
+
+      // Получаем содержимое последней версии
+      const version = await api.getSourceFileVersion(projectId, fileId, latestVersion.id);
+
+      // Загружаем код в редактор и генерируем диаграмму
+      if ((window as any).loadCodeIntoEditor) {
+        (window as any).loadCodeIntoEditor(version.content);
+      } else {
+        // Если функция еще не загружена, ждем загрузки скрипта
+        const checkInterval = setInterval(() => {
+          if ((window as any).loadCodeIntoEditor) {
+            (window as any).loadCodeIntoEditor(version.content);
+            clearInterval(checkInterval);
+          }
+        }, 100);
+
+        // Таймаут на случай, если скрипт не загрузится
+        setTimeout(() => clearInterval(checkInterval), 5000);
+      }
+
+      setFileLoaded(true);
+    } catch (error) {
+      console.error('Ошибка при загрузке файла:', error);
+      alert('Не удалось загрузить файл для просмотра диаграммы');
+    }
+  };
 
   useEffect(() => {
     // Загружаем и инициализируем app.js только один раз
@@ -126,7 +185,10 @@ function FlowchartEditor() {
       {/* Центральная область - Canvas */}
       <main className="main-content">
         <header className="top-bar">
-          <h1>Редактор блок-схем</h1>
+          <h1>
+            Редактор блок-схем
+            {fileName && <span className="file-name-indicator"> - {fileName}</span>}
+          </h1>
           <div className="zoom-indicator">
             Масштаб: <span id="zoom-value">100</span>%
           </div>

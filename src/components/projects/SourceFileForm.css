@@ -1,0 +1,109 @@
+.source-file-form-container {
+  margin-top: 1rem;
+}
+
+.source-file-form {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.source-file-form .form-group {
+  margin-bottom: 20px;
+}
+
+.source-file-form .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.source-file-form .form-group input,
+.source-file-form .form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.source-file-form .form-group textarea {
+  resize: vertical;
+  font-family: 'Courier New', monospace;
+}
+
+.source-file-form .form-group input:focus,
+.source-file-form .form-group textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.source-file-form .form-group input:disabled,
+.source-file-form .form-group textarea:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.source-file-form .form-group small {
+  display: block;
+  margin-top: 4px;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.source-file-form .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.source-file-form .cancel-button,
+.source-file-form .submit-button {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.source-file-form .cancel-button {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.source-file-form .cancel-button:hover:not(:disabled) {
+  background: #e0e0e0;
+}
+
+.source-file-form .submit-button {
+  background: #007bff;
+  color: white;
+}
+
+.source-file-form .submit-button:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.source-file-form .cancel-button:disabled,
+.source-file-form .submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.source-file-form .error-message {
+  background: #fee;
+  color: #c33;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+

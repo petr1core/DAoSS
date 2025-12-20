@@ -4,6 +4,7 @@ import { api } from '../../services/api';
 import MembersList from './MembersList';
 import InvitationsList from './InvitationsList';
 import ReviewsList from './ReviewsList';
+import SourceFilesList from './SourceFilesList';
 import './ProjectDetails.css';
 
 interface ProjectDetailsProps {
@@ -14,7 +15,7 @@ interface ProjectDetailsProps {
   onBack: () => void;
 }
 
-type TabType = 'overview' | 'members' | 'invitations' | 'reviews';
+type TabType = 'overview' | 'members' | 'invitations' | 'reviews' | 'files';
 
 export default function ProjectDetails({
   projectId,
@@ -129,11 +130,6 @@ export default function ProjectDetails({
           <span className="meta-item">
             <strong>Создан:</strong> {formatDate(project.createdAt)}
           </span>
-          {project.updatedAt && (
-            <span className="meta-item">
-              <strong>Обновлен:</strong> {formatDate(project.updatedAt)}
-            </span>
-          )}
         </div>
       </div>
 
@@ -161,6 +157,12 @@ export default function ProjectDetails({
           onClick={() => setActiveTab('reviews')}
         >
           Ревью
+        </button>
+        <button
+          className={`tab ${activeTab === 'files' ? 'active' : ''}`}
+          onClick={() => setActiveTab('files')}
+        >
+          Файлы
         </button>
       </div>
 
@@ -205,8 +207,16 @@ export default function ProjectDetails({
             canManage={userRole === 'owner' || userRole === 'admin' || userRole === 'reviewer'}
           />
         )}
+
+        {activeTab === 'files' && (
+          <SourceFilesList
+            projectId={projectId}
+            canManage={canEdit}
+          />
+        )}
       </div>
     </div>
   );
 }
+
 

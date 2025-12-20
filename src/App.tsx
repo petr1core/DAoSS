@@ -57,7 +57,6 @@ function AppContent() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [username, setUsername] = useState('')
   const [isLoading, setIsLoading] = useState(true)
-  const location = useLocation()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -70,21 +69,36 @@ function AppContent() {
       }
 
       try {
-        // Проверяем валидность токена
-        const isValid = await api.validateToken()
+        // Проверяем валидность токена с таймаутом
+        // Оборачиваем validateToken в промис, который всегда разрешается
+        const isValid = await Promise.race([
+          api.validateToken().catch(() => false), // При ошибке возвращаем false
+          new Promise<boolean>((resolve) =>
+            setTimeout(() => resolve(false), 3000) // 3 секунды таймаут
+          )
+        ])
 
         if (isValid) {
-          // Получаем информацию о пользователе
-          const userInfo = await api.getMe()
-          setUsername(userInfo.name || userInfo.email || 'Пользователь')
-          setIsAuthenticated(true)
+          try {
+            // Получаем информацию о пользователе
+            const userInfo = await api.getMe()
+            setUsername(userInfo.name || userInfo.email || 'Пользователь')
+            setIsAuthenticated(true)
+          } catch (error) {
+            // Ошибка при получении информации о пользователе
+            console.error('Failed to get user info:', error)
+            removeToken()
+            setIsAuthenticated(false)
+          }
         } else {
-          // Токен невалидный, удаляем его
+          // Токен невалидный или истек таймаут, удаляем его
           removeToken()
           setIsAuthenticated(false)
         }
       } catch (error) {
-        // Ошибка при проверке токена, удаляем его
+        // Ошибка при проверке токена (например, Backend недоступен)
+        console.warn('Auth check failed (Backend may be unavailable):', error)
+        // Если Backend недоступен, просто считаем пользователя неавторизованным
         removeToken()
         setIsAuthenticated(false)
       } finally {

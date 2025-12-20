@@ -10,3 +10,11 @@
 .user-panel {
   z-index: 1001;
 }
+
+/* Стиль для индикатора имени файла */
+.file-name-indicator {
+  font-size: 0.9em;
+  color: #666;
+  font-weight: normal;
+  margin-left: 0.5rem;
+}
