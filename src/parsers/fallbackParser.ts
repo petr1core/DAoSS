@@ -110,4 +110,3 @@ export function parseCodeToFlowchart(code: string): FlowchartNode[] {
     return nodes;
 }
 
-

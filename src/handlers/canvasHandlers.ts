@@ -82,4 +82,3 @@ export function setZoom(zoom: number, minZoom: number = 0.1, maxZoom: number = 2
     return Math.max(minZoom, Math.min(maxZoom, zoom));
 }
 
-

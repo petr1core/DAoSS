@@ -51,4 +51,3 @@ export function setTheme(isDark: boolean): void {
     }
 }
 
-

@@ -31,4 +31,3 @@ export function getTypeLabel(type: NodeType): string {
     return labels[type] || 'Неизвестно';
 }
 
-
