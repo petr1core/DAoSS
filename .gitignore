@@ -1,0 +1,76 @@
+# .NET / Visual Studio
+bin/
+obj/
+**/bin/
+**/obj/
+**/out/
+
+# VS / IDE
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vscode/
+
+# Build artifacts
+*.exe
+*.dll
+*.pdb
+*.cache
+*.log
+*.tmp
+*.tmp_proj
+*.svclog
+*.pid
+
+# NuGet
+*.nupkg
+.nuget/packages/
+**/packages/*
+!**/packages/build/
+
+# Resharper / Rider
+_ReSharper*/
+*.DotSettings.user
+.idea/
+
+# DotCover
+*.dotCover
+
+# Publish profiles
+**/Properties/PublishProfiles/*
+
+# EF Core Migrations snapshot build outputs
+**/Migrations/**/obj/
+**/Migrations/**/bin/
+
+# Azure
+PublishProfiles/
+
+# Logs
+logs/
+*.log
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Secrets (keep keys out of VCS)
+secrets.json
+
+# User local settings
+*.local.json
+
+# Node (if any frontend appears later)
+node_modules/
+
+# JetBrains Rider caches
+.idea/.idea.*
+
+# Diff files
+*.diff
+
+# Parser submodule build directory
+src/parser/Parser/backend/parser/build/
+

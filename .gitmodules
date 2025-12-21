@@ -1,0 +1,3 @@
+[submodule "src/parser/Parser"]
+	path = src/parser/Parser
+	url = https://github.com/KAPUSHA228/DAoSS.git
