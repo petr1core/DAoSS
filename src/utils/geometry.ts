@@ -94,3 +94,4 @@ export function calculateConnectionPath(
     return `M ${fromPos.x} ${fromPos.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${toPos.x} ${toPos.y}`;
 }
 
+

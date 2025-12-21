@@ -21,14 +21,14 @@ begin
   if 5 mod 3 > 0 then begin
     Writeln('Yes,if 1');
     Writeln('Yes,if 2');
-  end;
-  case num1 of
+  end
+  case num1 of begin
     1, 2, 3: begin
       Writeln('Switch works 1');
     end;
     4, 5: begin
       Writeln('Switch works 2');
-    end
+    end;
     else begin
       Writeln('Switch no works');
     end;
@@ -90,9 +90,10 @@ begin
     Writeln('No,else 1');
     Writeln('No,else 2');
   end;
-  repeat
+  repeat begin
     Write('3');
     num1 := num1 + 1;
+  end;
   until num1 < 7;
   num1 := num1 + 3;
 end.
