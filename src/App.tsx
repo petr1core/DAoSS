@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import LoginPage from './components/LoginPage'
 import UserPanel from './components/UserPanel'
-import FlowchartEditor from './components/FlowchartEditor'
+import FlowchartEditor from './components/FlowchartEditorRefactored'
 import './App.css'
 import { api } from './services/api'
 import { getToken, removeToken } from './utils/auth'
