@@ -36,20 +36,17 @@ DAoSS/
 ## Модули проекта
 
 ### Frontend
-
 - **Технологии:** React 19, TypeScript, Vite
 - **Порт:** 5173 (dev), 4173 (preview)
 - **Описание:** Пользовательский интерфейс для работы с проектами, диаграммами и ревью
 
 ### Backend
-
 - **Технологии:** ASP.NET Core 8, Entity Framework Core, PostgreSQL
 - **Порты:** HTTP 5143, HTTPS 7143
 - **Архитектура:** 3-tier (Domain, Application, Infrastructure)
 - **Описание:** RESTful API для управления проектами, пользователями, ревью и интеграции с парсером
 
 ### Parser
-
 - **Технологии:** C++17, CMake, cpp-httplib, nlohmann/json
 - **Порт:** 8080
 - **Описание:** HTTP сервер для парсинга кода на языках Pascal, C, C++ с генерацией AST/SPR и блок-схем
@@ -57,14 +54,12 @@ DAoSS/
 ## Требования к окружению
 
 ### Обязательные
-
 - **Git** — для работы с репозиторием и подмодулями
 - **Node.js** (v18+) и **npm** — для Frontend
 - **.NET 8 SDK** — для Backend
 - **PostgreSQL** — база данных для Backend
 
 ### Для сборки Parser
-
 - **CMake** (3.15+)
 - **C++ компилятор** с поддержкой C++17:
   - Windows: MSVC (Visual Studio 2019+) или MinGW
@@ -72,7 +67,6 @@ DAoSS/
   - macOS: Xcode Command Line Tools
 
 ### PowerShell (для скриптов)
-
 - Windows PowerShell 5.1+ или PowerShell 7+
 
 ## Быстрый старт
@@ -107,7 +101,6 @@ git submodule update --init --recursive
 ```
 
 Скрипт автоматически:
-
 - Инициализирует все подмодули (включая вложенные)
 - Переключает `backend_and_parser` на ветку `backend_and_parser`
 - Переключает `Parser` на ветку `http-server_wip`
@@ -125,7 +118,6 @@ git submodule update --init --recursive
 ```
 
 Или используйте переменные окружения:
-
 - `POSTGRES_HOST`
 - `POSTGRES_PORT`
 - `POSTGRES_DB`
@@ -160,7 +152,6 @@ npm install
 ```
 
 **Порядок запуска модулей:**
-
 1. Parser (порт 8080)
 2. Backend (порты 5143/7143)
 3. Frontend (порт 5173)
@@ -168,7 +159,6 @@ npm install
 ### Альтернативный запуск вручную
 
 #### Запуск Parser
-
 ```bash
 cd backend_and_parser/src/parser/Parser
 mkdir build && cd build
@@ -178,7 +168,6 @@ cmake --build . --config Release
 ```
 
 #### Запуск Backend
-
 ```bash
 cd backend_and_parser/src/WebApi
 dotnet restore
@@ -187,7 +176,6 @@ dotnet run
 ```
 
 #### Запуск Frontend
-
 ```bash
 npm run dev
 ```
@@ -199,12 +187,10 @@ npm run dev
 Скрипт для настройки Git подмодулей.
 
 **Параметры:**
-
 - `-Verbose` — подробный вывод
 - `-AddGitToPath` — автоматически добавить Git в PATH
 
 **Использование:**
-
 ```powershell
 .\setup-submodules.ps1 -AddGitToPath
 ```
@@ -214,7 +200,6 @@ npm run dev
 Скрипт для последовательного запуска всех модулей проекта.
 
 **Параметры:**
-
 - `-Verbose` — подробный вывод
 - `-AddGitToPath` — автоматически добавить Git в PATH
 - `-BuildParser` — собрать Parser перед запуском
@@ -222,7 +207,6 @@ npm run dev
 - `-UpdateMigrations` — применить миграции базы данных
 
 **Использование:**
-
 ```powershell
 # Полный запуск с подготовкой
 .\start-all.ps1 -BuildParser -BuildBackend -UpdateMigrations -Verbose
@@ -231,20 +215,17 @@ npm run dev
 ## API Эндпоинты
 
 ### Базовый URL
-
 - **Backend API**: `http://localhost:5143/api` (HTTP) или `https://localhost:7143/api` (HTTPS)
 - **Parser Service**: `http://localhost:8080/api` (внутренний, используется через Backend)
 
 ### Аутентификация
 
 Все эндпоинты (кроме `/api/auth/login` и `/api/auth/register`) требуют JWT токен в заголовке:
-
 ```
 Authorization: Bearer <token>
 ```
 
 #### Аутентификация и пользователи
-
 - `POST /api/auth/register` — регистрация нового пользователя
 - `POST /api/auth/login` — вход в систему
 - `GET /api/auth/me` — получение информации о текущем пользователе
@@ -326,13 +307,11 @@ Authorization: Bearer <token>
 ### Swagger документация
 
 В режиме Development доступна автоматическая документация API:
-
 - **Swagger UI**: `http://localhost:5143/swagger` (HTTP) или `https://localhost:7143/swagger` (HTTPS)
 
 ## Адреса страниц Frontend
 
 ### Базовый URL
-
 - **Development**: `http://localhost:5173`
 - **Preview**: `http://localhost:4173`
 
@@ -356,20 +335,17 @@ Authorization: Bearer <token>
 ### Навигация
 
 После авторизации доступны следующие разделы:
-
 - **Проекты** — управление проектами
 - **Приглашения** — просмотр и управление приглашениями
 
 ## Документация
 
 ### Основная документация
-
 - [Backend README](backend_and_parser/README.md) — подробная документация Backend
 - [Parser README](backend_and_parser/src/parser/Parser/README.md) — документация парсер-сервиса
 - [Some explanations](backend_and_parser/Some%20explanations.md) — нюансы работы с бэкендом
 
 ### Дополнительные материалы
-
 - [PARSER_API_TESTING.md](backend_and_parser/PARSER_API_TESTING.md) — тестирование API парсера
 - [Architecture.md](../Architecture.md) — архитектура проекта (если есть)
 
@@ -403,7 +379,6 @@ src/
 ### Проблемы с подмодулями
 
 Если подмодули не инициализированы:
-
 ```bash
 git submodule update --init --recursive
 cd backend_and_parser
@@ -413,14 +388,12 @@ git submodule update --init --recursive
 ### Проблемы с портами
 
 Убедитесь, что порты 5173, 5143, 7143, 8080 свободны:
-
 - Windows: `netstat -ano | findstr :8080`
 - Linux/macOS: `lsof -i :8080`
 
 ### Проблемы с базой данных
 
 Проверьте строку подключения и убедитесь, что PostgreSQL запущен:
-
 ```bash
 # Windows
 pg_ctl status
@@ -435,7 +408,6 @@ brew services list | grep postgresql
 ### Проблемы со сборкой Parser
 
 Убедитесь, что установлены CMake и C++ компилятор:
-
 ```bash
 cmake --version
 g++ --version  # или cl.exe на Windows
