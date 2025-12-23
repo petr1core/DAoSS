@@ -1,4 +1,4 @@
-# Скрипт для последовательного запуска всех модулей проекта
+﻿# Скрипт для последовательного запуска всех модулей проекта
 # Запускает: Parser -> Backend -> Frontend
 #
 # Параметры:
@@ -42,56 +42,6 @@ function Write-Verbose-Custom {
     if ($Verbose) {
         Write-Host "  [VERBOSE] $Message" -ForegroundColor DarkGray
     }
-}
-
-# Цвета для вывода логов модулей
-$script:ModuleColors = @{
-    "Parser"   = "Magenta"
-    "Backend"  = "Yellow"
-    "Frontend" = "Cyan"
-}
-
-# Маппинг цветов PowerShell на ConsoleColor для быстрого вывода
-$script:ColorMap = @{
-    "Black"       = [ConsoleColor]::Black
-    "DarkBlue"    = [ConsoleColor]::DarkBlue
-    "DarkGreen"   = [ConsoleColor]::DarkGreen
-    "DarkCyan"    = [ConsoleColor]::DarkCyan
-    "DarkRed"     = [ConsoleColor]::DarkRed
-    "DarkMagenta" = [ConsoleColor]::DarkMagenta
-    "DarkYellow"  = [ConsoleColor]::DarkYellow
-    "Gray"        = [ConsoleColor]::Gray
-    "DarkGray"    = [ConsoleColor]::DarkGray
-    "Blue"        = [ConsoleColor]::Blue
-    "Green"       = [ConsoleColor]::Green
-    "Cyan"        = [ConsoleColor]::Cyan
-    "Red"         = [ConsoleColor]::Red
-    "Magenta"     = [ConsoleColor]::Magenta
-    "Yellow"      = [ConsoleColor]::Yellow
-    "White"       = [ConsoleColor]::White
-}
-
-# Быстрая функция для цветного вывода (использует прямой доступ к консоли)
-function Write-FastColor {
-    param(
-        [string]$Message,
-        [string]$ForegroundColor = "White",
-        [switch]$NoNewline
-    )
-    
-    $originalColor = [Console]::ForegroundColor
-    $consoleColor = $script:ColorMap[$ForegroundColor]
-    if ($null -eq $consoleColor) {
-        $consoleColor = [ConsoleColor]::White
-    }
-    
-    [Console]::ForegroundColor = $consoleColor
-    if ($NoNewline) {
-        [Console]::Write($Message)
-    } else {
-        [Console]::WriteLine($Message)
-    }
-    [Console]::ForegroundColor = $originalColor
 }
 
 # Функция для сборки парсера
@@ -219,7 +169,7 @@ function Update-BackendMigrations {
     param([string]$BackendPath)
     
     Write-Info "=== Применение миграций Backend ==="
-    
+    $env:Path = "D:\DevLeb\DAoSS\eftools;" + $env:Path
     $dotnetCommand = Get-Command dotnet -ErrorAction SilentlyContinue
     if (-not $dotnetCommand) {
         Write-Error-Custom "Ошибка: .NET SDK не найден. Установите .NET SDK для применения миграций."
@@ -238,7 +188,7 @@ function Update-BackendMigrations {
         Push-Location $BackendPath
         
         Write-Info "Применяю миграции к базе данных..."
-        $updateResult = & dotnet ef database update --startup-project DAOSS.WebApi.csproj --project Infrastructure/DAOSS.Infrastructure.csproj 2>&1
+        $updateResult = & dotnet ef database update --project DAOSS.WebApi.csproj 2>&1
         if ($LASTEXITCODE -ne 0) {
             Write-Error-Custom "Ошибка при применении миграций:"
             Write-Host $updateResult -ForegroundColor Red
@@ -360,41 +310,19 @@ function Start-Module {
     $errorBuilder = New-Object System.Text.StringBuilder
     
     # Обработчики событий для перехвата вывода
-    # Используем прямой доступ к консоли для максимальной производительности
-    $color = $script:ModuleColors[$Name]
-    $consoleColor = $script:ColorMap[$color]
-    if ($null -eq $consoleColor) {
-        $consoleColor = [ConsoleColor]::White
-    }
-    
+    $moduleName = $Name
     $outputEvent = Register-ObjectEvent -InputObject $process -EventName OutputDataReceived -Action {
         if ($EventArgs.Data) {
-            [void]$Event.MessageData.Builder.AppendLine($EventArgs.Data)
-            
-            # Быстрый вывод через прямой доступ к консоли
-            $originalColor = [Console]::ForegroundColor
-            $prefix = "[$($Event.MessageData.Name)]"
-            [Console]::ForegroundColor = $Event.MessageData.ConsoleColor
-            [Console]::Write($prefix + " ")
-            [Console]::ForegroundColor = $originalColor
-            [Console]::WriteLine($EventArgs.Data)
+            [void]$Event.MessageData.AppendLine($EventArgs.Data)
         }
-    } -MessageData @{ Builder = $outputBuilder; Name = $Name; Color = $color; ConsoleColor = $consoleColor }
+    } -MessageData $outputBuilder
     
     $errorEvent = Register-ObjectEvent -InputObject $process -EventName ErrorDataReceived -Action {
         if ($EventArgs.Data) {
-            [void]$Event.MessageData.Builder.AppendLine($EventArgs.Data)
-            
-            # Быстрый вывод через прямой доступ к консоли
-            $originalColor = [Console]::ForegroundColor
-            $prefix = "[$($Event.MessageData.Name) ERROR]"
-            [Console]::ForegroundColor = $Event.MessageData.ConsoleColor
-            [Console]::Write($prefix + " ")
-            [Console]::ForegroundColor = [ConsoleColor]::Red
-            [Console]::WriteLine($EventArgs.Data)
-            [Console]::ForegroundColor = $originalColor
+            [void]$Event.MessageData.AppendLine($EventArgs.Data)
+            Write-Host "[$moduleName ERROR] $($EventArgs.Data)" -ForegroundColor Red
         }
-    } -MessageData @{ Builder = $errorBuilder; Name = $Name; Color = $color; ConsoleColor = $consoleColor }
+    } -MessageData $errorBuilder
     
     try {
         Write-Info "Запускаю $Name..."
