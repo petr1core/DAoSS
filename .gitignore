@@ -1,3 +1,120 @@
+# ============================================
+# DAoSS Project - Root .gitignore
+# ============================================
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDE / Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.cache
+
+# ============================================
+# .NET Backend
+# ============================================
+DAoSS-backend_wip/**/bin/
+DAoSS-backend_wip/**/obj/
+DAoSS-backend_wip/**/out/
+DAoSS-backend_wip/.vs/
+DAoSS-backend_wip/*.user
+DAoSS-backend_wip/*.suo
+DAoSS-backend_wip/*.userosscache
+DAoSS-backend_wip/*.sln.docstates
+
+# Build artifacts
+DAoSS-backend_wip/**/*.exe
+DAoSS-backend_wip/**/*.dll
+DAoSS-backend_wip/**/*.pdb
+DAoSS-backend_wip/**/*.cache
+DAoSS-backend_wip/**/*.nupkg
+
+# NuGet
+DAoSS-backend_wip/.nuget/packages/
+DAoSS-backend_wip/**/packages/*
+!DAoSS-backend_wip/**/packages/build/
+
+# EF Core Migrations build outputs
+DAoSS-backend_wip/**/Migrations/**/obj/
+DAoSS-backend_wip/**/Migrations/**/bin/
+
+# User secrets and local configs
+DAoSS-backend_wip/**/appsettings.Development.json
+DAoSS-backend_wip/**/appsettings.Local.json
+DAoSS-backend_wip/**/secrets.json
+DAoSS-backend_wip/**/*.local.json
+
+# ============================================
+# Android Client
+# ============================================
+FlowchartEditorClient/.gradle/
+FlowchartEditorClient/build/
+FlowchartEditorClient/**/build/
+FlowchartEditorClient/.idea/
+FlowchartEditorClient/*.iml
+FlowchartEditorClient/local.properties
+FlowchartEditorClient/.cxx/
+FlowchartEditorClient/.externalNativeBuild/
+FlowchartEditorClient/captures/
+FlowchartEditorClient/.DS_Store
+
+# Android Studio / IntelliJ IDEA
+FlowchartEditorClient/.idea/caches/
+FlowchartEditorClient/.idea/libraries/
+FlowchartEditorClient/.idea/modules.xml
+FlowchartEditorClient/.idea/workspace.xml
+FlowchartEditorClient/.idea/navEditor.xml
+FlowchartEditorClient/.idea/assetWizardSettings.xml
+
+# Generated files
+FlowchartEditorClient/**/generated/
+FlowchartEditorClient/**/R.java
+FlowchartEditorClient/**/BuildConfig.java
+
+# APK files
+FlowchartEditorClient/**/*.apk
+FlowchartEditorClient/**/*.ap_
+FlowchartEditorClient/**/*.aab
+
+# Signing files
+FlowchartEditorClient/**/*.jks
+FlowchartEditorClient/**/*.keystore
+FlowchartEditorClient/**/keystore.properties
+
+# ============================================
+# Project Specific
+# ============================================
+# SQL dumps (if they contain sensitive data)
+DAoSS-backend_wip/*.sql
+!DAoSS-backend_wip/src/Infrastructure/Migrations/*.sql
+
+# PowerShell scripts with credentials
+DAoSS-backend_wip/start-all.ps1
+
+# Documentation builds
+docs/_build/
+docs/.doctrees/
+
 # Logs
 logs
 *.log

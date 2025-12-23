@@ -1,0 +1,70 @@
+plugins {
+    alias(libs.plugins.android.application)
+}
+
+android {
+    namespace 'com.example.flowcharteditorclient'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "com.example.flowcharteditorclient"
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        
+        // Base URL для API
+        // Для Android Emulator используйте: http://10.0.2.2:5143
+        // Для реального устройства используйте IP вашего компьютера: http://192.168.x.x:5143
+        // Для HTTPS localhost нужны дополнительные настройки безопасности
+        buildConfigField "String", "BASE_URL", "\"http://10.0.2.2:5143/\""
+    }
+    
+    buildFeatures {
+        buildConfig true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+}
+
+dependencies {
+
+    implementation libs.appcompat
+    implementation libs.material
+    implementation libs.activity
+    implementation libs.constraintlayout
+    testImplementation libs.junit
+    androidTestImplementation libs.ext.junit
+    androidTestImplementation libs.espresso.core
+
+    // Material Design
+    implementation libs.material.v1110
+    implementation libs.material.v1130
+
+    // Retrofit
+    implementation libs.retrofit
+    implementation libs.converter.gson
+
+    // OkHttp + JWT
+    implementation libs.okhttp
+    implementation libs.logging.interceptor
+
+    // Lifecycle (необязательно, но полезно)
+    implementation libs.lifecycle.viewmodel
+    
+    // CoordinatorLayout (входит в Material, но добавим явно для надежности)
+    implementation libs.coordinatorlayout
+
+    implementation libs.core.ktx
+}

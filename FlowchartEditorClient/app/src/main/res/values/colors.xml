@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Calm Professional SaaS - Cool Indigo/Blue Palette (Light) -->
+    <!-- Primary: Muted Indigo - professional, calm -->
+    <color name="colorPrimary">#4F46E5</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="colorPrimaryContainer">#E0E7FF</color>
+    <color name="colorOnPrimaryContainer">#1E1B4B</color>
+
+    <!-- Secondary: Neutral gray-blue -->
+    <color name="colorSecondary">#64748B</color>
+    <color name="colorOnSecondary">#FFFFFF</color>
+    <color name="colorSecondaryContainer">#F1F5F9</color>
+    <color name="colorOnSecondaryContainer">#0F172A</color>
+
+    <!-- Tertiary: Minimal, barely used -->
+    <color name="colorTertiary">#6366F1</color>
+    <color name="colorOnTertiary">#FFFFFF</color>
+    <color name="colorTertiaryContainer">#EEF2FF</color>
+    <color name="colorOnTertiaryContainer">#1E1B4B</color>
+
+    <!-- Background: Very light, near white -->
+    <color name="colorBackground">#FFFFFF</color>
+    <color name="colorOnBackground">#0F172A</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorOnSurface">#0F172A</color>
+    <!-- Surface variant: Subtle light gray -->
+    <color name="colorSurfaceVariant">#F8FAFC</color>
+    <color name="colorOnSurfaceVariant">#475569</color>
+    <color name="colorOutline">#CBD5E1</color>
+
+    <!-- Error: Subtle, not aggressive -->
+    <color name="colorError">#DC2626</color>
+    <color name="colorOnError">#FFFFFF</color>
+    <color name="colorErrorContainer">#FEE2E2</color>
+    <color name="colorOnErrorContainer">#7F1D1D</color>
+</resources>
