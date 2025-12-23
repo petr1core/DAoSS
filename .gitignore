@@ -125,6 +125,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+eftools
 dist
 dist-ssr
 *.local

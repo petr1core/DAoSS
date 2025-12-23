@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
 import './LoginPage.css';
 import { api } from '../services/api';
 import { setToken } from '../utils/auth';
@@ -9,7 +8,6 @@ interface LoginPageProps {
 }
 
 function LoginPage({ onLogin }: LoginPageProps) {
-  const [searchParams] = useSearchParams();
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -17,13 +15,6 @@ function LoginPage({ onLogin }: LoginPageProps) {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const mode = searchParams.get('mode');
-    if (mode === 'register') {
-      setIsRegisterMode(true);
-    }
-  }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +24,7 @@ function LoginPage({ onLogin }: LoginPageProps) {
     try {
       const token = await api.login(username, password);
       setToken(token);
-
+      
       // Получаем информацию о пользователе
       const userInfo = await api.getMe();
       onLogin(userInfo.name || username);
@@ -52,7 +43,7 @@ function LoginPage({ onLogin }: LoginPageProps) {
     try {
       const token = await api.register(email, password, name || undefined, username || undefined);
       setToken(token);
-
+      
       // Получаем информацию о пользователе
       const userInfo = await api.getMe();
       onLogin(userInfo.name || name || email);
@@ -72,11 +63,11 @@ function LoginPage({ onLogin }: LoginPageProps) {
           {isRegisterMode ? 'Регистрация' : 'Авторизация'}
         </h1>
         {error && (
-          <div className="error-message" style={{
-            color: '#ef4444',
-            marginBottom: '1rem',
-            padding: '0.75rem',
-            backgroundColor: '#fee2e2',
+          <div className="error-message" style={{ 
+            color: '#ef4444', 
+            marginBottom: '1rem', 
+            padding: '0.75rem', 
+            backgroundColor: '#fee2e2', 
             borderRadius: '0.5rem',
             fontSize: '0.875rem'
           }}>
