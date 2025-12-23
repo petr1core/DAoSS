@@ -48,6 +48,18 @@
     color: #f1f5f9;
 }
 
+/* Темная тема для функций */
+.dark .node-process.function-node {
+    background: #1e3a8a;
+    border-color: #3b82f6;
+}
+
+.dark .node-process.function-node.function-prototype {
+    background: #3730a3;
+    border-color: #818cf8;
+    opacity: 0.9;
+}
+
 .dark .node-decision {
     background: #ca8a04; /* Темно-желтый/оранжевый */
     color: #f1f5f9;
@@ -55,7 +67,8 @@
 
 .dark .node-input,
 .dark .node-output {
-    background: #1e40af; /* Темно-синий */
+    background: #164e63; /* Темно-бирюзовый */
+    border-color: #06b6d4;
     color: #f1f5f9;
 }
 
@@ -291,7 +304,19 @@ body {
     border-radius: 0.375rem;
 }
 
-/* Особенная стилизация для main функции */
+/* Стилизация для функций (реализации) */
+.node-process.function-node {
+    background: #bfdbfe;
+    border: 2px solid #3b82f6;
+}
+
+.node-process.function-node.function-prototype {
+    background: #e0e7ff;
+    border: 2px dashed #818cf8;
+    opacity: 0.9;
+}
+
+/* Особенная стилизация для main функции (приоритет выше, чем function-node) */
 .node-process.main-function {
     background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
     border: 3px solid #d97706;
@@ -323,7 +348,8 @@ body {
 
 .node-input,
 .node-output {
-    background: #dbeafe;
+    background: #cffafe;
+    border: 2px solid #06b6d4;
     clip-path: polygon(10% 0%, 100% 0%, 90% 100%, 0% 100%);
 }
 
@@ -380,11 +406,11 @@ body {
     position: absolute;
     display: flex;
     gap: 0.25rem;
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
+    background: white; /* Всегда светлый фон, как у node-controls */
+    border: 1px solid #e5e7eb;
     border-radius: 0.375rem;
     padding: 0.25rem;
-    box-shadow: var(--shadow);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     z-index: 1000;
 }
 
@@ -510,6 +536,20 @@ body {
     font-weight: 500;
     margin-bottom: 0.625rem;
     color: var(--text-primary);
+}
+
+.form-group label:has(input[type="checkbox"]) {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: 0.25rem;
+}
+
+.form-group label input[type="checkbox"] {
+    width: auto;
+    margin-right: 0.5rem;
+    cursor: pointer;
+    accent-color: var(--accent);
 }
 
 .form-group input[type="text"],

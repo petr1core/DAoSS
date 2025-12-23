@@ -4,14 +4,16 @@ import type { NodeType } from '../types/flowchart';
 /**
  * Возвращает текст по умолчанию для типа узла
  */
-export function getDefaultText(type: NodeType): string {
-    const texts: Record<NodeType, string> = {
+export function getDefaultText(type: NodeType | 'function' | 'main'): string {
+    const texts: Record<string, string> = {
         start: 'Начало',
         end: 'Конец',
         process: 'Процесс',
         decision: 'Условие',
-        input: 'Ввод',
-        output: 'Вывод'
+        input: 'Ввод/Вывод',
+        output: 'Ввод/Вывод',
+        function: 'function name()',
+        main: 'main()'
     };
     return texts[type] || 'Блок';
 }

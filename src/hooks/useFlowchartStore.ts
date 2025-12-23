@@ -37,6 +37,8 @@ export function useFlowchartStore() {
         connections: state.connections,
         setConnections: useCallback((connections: Connection[]) => store.setConnections(connections), [store]),
         addConnection: useCallback((connection: Connection) => store.addConnection(connection), [store]),
+        updateConnection: useCallback((connectionId: string, updates: Partial<Connection>) => 
+            store.updateConnection(connectionId, updates), [store]),
         removeConnection: useCallback((connectionId: string) => store.removeConnection(connectionId), [store]),
         // Выбор
         selectedNodeId: state.selectedNodeId,

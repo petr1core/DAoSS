@@ -237,7 +237,8 @@ export function renderConnectionControls(
     fromNode: FlowchartNode | null,
     toNode: FlowchartNode | null,
     container: HTMLElement,
-    onDelete?: () => void
+    onDelete?: () => void,
+    onEditLabel?: () => void
 ): void {
     const existingControls = container.querySelector('.connection-controls');
     if (existingControls) {
@@ -259,6 +260,12 @@ export function renderConnectionControls(
     controls.style.top = `${midY - 20}px`;
     
     controls.innerHTML = `
+        <button class="node-control-btn" data-action="edit-label" title="Изменить метку">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+        </button>
         <button class="node-control-btn delete" data-action="delete-connection" title="Удалить связь">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
@@ -266,15 +273,15 @@ export function renderConnectionControls(
         </button>
     `;
     
-    if (onDelete) {
-        controls.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const action = (e.target as HTMLElement).closest('[data-action]')?.getAttribute('data-action');
-            if (action === 'delete-connection') {
-                onDelete();
-            }
-        });
-    }
+    controls.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const action = (e.target as HTMLElement).closest('[data-action]')?.getAttribute('data-action');
+        if (action === 'delete-connection' && onDelete) {
+            onDelete();
+        } else if (action === 'edit-label' && onEditLabel) {
+            onEditLabel();
+        }
+    });
     
     container.appendChild(controls);
 }

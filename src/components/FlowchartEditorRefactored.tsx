@@ -329,6 +329,64 @@ function FlowchartEditorRefactored() {
       textInputAfterRender.addEventListener('blur', handleTextInputBlur);
     }
 
+    // Обработчик для переключателя прототипа функции
+    const prototypeToggle = document.getElementById('function-prototype-toggle') as HTMLInputElement | null;
+    if (prototypeToggle && selectedNode && (selectedNode as any).isFunction) {
+      // Удаляем старый обработчик, если есть
+      const oldHandler = (prototypeToggle as any)._changeHandler;
+      if (oldHandler) {
+        prototypeToggle.removeEventListener('change', oldHandler);
+      }
+      
+      const handlePrototypeToggle = () => {
+        if (!selectedNode.id) return;
+        
+        const isPrototype = prototypeToggle.checked;
+        const currentState = flowchartStore.store.getState();
+        
+        // Создаем новый массив узлов с обновленным флагом isPrototype
+        const updatedNodes = currentState.nodes.map(node => {
+          if (node.id === selectedNode.id) {
+            const updatedNode = { ...node };
+            (updatedNode as any).isPrototype = isPrototype;
+            return updatedNode;
+          }
+          return node;
+        });
+        
+        // Обновляем узлы в store
+        flowchartStore.setNodes(updatedNodes);
+        
+        // Обновляем readOnly состояние поля кода
+        if (codeInputAfterRender) {
+          codeInputAfterRender.readOnly = isPrototype;
+          codeInputAfterRender.placeholder = isPrototype 
+            ? 'Прототип функции не имеет тела (только для чтения)'
+            : 'Тело функции';
+        }
+        
+        // Добавляем в историю
+        const updatedState = flowchartStore.store.getState();
+        flowchartStore.addHistoryEntry(addHistoryEntry(
+          `Функция "${selectedNode.text}" изменена на ${isPrototype ? 'прототип' : 'реализацию'}`,
+          updatedState.nodes,
+          updatedState.connections,
+          updatedState.history
+        )[updatedState.history.length]);
+        
+        // Вызываем ререндер
+        setTimeout(() => {
+          if (renderFlowchartFnRef.current) {
+            renderFlowchartFnRef.current();
+          }
+        }, 0);
+      };
+      
+      // Сохраняем ссылку для последующего удаления
+      (prototypeToggle as any)._changeHandler = handlePrototypeToggle;
+      prototypeToggle.addEventListener('change', handlePrototypeToggle);
+    }
+
     if (codeInputAfterRender && selectedNode && !codeInputAfterRender.readOnly) {
       // Удаляем старый обработчик, если есть
       const oldHandler = (codeInputAfterRender as any)._blurHandler;
@@ -416,6 +474,21 @@ function FlowchartEditorRefactored() {
             )[flowchartStore.history.length]);
             showToast('Связь удалена');
             // renderFlowchart() вызовется автоматически через useEffect
+          },
+          () => {
+            // Открываем диалог для редактирования метки
+            const currentLabel = connection.label || '';
+            const newLabel = prompt('Введите метку для связи (например: true, false, или ваша метка):', currentLabel);
+            if (newLabel !== null) {
+              flowchartStore.updateConnection(connection.id, { label: newLabel.trim() || undefined });
+              flowchartStore.addHistoryEntry(addHistoryEntry(
+                `Обновлена метка связи: ${newLabel.trim() || '(удалена)'}`,
+                flowchartStore.nodes,
+                flowchartStore.connections,
+                flowchartStore.history
+              )[flowchartStore.history.length]);
+              showToast('Метка обновлена');
+            }
           }
         );
       }
@@ -646,8 +719,9 @@ function FlowchartEditorRefactored() {
   }, []);
 
   // Добавление узла
-  const handleAddNode = useCallback((type: NodeType) => {
-    const newNode = createNode(type, flowchartStore.nodes);
+  const handleAddNode = useCallback((type: NodeType | 'function' | 'main') => {
+    const options = type === 'function' ? { isFunction: true } : type === 'main' ? { isMainFunction: true } : undefined;
+    const newNode = createNode(type, flowchartStore.nodes, 100, options);
     flowchartStore.addNode(newNode);
     flowchartStore.addHistoryEntry(addHistoryEntry(
       `Добавлен блок: ${newNode.text}`,
@@ -735,7 +809,7 @@ function FlowchartEditorRefactored() {
     document.querySelectorAll('.tool-btn').forEach(btn => {
       const type = (btn as HTMLElement).dataset.type;
       if (type) {
-        const handler = () => handleAddNode(type as NodeType);
+        const handler = () => handleAddNode(type as NodeType | 'function' | 'main');
         toolBtnHandlers.set(btn as HTMLElement, handler);
         btn.addEventListener('click', handler);
       }
@@ -1201,15 +1275,23 @@ function FlowchartEditorRefactored() {
             </button>
             <button className="tool-btn" data-type="input">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 5v14M19 12l-7 7-7-7"></path>
+                <path d="M3 9l3-3 3 3M9 7v10M21 15l-3 3-3-3M15 17V7"></path>
+                <path d="M12 3v18"></path>
               </svg>
-              <span>Ввод</span>
+              <span>Ввод/Вывод</span>
             </button>
-            <button className="tool-btn" data-type="output">
+            <button className="tool-btn" data-type="function" title="Функция/Процедура">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 19V5M5 12l7-7 7 7"></path>
+                <path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path>
+                <path d="M12 14v4M10 16h4"></path>
               </svg>
-              <span>Вывод</span>
+              <span>Функция/Процедура</span>
+            </button>
+            <button className="tool-btn" data-type="main" title="Main функция (только для C/C++)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+              </svg>
+              <span>Main (C/C++)</span>
             </button>
           </div>
         </div>
@@ -1354,6 +1436,15 @@ function FlowchartEditorRefactored() {
             <div className="form-group">
               <label>Тип блока</label>
               <div className="node-type-badge" id="node-type-badge"></div>
+            </div>
+            <div className="form-group" id="function-prototype-toggle-group" style={{ display: 'none' }}>
+              <label htmlFor="function-prototype-toggle">
+                <input type="checkbox" id="function-prototype-toggle" />
+                <span style={{ marginLeft: '0.5rem' }}>Прототип функции</span>
+              </label>
+              <small style={{ display: 'block', marginTop: '0.25rem', color: 'var(--text-secondary)', fontSize: '0.75rem' }}>
+                Прототип не имеет тела функции
+              </small>
             </div>
             <div className="form-group">
               <label htmlFor="node-id-input">ID блока</label>

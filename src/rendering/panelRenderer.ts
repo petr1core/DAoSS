@@ -44,13 +44,35 @@ export function renderInfoPanel(
     
     // Для функций показываем тело функции, для остальных - codeReference
     const isFunction = (node as any).isFunction === true;
+    const isPrototype = (node as any).isPrototype === true;
+    
+    // Показываем/скрываем переключатель прототипа для функций
+    const prototypeToggleGroup = document.getElementById('function-prototype-toggle-group');
+    const prototypeToggle = document.getElementById('function-prototype-toggle') as HTMLInputElement | null;
+    
+    if (prototypeToggleGroup && prototypeToggle) {
+        if (isFunction) {
+            prototypeToggleGroup.style.display = 'block';
+            prototypeToggle.checked = isPrototype || false;
+        } else {
+            prototypeToggleGroup.style.display = 'none';
+        }
+    }
+    
     if (codeInput) {
-        if (isFunction && node.codeReference) {
+        if (isFunction) {
             // Для функций показываем полное тело функции
-            codeInput.value = node.codeReference;
-            codeInput.rows = Math.max(10, node.codeReference.split('\n').length + 2);
-            codeInput.readOnly = true; // Тело функции только для чтения
-            codeInput.placeholder = 'Тело функции (только для чтения)';
+            codeInput.value = node.codeReference || '';
+            codeInput.rows = Math.max(10, (node.codeReference || '').split('\n').length + 2);
+            
+            // Если это прототип - делаем поле только для чтения
+            if (isPrototype) {
+                codeInput.readOnly = true;
+                codeInput.placeholder = 'Прототип функции не имеет тела (только для чтения)';
+            } else {
+                codeInput.readOnly = false;
+                codeInput.placeholder = 'Тело функции';
+            }
         } else {
             // Для остальных нод показываем codeReference как обычно
             codeInput.value = node.codeReference || '';

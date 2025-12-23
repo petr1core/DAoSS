@@ -45,7 +45,15 @@ export function renderNode(
     if (connectingFrom) {
         nodeEl.classList.add('connecting');
     }
-    // Добавляем специальный класс для main функции
+    // Добавляем специальные классы для функций
+    if ((node as any).isFunction) {
+        nodeEl.classList.add('function-node');
+        // Прототипы имеют дополнительный класс
+        if ((node as any).isPrototype) {
+            nodeEl.classList.add('function-prototype');
+        }
+    }
+    // Добавляем специальный класс для main функции (приоритет выше)
     if ((node as any).isMainFunction) {
         nodeEl.classList.add('main-function');
     }

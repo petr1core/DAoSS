@@ -7,8 +7,8 @@ import type { FlowchartNode, Connection } from '../types/flowchart';
  */
 export function exportToSVG(
     canvasWrapper: HTMLElement,
-    nodes: Array<{ id: string; x: number; y: number; width: number; height: number; text: string; type: string }>,
-    connections: Array<{ from: string; to: string; fromPort: string; toPort: string; label?: string }>
+    nodes: FlowchartNode[],
+    connections: Connection[]
 ): string {
     // Создаем SVG элемент
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -22,29 +22,162 @@ export function exportToSVG(
     const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
     style.textContent = `
         .flowchart-node { fill: #ffffff; stroke: #64748b; stroke-width: 2; }
-        .node-start, .node-end { fill: #22c55e; stroke: #16a34a; }
-        .node-process { fill: #3b82f6; stroke: #2563eb; }
-        .node-decision { fill: #f59e0b; stroke: #d97706; }
-        .node-input, .node-output { fill: #8b5cf6; stroke: #7c3aed; }
+        .node-start, .node-end { fill: #dcfce7; stroke: #16a34a; }
+        .node-process { fill: #e9d5ff; stroke: #2563eb; }
+        .node-process.function-node { fill: #bfdbfe; stroke: #3b82f6; }
+        .node-process.function-node.function-prototype { fill: #e0e7ff; stroke: #818cf8; stroke-dasharray: 4,2; opacity: 0.9; }
+        .node-process.main-function { fill: #fbbf24; stroke: #d97706; stroke-width: 3; }
+        .node-decision { fill: #fef9c3; stroke: #d97706; }
+        .node-input, .node-output { fill: #cffafe; stroke: #06b6d4; }
         .connection-line { stroke: #64748b; stroke-width: 2; fill: none; }
         .node-text { fill: #1e293b; font-family: Arial, sans-serif; font-size: 12px; text-anchor: middle; dominant-baseline: middle; }
     `;
     svg.appendChild(style);
     
+    const padding = 50;
+    const offsetX = -bounds.minX + padding;
+    const offsetY = -bounds.minY + padding;
+    
+    // Создаем группу для соединений (чтобы они были под узлами)
+    const connectionsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    connectionsGroup.setAttribute('class', 'connections');
+    
+    // Рендерим соединения
+    connections.forEach(conn => {
+        const fromNode = nodes.find(n => n.id === conn.from);
+        const toNode = nodes.find(n => n.id === conn.to);
+        
+        if (!fromNode || !toNode) return;
+        
+        const fromPort = conn.fromPort || 'bottom';
+        const toPort = conn.toPort || 'top';
+        
+        const fromPos = getPortPosition(fromNode, fromPort);
+        const toPos = getPortPosition(toNode, toPort);
+        
+        // Вычисляем контрольные точки для кривой Безье
+        const dx = Math.abs(toPos.x - fromPos.x);
+        const dy = Math.abs(toPos.y - fromPos.y);
+        const controlOffset = Math.min(dx, dy) * 0.5;
+        
+        let cp1x = fromPos.x;
+        let cp1y = fromPos.y;
+        let cp2x = toPos.x;
+        let cp2y = toPos.y;
+        
+        if (fromPort === 'bottom') {
+            cp1y = fromPos.y + controlOffset;
+        } else if (fromPort === 'top') {
+            cp1y = fromPos.y - controlOffset;
+        } else if (fromPort === 'right') {
+            cp1x = fromPos.x + controlOffset;
+        } else if (fromPort === 'left') {
+            cp1x = fromPos.x - controlOffset;
+        }
+        
+        if (toPort === 'top') {
+            cp2y = toPos.y - controlOffset;
+        } else if (toPort === 'bottom') {
+            cp2y = toPos.y + controlOffset;
+        } else if (toPort === 'right') {
+            cp2x = toPos.x + controlOffset;
+        } else if (toPort === 'left') {
+            cp2x = toPos.x - controlOffset;
+        }
+        
+        // Создаем SVG path для соединения
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const adjustedFromX = fromPos.x + offsetX;
+        const adjustedFromY = fromPos.y + offsetY;
+        const adjustedToX = toPos.x + offsetX;
+        const adjustedToY = toPos.y + offsetY;
+        const adjustedCp1x = cp1x + offsetX;
+        const adjustedCp1y = cp1y + offsetY;
+        const adjustedCp2x = cp2x + offsetX;
+        const adjustedCp2y = cp2y + offsetY;
+        
+        path.setAttribute('d', `M ${adjustedFromX} ${adjustedFromY} C ${adjustedCp1x} ${adjustedCp1y}, ${adjustedCp2x} ${adjustedCp2y}, ${adjustedToX} ${adjustedToY}`);
+        path.setAttribute('class', 'connection-line');
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', '#64748b');
+        path.setAttribute('stroke-width', '3');
+        
+        // Создаем стрелку (маркер)
+        const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+        const markerId = `arrowhead-${conn.id}`;
+        marker.setAttribute('id', markerId);
+        marker.setAttribute('markerWidth', '10');
+        marker.setAttribute('markerHeight', '10');
+        marker.setAttribute('refX', '9');
+        marker.setAttribute('refY', '3');
+        marker.setAttribute('orient', 'auto');
+        marker.setAttribute('markerUnits', 'userSpaceOnUse');
+        
+        const arrowPolygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        arrowPolygon.setAttribute('points', '0 0, 10 3, 0 6');
+        arrowPolygon.setAttribute('fill', '#64748b');
+        marker.appendChild(arrowPolygon);
+        
+        // Добавляем маркер в defs, если его еще нет
+        let defs = svg.querySelector('defs');
+        if (!defs) {
+            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            svg.insertBefore(defs, svg.firstChild);
+        }
+        defs.appendChild(marker);
+        
+        path.setAttribute('marker-end', `url(#${markerId})`);
+        connectionsGroup.appendChild(path);
+        
+        // Добавляем метку соединения, если есть
+        if (conn.label) {
+            const labelX = (adjustedFromX + adjustedToX) / 2;
+            const labelY = (adjustedFromY + adjustedToY) / 2;
+            
+            const labelBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            labelBg.setAttribute('x', (labelX - 30).toString());
+            labelBg.setAttribute('y', (labelY - 8).toString());
+            labelBg.setAttribute('width', '60');
+            labelBg.setAttribute('height', '16');
+            labelBg.setAttribute('fill', '#ffffff');
+            labelBg.setAttribute('stroke', '#64748b');
+            labelBg.setAttribute('stroke-width', '1');
+            labelBg.setAttribute('rx', '2');
+            
+            const labelText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            labelText.setAttribute('x', labelX.toString());
+            labelText.setAttribute('y', labelY.toString());
+            labelText.setAttribute('text-anchor', 'middle');
+            labelText.setAttribute('dominant-baseline', 'middle');
+            labelText.setAttribute('font-size', '12');
+            labelText.setAttribute('fill', '#1e293b');
+            labelText.setAttribute('font-weight', 'bold');
+            labelText.textContent = conn.label;
+            
+            connectionsGroup.appendChild(labelBg);
+            connectionsGroup.appendChild(labelText);
+        }
+    });
+    
+    svg.appendChild(connectionsGroup);
+    
     // Рендерим узлы
     nodes.forEach(node => {
+        const x = node.x + offsetX;
+        const y = node.y + offsetY;
+        
         let shape: SVGGraphicsElement;
         
         if (node.type === 'start' || node.type === 'end') {
             shape = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-            shape.setAttribute('cx', (node.x + node.width / 2 - bounds.minX + 50).toString());
-            shape.setAttribute('cy', (node.y + node.height / 2 - bounds.minY + 50).toString());
+            shape.setAttribute('cx', (x + node.width / 2).toString());
+            shape.setAttribute('cy', (y + node.height / 2).toString());
             shape.setAttribute('rx', (node.width / 2).toString());
             shape.setAttribute('ry', (node.height / 2).toString());
         } else if (node.type === 'decision') {
             shape = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            const centerX = node.x + node.width / 2 - bounds.minX + 50;
-            const centerY = node.y + node.height / 2 - bounds.minY + 50;
+            const centerX = x + node.width / 2;
+            const centerY = y + node.height / 2;
             const w = node.width / 2;
             const h = node.height / 2;
             shape.setAttribute('points', 
@@ -53,28 +186,56 @@ export function exportToSVG(
                 `${centerX},${centerY + h} ` +
                 `${centerX - w},${centerY}`
             );
+        } else if (node.type === 'input' || node.type === 'output') {
+            // Параллелограмм
+            shape = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            const offset = 10;
+            shape.setAttribute('points', 
+                `${x + offset},${y} ` +
+                `${x + node.width},${y} ` +
+                `${x + node.width - offset},${y + node.height} ` +
+                `${x},${y + node.height}`
+            );
         } else {
             shape = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            shape.setAttribute('x', (node.x - bounds.minX + 50).toString());
-            shape.setAttribute('y', (node.y - bounds.minY + 50).toString());
+            shape.setAttribute('x', x.toString());
+            shape.setAttribute('y', y.toString());
             shape.setAttribute('width', node.width.toString());
             shape.setAttribute('height', node.height.toString());
             shape.setAttribute('rx', '4');
         }
         
-        shape.setAttribute('class', `flowchart-node node-${node.type}`);
+        // Добавляем классы в зависимости от типа узла и флагов
+        let className = `flowchart-node node-${node.type}`;
+        const nodeAny = node as any;
+        if (nodeAny.isFunction) {
+            className += ' function-node';
+            if (nodeAny.isPrototype) {
+                className += ' function-prototype';
+            }
+        }
+        if (nodeAny.isMainFunction) {
+            className += ' main-function';
+        }
+        shape.setAttribute('class', className);
         svg.appendChild(shape);
         
-        // Добавляем текст
-        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        text.setAttribute('x', (node.x + node.width / 2 - bounds.minX + 50).toString());
-        text.setAttribute('y', (node.y + node.height / 2 - bounds.minY + 50).toString());
-        text.setAttribute('class', 'node-text');
-        text.textContent = node.text;
-        svg.appendChild(text);
+        // Добавляем текст с поддержкой многострочности
+        const textLines = node.text.split('\n');
+        const lineHeight = 14;
+        const startY = y + node.height / 2 - ((textLines.length - 1) * lineHeight) / 2;
+        
+        textLines.forEach((line, index) => {
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', (x + node.width / 2).toString());
+            text.setAttribute('y', (startY + index * lineHeight).toString());
+            text.setAttribute('class', 'node-text');
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('dominant-baseline', 'middle');
+            text.textContent = line;
+            svg.appendChild(text);
+        });
     });
-    
-    // TODO: Добавить рендеринг соединений
     
     return new XMLSerializer().serializeToString(svg);
 }
@@ -246,14 +407,29 @@ export async function exportToPNG(
             fillColor = '#dcfce7';
             strokeColor = '#16a34a';
         } else if (node.type === 'process') {
-            fillColor = '#e9d5ff';
-            strokeColor = '#2563eb';
+            // Проверяем специальные типы функций
+            const nodeAny = node as any;
+            if (nodeAny.isMainFunction) {
+                fillColor = '#fbbf24'; // Жёлтый для main (градиент упрощён)
+                strokeColor = '#d97706';
+            } else if (nodeAny.isFunction) {
+                if (nodeAny.isPrototype) {
+                    fillColor = '#e0e7ff'; // Светло-синий/лавандовый для прототипов
+                    strokeColor = '#818cf8';
+                } else {
+                    fillColor = '#bfdbfe'; // Синий для реализаций функций
+                    strokeColor = '#3b82f6';
+                }
+            } else {
+                fillColor = '#e9d5ff'; // Фиолетовый для обычных process
+                strokeColor = '#2563eb';
+            }
         } else if (node.type === 'decision') {
             fillColor = '#fef9c3';
             strokeColor = '#d97706';
         } else if (node.type === 'input' || node.type === 'output') {
-            fillColor = '#dbeafe';
-            strokeColor = '#7c3aed';
+            fillColor = '#cffafe'; // Бирюзовый для IO операций
+            strokeColor = '#06b6d4';
         } else {
             fillColor = '#ffffff';
             strokeColor = '#64748b';

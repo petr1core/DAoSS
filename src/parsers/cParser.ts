@@ -622,6 +622,11 @@ function processASTStatement(
         if (currentNode) {
             (currentNode as any).isFunction = true;
             (currentNode as any).functionName = funcName;
+            // Прототип - это функция без body (body отсутствует или null)
+            const hasBody = stmt.body && typeof stmt.body === 'object' && stmt.body.type === 'Block';
+            if (!hasBody) {
+                (currentNode as any).isPrototype = true;
+            }
         }
         
         // Добавляем специальный класс или метаданные для main (будет использоваться в рендеринге)
@@ -879,6 +884,11 @@ export function parseCToFlowchart(
                 if (funcNode) {
                     (funcNode as any).isFunction = true;
                     (funcNode as any).functionName = funcName;
+                    // Прототип - это функция без body (body отсутствует или null)
+                    const hasBody = stmt.body && typeof stmt.body === 'object' && stmt.body.type === 'Block';
+                    if (!hasBody) {
+                        (funcNode as any).isPrototype = true;
+                    }
                 }
                 
                 // Для main функции добавляем флаг

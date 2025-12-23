@@ -1,29 +1,43 @@
 // Обработчики для работы с узлами
 import type { FlowchartNode, NodeType } from '../types/flowchart';
-import type { Connection } from '../types/flowchart';
 import { getDefaultText } from '../utils/nodeUtils';
-import { showToast } from '../utils/toast';
-import { addToHistory } from '../utils/history';
 
 /**
  * Создает новый узел
  */
 export function createNode(
-    type: NodeType,
+    type: NodeType | 'function' | 'main',
     nodes: FlowchartNode[],
-    yPosition: number = 100
+    yPosition: number = 100,
+    options?: {
+        isFunction?: boolean;
+        isMainFunction?: boolean;
+    }
 ): FlowchartNode {
-    return {
+    // Для function и main используем process тип, но с флагами
+    const actualType: NodeType = (type === 'function' || type === 'main') ? 'process' : type;
+    
+    const node: FlowchartNode = {
         id: `node-${Date.now()}`,
-        type,
+        type: actualType,
         x: 400,
         y: yPosition + nodes.length * 150,
-        width: type === 'decision' ? 180 : (type === 'start' || type === 'end') ? 120 : 180,
-        height: type === 'decision' ? 100 : (type === 'start' || type === 'end') ? 60 : 80,
-        text: getDefaultText(type),
+        width: actualType === 'decision' ? 180 : (actualType === 'start' || actualType === 'end') ? 120 : 180,
+        height: actualType === 'decision' ? 100 : (actualType === 'start' || actualType === 'end') ? 60 : 80,
+        text: getDefaultText(type as NodeType),
         codeReference: '',
         comments: []
     };
+    
+    // Добавляем флаги через расширение объекта (так как TypeScript не позволяет добавлять произвольные свойства)
+    if (options?.isFunction || type === 'function') {
+        (node as any).isFunction = true;
+    }
+    if (options?.isMainFunction || type === 'main') {
+        (node as any).isMainFunction = true;
+    }
+    
+    return node;
 }
 
 /**
@@ -135,7 +149,7 @@ export function updateNodePosition(
     wrapper: HTMLElement
 ): { x: number; y: number } {
     const node = nodes.find(n => n.id === nodeId);
-    if (!node) return { x: node.x, y: node.y };
+    if (!node) return { x: 0, y: 0 };
     
     // Вычисляем новую позицию с учетом offset
     const rect = wrapper.getBoundingClientRect();

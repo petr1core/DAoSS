@@ -164,6 +164,14 @@ export class FlowchartStore {
         });
     }
 
+    updateConnection(connectionId: string, updates: Partial<Connection>): void {
+        this.setState({
+            connections: this.state.connections.map(conn =>
+                conn.id === connectionId ? { ...conn, ...updates } : conn
+            )
+        });
+    }
+
     // Выбор
     selectNode(nodeId: string | null): void {
         this.setState({ selectedNodeId: nodeId, selectedConnectionId: null });
