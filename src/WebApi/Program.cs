@@ -119,6 +119,7 @@ var app = builder.Build();
 
 app.Urls.Clear();
 app.Urls.Add("http://localhost:5143");
+app.Urls.Add("http://0.0.0.0:5143"); // Для доступа из локальной сети (Android)
 app.Urls.Add("https://localhost:7143");
 
 
