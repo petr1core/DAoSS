@@ -14,11 +14,11 @@
 .project-list-header h1 {
   margin: 0;
   font-size: 2rem;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .create-project-button {
-  background: #007bff;
+  background: var(--accent);
   color: white;
   border: none;
   padding: 12px 24px;
@@ -29,7 +29,7 @@
 }
 
 .create-project-button:hover {
-  background: #0056b3;
+  background: var(--accent-hover);
 }
 
 .project-list {
@@ -41,32 +41,34 @@
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .empty-state p {
   font-size: 1.1rem;
   margin-bottom: 20px;
+  color: var(--text-secondary);
 }
 
 .loading {
   text-align: center;
   padding: 40px;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 1.1rem;
 }
 
 .error {
-  background: #fee;
-  color: #c33;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
   padding: 16px;
   border-radius: 6px;
   margin-bottom: 16px;
   text-align: center;
+  border: 1px solid var(--danger);
 }
 
 .retry-button {
-  background: #dc3545;
+  background: var(--danger);
   color: white;
   border: none;
   padding: 10px 20px;

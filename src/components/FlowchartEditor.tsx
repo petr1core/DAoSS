@@ -4,12 +4,19 @@ import { api } from '../services/api';
 import '../../styles.css';
 import './FlowchartEditor.css';
 
+interface ParserNotification {
+  type: 'error' | 'warning' | 'success';
+  message: string;
+}
+
 function FlowchartEditor() {
   const editorRef = useRef<HTMLDivElement>(null);
   const scriptLoadedRef = useRef(false);
   const [searchParams] = useSearchParams();
   const [fileLoaded, setFileLoaded] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [notification, setNotification] = useState<ParserNotification | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Загрузка файла из URL параметров
   useEffect(() => {
@@ -22,6 +29,9 @@ function FlowchartEditor() {
   }, [searchParams, fileLoaded]);
 
   const loadFileAndGenerateDiagram = async (projectId: string, fileId: string) => {
+    setIsLoading(true);
+    setNotification(null);
+    
     try {
       // Получаем информацию о файле
       const file = await api.getSourceFile(projectId, fileId);
@@ -30,7 +40,8 @@ function FlowchartEditor() {
       // Получаем версии файла
       const versions = await api.getSourceFileVersions(projectId, fileId);
       if (versions.length === 0) {
-        console.warn('Файл не имеет версий');
+        setNotification({ type: 'warning', message: 'Файл не имеет версий' });
+        setIsLoading(false);
         return;
       }
 
@@ -41,27 +52,88 @@ function FlowchartEditor() {
 
       // Получаем содержимое последней версии
       const version = await api.getSourceFileVersion(projectId, fileId, latestVersion.id);
+      const code = version.content;
 
-      // Загружаем код в редактор и генерируем диаграмму
-      if ((window as any).loadCodeIntoEditor) {
-        (window as any).loadCodeIntoEditor(version.content);
-      } else {
-        // Если функция еще не загружена, ждем загрузки скрипта
-        const checkInterval = setInterval(() => {
+      // Определяем язык по расширению файла
+      const extension = file.path.split('.').pop()?.toLowerCase();
+      let language = 'cpp';
+      if (extension === 'py') language = 'python';
+      else if (extension === 'js' || extension === 'ts') language = 'javascript';
+      else if (extension === 'java') language = 'java';
+      else if (extension === 'pas') language = 'pascal';
+
+      // Пытаемся распарсить через API
+      let parserSuccess = false;
+      try {
+        const parseResult = await api.parseCode(code, language);
+        if (parseResult.success && parseResult.representation) {
+          // Парсер успешно вернул результат
+          parserSuccess = true;
+          setNotification({ type: 'success', message: 'Код успешно распарсен' });
+          
+          // Загружаем код в редактор с результатом парсера
+          const loadCode = () => {
+            if ((window as any).loadCodeIntoEditor) {
+              (window as any).loadCodeIntoEditor(code, { 
+                autoGenerate: true,
+                useApiParser: false // Уже распарсили
+              });
+            }
+          };
+          
           if ((window as any).loadCodeIntoEditor) {
-            (window as any).loadCodeIntoEditor(version.content);
-            clearInterval(checkInterval);
+            loadCode();
+          } else {
+            const checkInterval = setInterval(() => {
+              if ((window as any).loadCodeIntoEditor) {
+                loadCode();
+                clearInterval(checkInterval);
+              }
+            }, 100);
+            setTimeout(() => clearInterval(checkInterval), 5000);
           }
-        }, 100);
+        }
+      } catch (parseError) {
+        console.warn('Ошибка API парсера:', parseError);
+        setNotification({ 
+          type: 'error', 
+          message: `Парсер недоступен: ${parseError instanceof Error ? parseError.message : 'неизвестная ошибка'}. Используется локальная генерация.`
+        });
+      }
 
-        // Таймаут на случай, если скрипт не загрузится
-        setTimeout(() => clearInterval(checkInterval), 5000);
+      // Если парсер не сработал, используем локальную генерацию
+      if (!parserSuccess) {
+        const loadCodeLocally = () => {
+          if ((window as any).loadCodeIntoEditor) {
+            (window as any).loadCodeIntoEditor(code, { 
+              autoGenerate: true,
+              useApiParser: false
+            });
+          }
+        };
+        
+        if ((window as any).loadCodeIntoEditor) {
+          loadCodeLocally();
+        } else {
+          const checkInterval = setInterval(() => {
+            if ((window as any).loadCodeIntoEditor) {
+              loadCodeLocally();
+              clearInterval(checkInterval);
+            }
+          }, 100);
+          setTimeout(() => clearInterval(checkInterval), 5000);
+        }
       }
 
       setFileLoaded(true);
     } catch (error) {
       console.error('Ошибка при загрузке файла:', error);
-      alert('Не удалось загрузить файл для просмотра диаграммы');
+      setNotification({ 
+        type: 'error', 
+        message: `Не удалось загрузить файл: ${error instanceof Error ? error.message : 'неизвестная ошибка'}`
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -109,8 +181,55 @@ function FlowchartEditor() {
     };
   }, []);
 
+  const dismissNotification = () => {
+    setNotification(null);
+  };
+
   return (
     <div className="app-container" ref={editorRef}>
+      {/* Уведомление о парсере */}
+      {notification && (
+        <div className={`parser-notification ${notification.type}`}>
+          <div className="notification-content">
+            {notification.type === 'error' && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+              </svg>
+            )}
+            {notification.type === 'warning' && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            )}
+            {notification.type === 'success' && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            )}
+            <span>{notification.message}</span>
+          </div>
+          <button className="notification-close" onClick={dismissNotification}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      )}
+      
+      {/* Индикатор загрузки */}
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+          <span>Загрузка файла и генерация диаграммы...</span>
+        </div>
+      )}
+      
       {/* Левая панель - Инструменты */}
       <aside className="sidebar-left">
         <h2>Панель инструментов</h2>

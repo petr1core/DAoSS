@@ -1,4 +1,5 @@
 .invitations-page-wrapper {
   width: 100%;
   min-height: calc(100vh - 120px);
+  background: var(--bg-secondary);
 }

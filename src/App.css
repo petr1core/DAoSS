@@ -2,11 +2,13 @@
   width: 100%;
   min-height: 100vh;
   overflow: auto;
+  background-color: var(--bg-secondary);
 }
 
 .main-content-wrapper {
   padding: 2rem;
   margin-top: 4rem;
+  background-color: var(--bg-secondary);
 }
 
 .main-navigation {
@@ -15,9 +17,9 @@
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  background: white;
-  border-bottom: 1px solid #e0e0e0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -35,7 +37,7 @@
 }
 
 .nav-username {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 0.9rem;
   padding: 0 8px;
 }
@@ -47,49 +49,64 @@
   border-radius: 6px;
   cursor: pointer;
   font-size: 1rem;
-  color: #666;
+  color: var(--text-secondary);
   transition: all 0.2s ease;
   text-decoration: none;
   display: inline-block;
 }
 
 .nav-button:hover {
-  background: #f0f0f0;
-  color: #333;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .nav-button.active {
-  background: #007bff;
+  background: var(--accent);
   color: white;
 }
 
 .nav-button.active:hover {
-  background: #0056b3;
+  background: var(--accent-hover);
 }
 
-@media (prefers-color-scheme: dark) {
-  .main-navigation {
-    background: var(--bg-primary, #1a1a1a);
-    border-bottom-color: var(--border-color, #404040);
-  }
+/* Кнопка переключения темы */
+.theme-toggle-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  position: relative;
+}
 
-  .nav-username {
-    color: var(--text-secondary, rgba(255, 255, 255, 0.6));
-  }
+.theme-toggle-button:hover:not(:disabled) {
+  background: var(--border-color);
+  color: var(--text-primary);
+}
 
-  .nav-button {
-    color: var(--text-secondary, rgba(255, 255, 255, 0.6));
-  }
+.theme-toggle-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
-  .nav-button:hover {
-    background: var(--bg-secondary, #242424);
-    color: var(--text-primary, rgba(255, 255, 255, 0.87));
-  }
-
-  .nav-button.active {
-    background: #007bff;
-    color: white;
-  }
+.cooldown-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--danger);
+  color: white;
+  font-size: 10px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (max-width: 768px) {

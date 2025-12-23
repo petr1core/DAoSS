@@ -6,7 +6,7 @@
 
 .invitations-page-container h1 {
   margin-bottom: 24px;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .invitations-list {
@@ -17,25 +17,27 @@
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .empty-state p {
   font-size: 1.1rem;
+  color: var(--text-secondary);
 }
 
 .loading {
   text-align: center;
   padding: 40px;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 1.1rem;
 }
 
 .error {
-  background: #fee;
-  color: #c33;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
   padding: 16px;
   border-radius: 6px;
   margin-bottom: 16px;
   text-align: center;
+  border: 1px solid var(--danger);
 }

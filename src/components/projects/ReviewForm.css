@@ -1,8 +1,9 @@
 .review-form-container {
-  background: #f8f9fa;
+  background: var(--bg-tertiary);
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 24px;
+  border: 1px solid var(--border-color);
 }
 
 .review-form {
@@ -19,24 +20,26 @@
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .review-form .form-group input,
 .review-form .form-group select {
   width: 100%;
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--input-border);
   border-radius: 4px;
   font-size: 1rem;
   box-sizing: border-box;
+  background: var(--input-bg);
+  color: var(--text-primary);
 }
 
 .review-form .form-group input:focus,
 .review-form .form-group select:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 .review-form .form-actions {
@@ -59,21 +62,22 @@
 }
 
 .review-form .cancel-button {
-  background: #f0f0f0;
-  color: #333;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 
 .review-form .cancel-button:hover:not(:disabled) {
-  background: #e0e0e0;
+  background: var(--border-color);
 }
 
 .review-form .submit-button {
-  background: #007bff;
+  background: var(--accent);
   color: white;
 }
 
 .review-form .submit-button:hover:not(:disabled) {
-  background: #0056b3;
+  background: var(--accent-hover);
 }
 
 .review-form .cancel-button:disabled,
@@ -83,8 +87,9 @@
 }
 
 .error-message {
-  background: #fee;
-  color: #c33;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
   padding: 12px;
   border-radius: 6px;
+  border: 1px solid var(--danger);
 }

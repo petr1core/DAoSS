@@ -1,19 +1,19 @@
 .invitation-card {
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 24px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
   transition: all 0.2s ease;
 }
 
 .invitation-card:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
 }
 
 .invitation-card.expired {
   opacity: 0.6;
-  background: #f5f5f5;
+  background: var(--bg-tertiary);
 }
 
 .invitation-header {
@@ -25,11 +25,11 @@
 
 .invitation-header h3 {
   margin: 0;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .expired-badge {
-  background: #dc3545;
+  background: var(--danger);
   color: white;
   padding: 4px 12px;
   border-radius: 12px;
@@ -43,11 +43,11 @@
 
 .invitation-info p {
   margin: 8px 0;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .invitation-info strong {
-  color: #333;
+  color: var(--text-primary);
   margin-right: 8px;
 }
 
@@ -74,7 +74,7 @@
   display: flex;
   gap: 12px;
   padding-top: 16px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--border-color);
 }
 
 .accept-button,
@@ -89,7 +89,7 @@
 }
 
 .accept-button {
-  background: #28a745;
+  background: var(--success);
   color: white;
 }
 
@@ -98,7 +98,7 @@
 }
 
 .reject-button {
-  background: #dc3545;
+  background: var(--danger);
   color: white;
 }
 

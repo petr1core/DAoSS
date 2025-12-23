@@ -10,7 +10,6 @@ interface SourceFileFormProps {
 export default function SourceFileForm({ onSubmit, onCancel }: SourceFileFormProps) {
   const [path, setPath] = useState('');
   const [content, setContent] = useState('');
-  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,10 +19,9 @@ export default function SourceFileForm({ onSubmit, onCancel }: SourceFileFormPro
     setLoading(true);
 
     try {
-      await onSubmit({ path, content, message: message || undefined });
+      await onSubmit({ path, content });
       setPath('');
       setContent('');
-      setMessage('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось создать файл');
     } finally {
@@ -60,18 +58,6 @@ export default function SourceFileForm({ onSubmit, onCancel }: SourceFileFormPro
             placeholder="Введите код файла..."
             disabled={loading}
             rows={15}
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="message">Сообщение коммита (необязательно)</label>
-          <input
-            type="text"
-            id="message"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Описание изменений"
-            disabled={loading}
           />
         </div>
 

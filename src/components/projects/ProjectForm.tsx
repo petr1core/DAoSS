@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { api, Language } from '../../services/api';
+import { api } from '../../services/api';
+import type { Language } from '../../services/api';
 import ReviewRulesEditor from './ReviewRulesEditor';
 import './ProjectForm.css';
 

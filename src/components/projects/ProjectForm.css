@@ -6,14 +6,15 @@
 
 .project-form-container h2 {
   margin-bottom: 24px;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .project-form {
-  background: white;
+  background: var(--bg-card);
   padding: 24px;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
 }
 
 .form-group {
@@ -24,7 +25,7 @@
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .form-group input,
@@ -32,26 +33,29 @@
 .form-group select {
   width: 100%;
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--input-border);
   border-radius: 4px;
   font-size: 1rem;
   font-family: inherit;
   box-sizing: border-box;
+  background: var(--input-bg);
+  color: var(--text-primary);
 }
 
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 .form-group input:disabled,
 .form-group textarea:disabled,
 .form-group select:disabled {
-  background: #f5f5f5;
+  background: var(--bg-tertiary);
   cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .form-group textarea {
@@ -62,7 +66,7 @@
 .form-group small {
   display: block;
   margin-top: 4px;
-  color: #666;
+  color: var(--text-muted);
   font-size: 0.85rem;
 }
 
@@ -72,7 +76,7 @@
   gap: 12px;
   margin-top: 24px;
   padding-top: 24px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--border-color);
 }
 
 .cancel-button,
@@ -86,21 +90,22 @@
 }
 
 .cancel-button {
-  background: #f0f0f0;
-  color: #333;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 
 .cancel-button:hover:not(:disabled) {
-  background: #e0e0e0;
+  background: var(--border-color);
 }
 
 .submit-button {
-  background: #007bff;
+  background: var(--accent);
   color: white;
 }
 
 .submit-button:hover:not(:disabled) {
-  background: #0056b3;
+  background: var(--accent-hover);
 }
 
 .cancel-button:disabled,
@@ -110,9 +115,10 @@
 }
 
 .error-message {
-  background: #fee;
-  color: #c33;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
   padding: 12px;
   border-radius: 6px;
   margin-bottom: 20px;
+  border: 1px solid var(--danger);
 }

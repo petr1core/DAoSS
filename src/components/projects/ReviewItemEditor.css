@@ -1,6 +1,6 @@
 .review-item-editor-container {
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 16px;
@@ -20,7 +20,7 @@
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .review-item-form .form-group input,
@@ -28,19 +28,21 @@
 .review-item-form .form-group select {
   width: 100%;
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--input-border);
   border-radius: 4px;
   font-size: 1rem;
   font-family: inherit;
   box-sizing: border-box;
+  background: var(--input-bg);
+  color: var(--text-primary);
 }
 
 .review-item-form .form-group input:focus,
 .review-item-form .form-group textarea:focus,
 .review-item-form .form-group select:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 .review-item-form .form-group textarea {
@@ -69,25 +71,26 @@
 }
 
 .review-item-form .cancel-button {
-  background: #f0f0f0;
-  color: #333;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 
 .review-item-form .cancel-button:hover:not(:disabled) {
-  background: #e0e0e0;
+  background: var(--border-color);
 }
 
 .review-item-form .submit-button {
-  background: #007bff;
+  background: var(--accent);
   color: white;
 }
 
 .review-item-form .submit-button:hover:not(:disabled) {
-  background: #0056b3;
+  background: var(--accent-hover);
 }
 
 .review-item-form .delete-button {
-  background: #dc3545;
+  background: var(--danger);
   color: white;
   margin-right: auto;
 }
@@ -103,16 +106,17 @@
 }
 
 .error-message {
-  background: #fee;
-  color: #c33;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
   padding: 12px;
   border-radius: 6px;
+  border: 1px solid var(--danger);
 }
 
 .comments-section {
   margin-top: 24px;
   padding-top: 24px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--border-color);
 }
 
 .toggle-comments-button {
@@ -137,8 +141,8 @@
 }
 
 .comment-card {
-  background: #f8f9fa;
-  border: 1px solid #e0e0e0;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 16px;
 }
@@ -149,11 +153,11 @@
   align-items: center;
   margin-bottom: 8px;
   font-size: 0.9rem;
-  color: #666;
+  color: var(--text-muted);
 }
 
 .comment-body {
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 8px;
   line-height: 1.5;
 }
@@ -162,14 +166,14 @@
   display: flex;
   gap: 8px;
   padding-top: 8px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--border-color);
 }
 
 .edit-comment-button,
 .delete-comment-button {
   background: none;
   border: none;
-  color: #007bff;
+  color: var(--accent);
   cursor: pointer;
   font-size: 0.85rem;
   padding: 4px 8px;
@@ -177,11 +181,11 @@
 }
 
 .edit-comment-button:hover {
-  color: #0056b3;
+  color: var(--accent-hover);
 }
 
 .delete-comment-button {
-  color: #dc3545;
+  color: var(--danger);
 }
 
 .delete-comment-button:hover {
@@ -195,23 +199,25 @@
 .comment-input {
   width: 100%;
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--input-border);
   border-radius: 4px;
   font-size: 1rem;
   font-family: inherit;
   resize: vertical;
   margin-bottom: 8px;
   box-sizing: border-box;
+  background: var(--input-bg);
+  color: var(--text-primary);
 }
 
 .comment-input:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 .add-comment-button {
-  background: #007bff;
+  background: var(--accent);
   color: white;
   border: none;
   padding: 8px 16px;
@@ -222,5 +228,5 @@
 }
 
 .add-comment-button:hover {
-  background: #0056b3;
+  background: var(--accent-hover);
 }

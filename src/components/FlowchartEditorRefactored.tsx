@@ -1,5 +1,6 @@
 // Рефакторенная версия FlowchartEditor с использованием новых модулей
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import '../../styles.css';
 import './FlowchartEditor.css';
 import { useFlowchartStore } from '../hooks/useFlowchartStore';
@@ -13,12 +14,16 @@ import { addToHistory as addHistoryEntry } from '../utils/history';
 import { addCommentToNode } from '../utils/commentUtils';
 import { exportToSVG, exportToPNG, downloadSVG, downloadPNG } from '../utils/exportUtils';
 import { loadExampleCode } from '../utils/fileUtils';
-import { initTheme, toggleTheme as toggleThemeUtil } from '../utils/themeUtils';
 import { initializeFileUpload, initializeComments, initializeTabs } from '../utils/editorInitializer';
 import { renderTemporaryConnection } from '../rendering/connectionRenderer';
 import type { NodeType, PortType, FlowchartNode, Connection } from '../types/flowchart';
 import { flowchartToJSON } from '../converters';
 import { api } from '../services/api';
+
+interface ParserNotification {
+  type: 'error' | 'warning' | 'success';
+  message: string;
+}
 
 function FlowchartEditorRefactored() {
   const editorRef = useRef<HTMLDivElement>(null);
@@ -27,11 +32,12 @@ function FlowchartEditorRefactored() {
   const connectionsSvgRef = useRef<SVGSVGElement>(null);
   const flowchartCanvasRef = useRef<HTMLDivElement>(null);
   
-  const [isDark, setIsDark] = useState(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    return savedTheme === 'dark' || (!savedTheme && prefersDark);
-  });
+  const [searchParams] = useSearchParams();
+  const [fileLoaded, setFileLoaded] = useState(false);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [notification, setNotification] = useState<ParserNotification | null>(null);
+  const [isLoadingFile, setIsLoadingFile] = useState(false);
+  
 
   const [panState, setPanState] = useState<{ isPanning: boolean; panStart: { x: number; y: number }; panScroll: { x: number; y: number } } | null>(null);
   const [draggedNodeState, setDraggedNodeState] = useState<{ 
@@ -56,16 +62,6 @@ function FlowchartEditorRefactored() {
   const connectingFromPort = flowchartStore.connectingFromPort;
   const zoom = flowchartStore.zoom;
 
-  // Инициализация темы
-  useEffect(() => {
-    const html = document.documentElement;
-    if (isDark) {
-      html.classList.add('dark');
-    } else {
-      html.classList.remove('dark');
-    }
-  }, [isDark]);
-
   // Создаем контейнер для toast
   useEffect(() => {
     if (!document.getElementById('toast-container')) {
@@ -75,6 +71,109 @@ function FlowchartEditorRefactored() {
       document.body.appendChild(toastContainer);
     }
   }, []);
+
+  // Загрузка файла из URL параметров
+  useEffect(() => {
+    const fileId = searchParams.get('fileId');
+    const projectId = searchParams.get('projectId');
+
+    if (fileId && projectId && !fileLoaded) {
+      // Ждем, пока DOM элементы будут готовы
+      const checkAndLoad = () => {
+        const codeEditor = document.getElementById('code-editor');
+        if (codeEditor) {
+          loadFileAndGenerateDiagram(projectId, fileId);
+        } else {
+          // Повторяем проверку через 100мс
+          setTimeout(checkAndLoad, 100);
+        }
+      };
+      
+      // Небольшая задержка для первоначального рендера
+      setTimeout(checkAndLoad, 200);
+    }
+  }, [searchParams, fileLoaded]);
+
+  const loadFileAndGenerateDiagram = async (projectId: string, fileId: string) => {
+    setIsLoadingFile(true);
+    setNotification(null);
+    
+    try {
+      // Получаем информацию о файле
+      const file = await api.getSourceFile(projectId, fileId);
+      setFileName(file.path);
+
+      // Получаем версии файла
+      const versions = await api.getSourceFileVersions(projectId, fileId);
+      if (versions.length === 0) {
+        setNotification({ type: 'warning', message: 'Файл не имеет версий' });
+        setIsLoadingFile(false);
+        return;
+      }
+
+      // Находим последнюю версию
+      const latestVersion = versions.reduce((latest, current) => 
+        current.versionIndex > latest.versionIndex ? current : latest
+      );
+
+      // Получаем содержимое последней версии
+      const version = await api.getSourceFileVersion(projectId, fileId, latestVersion.id);
+      const code = version.content;
+
+      // Определяем язык по расширению файла
+      const extension = file.path.split('.').pop()?.toLowerCase();
+      let language: 'pascal' | 'c' | 'cpp' = 'cpp';
+      if (extension === 'pas') language = 'pascal';
+      else if (extension === 'c') language = 'c';
+
+      // Устанавливаем код в textarea
+      const codeEditor = document.getElementById('code-editor') as HTMLTextAreaElement | null;
+      const languageSelect = document.getElementById('language-select') as HTMLSelectElement | null;
+      
+      if (codeEditor) {
+        codeEditor.value = code;
+        console.log('[FILE LOAD] Код установлен в textarea, длина:', code.length);
+      } else {
+        console.warn('[FILE LOAD] code-editor не найден!');
+      }
+      
+      if (languageSelect) {
+        languageSelect.value = language;
+        console.log('[FILE LOAD] Язык установлен:', language);
+      }
+
+      // Автоматически запускаем генерацию диаграммы
+      // Небольшая задержка для обновления DOM
+      setTimeout(() => {
+        const generateBtn = document.getElementById('generate-btn') as HTMLButtonElement | null;
+        if (generateBtn) {
+          console.log('[FILE LOAD] Запускаем генерацию диаграммы...');
+          generateBtn.click();
+          setNotification({ type: 'success', message: 'Файл загружен, диаграмма генерируется...' });
+        } else {
+          console.warn('[FILE LOAD] Кнопка генерации не найдена!');
+          setNotification({ 
+            type: 'warning', 
+            message: 'Код загружен. Нажмите "Сгенерировать блок-схему" для создания диаграммы.'
+          });
+        }
+      }, 100);
+
+      setFileLoaded(true);
+    } catch (error) {
+      console.error('Ошибка при загрузке файла:', error);
+      setNotification({ 
+        type: 'error', 
+        message: `Не удалось загрузить файл: ${error instanceof Error ? error.message : 'неизвестная ошибка'}`
+      });
+    } finally {
+      setIsLoadingFile(false);
+    }
+  };
+
+  const dismissNotification = () => {
+    setNotification(null);
+  };
 
   // Сохраняем актуальные значения в ref для использования в renderFlowchart
   const renderFlowchartRef = useRef<{
@@ -608,11 +707,19 @@ function FlowchartEditorRefactored() {
       // Сохраняем позицию в ref вместо setState, чтобы избежать re-render
       draggedNodePositionRef.current = newPos;
       
+      // Создаем копию нод с обновленной позицией перетаскиваемой ноды
+      // для корректного рендеринга соединений в реальном времени
+      const nodesWithUpdatedPosition = currentNodes.map(node => 
+        node.id === draggedNodeState.nodeId 
+          ? { ...node, x: newPos.x, y: newPos.y }
+          : node
+      );
+      
       // Обновляем соединения во время перетаскивания для плавного ререндеринга
       // Используем requestAnimationFrame для оптимизации
       requestAnimationFrame(() => {
         renderConnections(
-          currentNodes,
+          nodesWithUpdatedPosition,
           flowchartStore.store.getState().connections,
           connectionsCanvasRef.current!,
           connectionsSvgRef.current!,
@@ -676,6 +783,26 @@ function FlowchartEditorRefactored() {
             updatedState.connections,
             updatedState.history
           )[updatedState.history.length]);
+          
+          // Рендерим соединения с актуальными данными из store
+          // (renderFlowchartRef может содержать устаревшие данные)
+          const wrapper = canvasWrapperRef.current;
+          if (wrapper && connectionsCanvasRef.current && connectionsSvgRef.current) {
+            renderConnections(
+              updatedState.nodes,
+              updatedState.connections,
+              connectionsCanvasRef.current,
+              connectionsSvgRef.current,
+              wrapper,
+              {
+                zoom: updatedState.zoom,
+                selectedConnectionId: flowchartStore.selectedConnectionId,
+                onConnectionClick: (connectionId) => {
+                  flowchartStore.selectConnection(connectionId);
+                }
+              }
+            );
+          }
         }
         
         draggedNodePositionRef.current = null;
@@ -683,9 +810,6 @@ function FlowchartEditorRefactored() {
       
       stopDraggingNode(draggedNodeState.nodeId);
       setDraggedNodeState(null);
-      
-      // Обновляем соединения после перемещения узла
-      renderFlowchart();
     }
     if (panState) {
       setPanState(stopCanvasPan(panState, canvasWrapperRef.current));
@@ -1164,12 +1288,6 @@ function FlowchartEditorRefactored() {
     };
   }, [flowchartStore]);
 
-  // Инициализация темы
-  useEffect(() => {
-    const initialIsDark = initTheme();
-    setIsDark(initialIsDark);
-  }, []);
-
   // Обработчик для кнопки "Экспорт в код"
   useEffect(() => {
     const exportCodeBtn = document.getElementById('export-code-btn');
@@ -1248,6 +1366,49 @@ function FlowchartEditorRefactored() {
 
   return (
     <div className="app-container" ref={editorRef}>
+      {/* Уведомление о парсере */}
+      {notification && (
+        <div className={`parser-notification ${notification.type}`}>
+          <div className="notification-content">
+            {notification.type === 'error' && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+              </svg>
+            )}
+            {notification.type === 'warning' && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            )}
+            {notification.type === 'success' && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            )}
+            <span>{notification.message}</span>
+          </div>
+          <button className="notification-close" onClick={dismissNotification}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      )}
+      
+      {/* Индикатор загрузки файла */}
+      {isLoadingFile && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+          <span>Загрузка файла и генерация диаграммы...</span>
+        </div>
+      )}
+      
       {/* Левая панель - Инструменты */}
       <aside className="sidebar-left">
         <h2>Панель инструментов</h2>
@@ -1352,33 +1513,12 @@ function FlowchartEditorRefactored() {
       {/* Центральная область - Canvas */}
       <main className="main-content">
         <header className="top-bar">
-          <h1>Редактор блок-схем</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <button 
-              id="theme-toggle" 
-              className="control-btn"
-              title="Переключить тему"
-              onClick={() => {
-                const newIsDark = toggleThemeUtil();
-                setIsDark(newIsDark);
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="5"></circle>
-                <line x1="12" y1="1" x2="12" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="23"></line>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                <line x1="1" y1="12" x2="3" y2="12"></line>
-                <line x1="21" y1="12" x2="23" y2="12"></line>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-              </svg>
-              <span className="theme-toggle-text">{isDark ? 'Тёмная' : 'Светлая'}</span>
-            </button>
-            <div className="zoom-indicator">
-              Масштаб: <span id="zoom-value">100</span>%
-            </div>
+          <h1>
+            Редактор блок-схем
+            {fileName && <span className="file-name-indicator"> - {fileName}</span>}
+          </h1>
+          <div className="zoom-indicator">
+            Масштаб: <span id="zoom-value">100</span>%
           </div>
         </header>
         <div 

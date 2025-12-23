@@ -1046,6 +1046,71 @@ function generateFlowchart() {
     
     addToHistory('Загружен исходный код и сгенерирована схема');
     renderNodes();
+}
+
+// Функция для загрузки кода в редактор извне (из React)
+async function loadCodeIntoEditor(code, options = {}) {
+    const codeEditor = document.getElementById('code-editor');
+    if (!codeEditor) {
+        console.warn('Code editor element not found');
+        return { success: false, error: 'Code editor not found' };
+    }
+    
+    // Устанавливаем код в textarea
+    codeEditor.value = code;
+    state.sourceCode = code;
+    
+    // Если нужно автоматически парсить
+    if (options.autoGenerate !== false) {
+        try {
+            // Пытаемся использовать API парсера если доступен
+            if (options.useApiParser && window.parseCodeWithApi) {
+                const result = await window.parseCodeWithApi(code, options.language || 'cpp');
+                if (result.success) {
+                    // Парсер вернул результат - используем его
+                    if (result.nodes) {
+                        state.nodes = result.nodes;
+                        state.connections = result.connections || [];
+                    }
+                    addToHistory('Загружен код и сгенерирована диаграмма через парсер');
+                    renderNodes();
+                    showToast('Диаграмма успешно сгенерирована', 'success');
+                    return { success: true };
+                } else {
+                    // Парсер вернул ошибку - используем локальную генерацию
+                    console.warn('API parser failed, using local generation:', result.error);
+                    state.nodes = parseCodeToFlowchart(code);
+                    state.connections = [];
+                    addToHistory('Загружен код (локальная генерация)');
+                    renderNodes();
+                    showToast('Парсер недоступен, использована локальная генерация', 'error');
+                    return { success: true, warning: 'Parser unavailable, used local generation' };
+                }
+            } else {
+                // Используем локальную генерацию
+                state.nodes = parseCodeToFlowchart(code);
+                state.connections = [];
+                addToHistory('Загружен код и сгенерирована диаграмма');
+                renderNodes();
+                showToast('Диаграмма сгенерирована', 'success');
+                return { success: true };
+            }
+        } catch (error) {
+            console.error('Error generating flowchart:', error);
+            // При ошибке все равно показываем код и генерируем локально
+            state.nodes = parseCodeToFlowchart(code);
+            state.connections = [];
+            renderNodes();
+            showToast('Ошибка парсера: ' + (error.message || 'неизвестная ошибка'), 'error');
+            return { success: false, error: error.message };
+        }
+    }
+    
+    return { success: true };
+}
+
+// Экспортируем функцию глобально для React
+window.loadCodeIntoEditor = loadCodeIntoEditor;
     renderInfoPanel();
     renderComments();
     showToast('Блок-схема сгенерирована из кода');

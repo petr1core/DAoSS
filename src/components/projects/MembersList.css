@@ -1,8 +1,9 @@
 .members-list-container {
-  background: white;
+  background: var(--bg-card);
   padding: 24px;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
 }
 
 .members-header {
@@ -14,11 +15,11 @@
 
 .members-header h2 {
   margin: 0;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .add-button {
-  background: #007bff;
+  background: var(--accent);
   color: white;
   border: none;
   padding: 10px 20px;
@@ -29,7 +30,7 @@
 }
 
 .add-button:hover {
-  background: #0056b3;
+  background: var(--accent-hover);
 }
 
 .members-table {
@@ -41,13 +42,14 @@
 .members-table td {
   padding: 12px;
   text-align: left;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
 }
 
 .members-table th {
-  background: #f8f9fa;
+  background: var(--bg-tertiary);
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .role-badge {
@@ -59,7 +61,7 @@
 }
 
 .role-owner {
-  background: #ffc107;
+  background: var(--warning);
   color: #333;
 }
 
@@ -81,13 +83,15 @@
 
 .role-select {
   padding: 6px 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--input-border);
   border-radius: 4px;
   font-size: 0.9rem;
+  background: var(--input-bg);
+  color: var(--text-primary);
 }
 
 .remove-button {
-  background: #dc3545;
+  background: var(--danger);
   color: white;
   border: none;
   padding: 6px 12px;
@@ -102,7 +106,7 @@
 }
 
 .no-actions {
-  color: #999;
+  color: var(--text-muted);
   font-style: italic;
   font-size: 0.9rem;
 }
@@ -110,13 +114,14 @@
 .empty-state {
   text-align: center;
   padding: 40px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .error {
-  background: #fee;
-  color: #c33;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
   padding: 12px;
   border-radius: 6px;
   margin-bottom: 16px;
+  border: 1px solid var(--danger);
 }

@@ -10,23 +10,24 @@
 .home-container {
   max-width: 900px;
   width: 100%;
-  background: white;
+  background: var(--bg-card);
   border-radius: 1rem;
   padding: 3rem;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
 }
 
 .home-title {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--text-primary);
   margin-bottom: 1rem;
   text-align: center;
 }
 
 .home-description {
   font-size: 1.125rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   text-align: center;
   margin-bottom: 3rem;
   line-height: 1.6;
@@ -41,20 +42,20 @@
 
 .feature-card {
   padding: 1.5rem;
-  background: #f9fafb;
+  background: var(--bg-tertiary);
   border-radius: 0.5rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color);
 }
 
 .feature-card h3 {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
 .feature-card p {
-  color: #6b7280;
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 
@@ -77,24 +78,24 @@
 }
 
 .home-button.primary {
-  background: #3b82f6;
+  background: var(--accent);
   color: white;
 }
 
 .home-button.primary:hover {
-  background: #2563eb;
+  background: var(--accent-hover);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
 .home-button.secondary {
-  background: white;
-  color: #3b82f6;
-  border-color: #3b82f6;
+  background: var(--bg-card);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .home-button.secondary:hover {
-  background: #eff6ff;
+  background: rgba(59, 130, 246, 0.1);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
 }
