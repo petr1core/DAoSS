@@ -46,8 +46,7 @@ public class ProjectsController : ControllerBase
 	{
 		[Required]
 		public string Name { get; set; } = string.Empty;
-		[Required]
-		public string Description { get; set; } = string.Empty;
+		public string? Description { get; set; }
 		[Required]
 		public Guid OwnerId { get; set; }
 		public Guid DefaultLanguageId { get; set; }
@@ -76,7 +75,7 @@ public class ProjectsController : ControllerBase
 		{
 			Id = Guid.NewGuid(),
 			Name = dto.Name,
-			Description = dto.Description,
+			Description = dto.Description ?? string.Empty,
 			OwnerId = dto.OwnerId,
 			DefaultLanguageId = dto.DefaultLanguageId,
 			Visibility = string.IsNullOrWhiteSpace(dto.Visibility) ? "private" : dto.Visibility,
@@ -118,7 +117,7 @@ public class ProjectsController : ControllerBase
 		}
 
 		existing.Name = dto.Name;
-		existing.Description = dto.Description;
+		existing.Description = dto.Description ?? string.Empty;
 		existing.OwnerId = dto.OwnerId;
 		existing.DefaultLanguageId = dto.DefaultLanguageId;
 		existing.Visibility = string.IsNullOrWhiteSpace(dto.Visibility) ? existing.Visibility : dto.Visibility;

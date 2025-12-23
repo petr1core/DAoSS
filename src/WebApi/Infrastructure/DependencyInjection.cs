@@ -20,10 +20,15 @@ public static class DependencyInjection
 		services.AddScoped<ILanguageRepository, LanguageRepository>();
 		services.AddScoped<IProjectMemberRepository, ProjectMemberRepository>();
 		services.AddScoped<IInvitationRepository, InvitationRepository>();
+		services.AddScoped<ISourceFileVersionRepository, SourceFileVersionRepository>();
+		services.AddScoped<IDiagramVersionRepository, DiagramVersionRepository>();
+		services.AddScoped<ICodeRegionRepository, CodeRegionRepository>();
 		services.AddScoped<IUnitOfWork, UnitOfWork>();
 		services.AddScoped<IAuthService, AuthService>();
 		services.AddScoped<IInvitationService, InvitationService>();
 		services.AddScoped<IReviewService, ReviewService>();
+		services.AddScoped<ISourceFileService, SourceFileService>();
+		services.AddScoped<IDiagramService, DiagramService>();
 		
 		// HttpClient для ParserService
 		services.AddHttpClient(nameof(ParserService));

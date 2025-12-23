@@ -22,6 +22,7 @@ public class AppDbContext : DbContext
 	public DbSet<DiagramVersion> DiagramVersions => Set<DiagramVersion>();
 	public DbSet<ReviewItem> ReviewItems => Set<ReviewItem>();
 	public DbSet<AuditLog> AuditLog => Set<AuditLog>();
+	public DbSet<CodeRegion> CodeRegions => Set<CodeRegion>();
 }
 
 
