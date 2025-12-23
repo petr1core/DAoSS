@@ -51,10 +51,182 @@ interface SimpleValidationResponse {
   parserErrorsCount: number;
 }
 
+// Project types
+export interface Project {
+  id: string;
+  name: string;
+  description?: string;
+  visibility: string;
+  createdAt: string;
+  ownerId: string;
+  defaultLanguageId?: string;
+  requiredReviewersRules?: string;
+}
+
+export interface CreateProjectDto {
+  name: string;
+  description: string; // Всегда передаем, даже если пустая строка
+  ownerId: string;
+  visibility?: string;
+  defaultLanguageId?: string;
+  requiredReviewersRules?: string;
+}
+
+export interface UpdateProjectDto {
+  name?: string;
+  description: string; // Всегда передаем, даже если пустая строка
+  ownerId: string;
+  visibility?: string;
+  defaultLanguageId?: string;
+  requiredReviewersRules?: string;
+}
+
+// Invitation types
+export interface Invitation {
+  id: string;
+  projectId: string;
+  role: 'admin' | 'reviewer';
+  status: string;
+  expiresAt: string;
+  createdAt: string;
+}
+
+export interface SendInvitationDto {
+  invitedUserId: string;
+  role: 'admin' | 'reviewer';
+}
+
+// Member types
+export interface ProjectMember {
+  userId: string;
+  role: 'owner' | 'admin' | 'reviewer';
+  name?: string;
+  email?: string;
+}
+
+export interface CreateMemberDto {
+  userId: string;
+  role: 'admin' | 'reviewer';
+}
+
+export interface UpdateRoleDto {
+  role: 'admin' | 'reviewer';
+}
+
+// Review types
+export interface Review {
+  id: string;
+  projectId: string;
+  status: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateReviewDto {
+  targetType: string;
+  targetId: string;
+}
+
+export interface UpdateReviewDto {
+  status?: 'approved' | 'changes_requested';
+}
+
+export interface ReviewItem {
+  id: string;
+  reviewId: string;
+  kind: 'comment' | 'issue';
+  anchorType: 'code' | 'diagram';
+  anchorRef: string;
+  body: string;
+  status: 'open' | 'resolved';
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateReviewItemDto {
+  kind: 'comment' | 'issue';
+  anchorType: 'code' | 'diagram';
+  anchorRef: string;
+  body: string;
+}
+
+export interface UpdateReviewItemDto {
+  body?: string;
+  status?: 'open' | 'resolved';
+}
+
+export interface Comment {
+  id: string;
+  reviewItemId: string;
+  body: string;
+  createdAt: string;
+  updatedAt?: string;
+  authorId?: string;
+  authorName?: string;
+}
+
+export interface CreateCommentDto {
+  body: string;
+}
+
+export interface UpdateCommentDto {
+  body: string;
+}
+
+// Source File types
+export interface SourceFile {
+  id: string;
+  projectId: string;
+  path: string;
+  languageId: string;
+  latestVersionId?: string;
+  createdAt: string;
+}
+
+export interface SourceFileVersion {
+  id: string;
+  sourceFileId: string;
+  versionIndex: number;
+  content: string;
+  authorId: string;
+  authorName: string;
+  message: string;
+  createdAt: string;
+  isVerified: boolean;
+}
+
+export interface CreateSourceFileDto {
+  path: string;
+  content: string;
+  message?: string;
+}
+
+export interface CreateSourceFileVersionDto {
+  content: string;
+  message?: string;
+}
+
+// User types
+export interface User {
+  id: string;
+  login: string;
+  email: string;
+  name: string;
+}
+
+// Language types
+export interface Language {
+  id: string;
+  code: string;
+  name: string;
+  versionHint?: string;
+  fileExtensions?: string;
+}
+
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     let errorMessage = 'Произошла ошибка';
-    
+
     try {
       const errorData: ApiError = await response.json();
       errorMessage = errorData.message || errorMessage;
@@ -69,10 +241,21 @@ async function handleResponse<T>(response: Response): Promise<T> {
         errorMessage = `Ошибка ${response.status}`;
       }
     }
-    
+
     throw new Error(errorMessage);
   }
-  
+
+  // Если ответ 204 No Content, возвращаем пустой объект
+  if (response.status === 204) {
+    return {} as T;
+  }
+
+  // Проверяем, есть ли контент
+  const contentType = response.headers.get('content-type');
+  if (!contentType || !contentType.includes('application/json')) {
+    return {} as T;
+  }
+
   return response.json();
 }
 
@@ -83,28 +266,38 @@ async function fetchWithAuth<T>(url: string, options: RequestInit = {}): Promise
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
   };
-  
+
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  
+
   try {
+    // Добавляем таймаут для fetch запроса
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 секунд таймаут
+
     const response = await fetch(`${API_BASE_URL}${url}`, {
       ...options,
       headers,
+      signal: controller.signal,
     });
-    
+
+    clearTimeout(timeoutId);
+
     // Если токен невалидный, удаляем его
     if (response.status === 401) {
       removeToken();
       // Вызываем событие для обновления состояния авторизации
       window.dispatchEvent(new CustomEvent('auth:logout'));
     }
-    
+
     return handleResponse<T>(response);
   } catch (error) {
     if (error instanceof TypeError && error.message.includes('fetch')) {
       throw new Error('Не удалось подключиться к серверу');
+    }
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Не удалось подключиться к серверу (таймаут)');
     }
     throw error;
   }
@@ -115,17 +308,27 @@ async function fetchWithoutAuth<T>(url: string, options: RequestInit = {}): Prom
     'Content-Type': 'application/json',
     ...options.headers,
   };
-  
+
   try {
+    // Добавляем таймаут для fetch запроса
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 секунд таймаут
+
     const response = await fetch(`${API_BASE_URL}${url}`, {
       ...options,
       headers,
+      signal: controller.signal,
     });
-    
+
+    clearTimeout(timeoutId);
+
     return handleResponse<T>(response);
   } catch (error) {
     if (error instanceof TypeError && error.message.includes('fetch')) {
       throw new Error('Не удалось подключиться к серверу');
+    }
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Не удалось подключиться к серверу (таймаут)');
     }
     throw error;
   }
