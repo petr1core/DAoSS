@@ -1,0 +1,32 @@
+.user-panel {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  background: var(--bg-primary, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  box-shadow: var(--shadow, 0 1px 3px 0 rgb(0 0 0 / 0.1));
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.user-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+}
+
+.user-status {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #64748b);
+  text-transform: capitalize;
+}
+
+
+

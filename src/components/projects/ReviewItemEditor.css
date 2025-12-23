@@ -1,0 +1,226 @@
+.review-item-editor-container {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.review-item-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.review-item-form .form-group {
+  margin: 0;
+}
+
+.review-item-form .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.review-item-form .form-group input,
+.review-item-form .form-group textarea,
+.review-item-form .form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.review-item-form .form-group input:focus,
+.review-item-form .form-group textarea:focus,
+.review-item-form .form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.review-item-form .form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.review-item-form .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.review-item-form .cancel-button,
+.review-item-form .submit-button,
+.review-item-form .delete-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.review-item-form .cancel-button {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.review-item-form .cancel-button:hover:not(:disabled) {
+  background: #e0e0e0;
+}
+
+.review-item-form .submit-button {
+  background: #007bff;
+  color: white;
+}
+
+.review-item-form .submit-button:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.review-item-form .delete-button {
+  background: #dc3545;
+  color: white;
+  margin-right: auto;
+}
+
+.review-item-form .delete-button:hover {
+  background: #c82333;
+}
+
+.review-item-form .cancel-button:disabled,
+.review-item-form .submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background: #fee;
+  color: #c33;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.comments-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.toggle-comments-button {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s ease;
+  margin-bottom: 16px;
+}
+
+.toggle-comments-button:hover {
+  background: #5a6268;
+}
+
+.comments-list {
+  display: grid;
+  gap: 12px;
+}
+
+.comment-card {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.comment-body {
+  color: #333;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.edit-comment-button,
+.delete-comment-button {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  transition: color 0.2s ease;
+}
+
+.edit-comment-button:hover {
+  color: #0056b3;
+}
+
+.delete-comment-button {
+  color: #dc3545;
+}
+
+.delete-comment-button:hover {
+  color: #c82333;
+}
+
+.add-comment-section {
+  margin-top: 16px;
+}
+
+.comment-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
+
+.comment-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.add-comment-button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s ease;
+}
+
+.add-comment-button:hover {
+  background: #0056b3;
+}

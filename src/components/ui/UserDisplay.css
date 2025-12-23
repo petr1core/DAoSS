@@ -1,0 +1,104 @@
+.user-display-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-name {
+  color: var(--text-primary, #0f172a);
+  font-weight: 500;
+}
+
+.user-email-icon-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--text-muted, #94a3b8);
+  transition: color 0.2s;
+  padding: 2px;
+  border-radius: 4px;
+}
+
+.user-email-icon-container:hover {
+  color: var(--accent, #3b82f6);
+  background-color: var(--bg-tertiary, #f1f5f9);
+}
+
+.user-icon {
+  display: block;
+  flex-shrink: 0;
+}
+
+.eye-icon {
+  /* Иконка глаза уже стилизована через color */
+}
+
+.check-icon {
+  color: var(--success, #10b981);
+}
+
+.email-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--bg-primary, #ffffff);
+  color: var(--text-primary, #0f172a);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 6px;
+  box-shadow: var(--shadow-lg, 0 10px 15px -3px rgb(0 0 0 / 0.1));
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+  animation: tooltipFadeIn 0.2s ease-out;
+}
+
+.email-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--bg-primary, #ffffff);
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .user-name {
+    color: var(--text-primary, rgba(255, 255, 255, 0.87));
+  }
+  
+  .user-email-icon-container {
+    color: var(--text-muted, rgba(255, 255, 255, 0.4));
+  }
+  
+  .user-email-icon-container:hover {
+    background-color: var(--bg-tertiary, #2a2a2a);
+  }
+  
+  .email-tooltip {
+    background-color: var(--bg-primary, #1a1a1a);
+    color: var(--text-primary, rgba(255, 255, 255, 0.87));
+    border-color: var(--border-color, #404040);
+  }
+  
+  .email-tooltip::after {
+    border-top-color: var(--bg-primary, #1a1a1a);
+  }
+}
+

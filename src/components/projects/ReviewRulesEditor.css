@@ -1,0 +1,318 @@
+.review-rules-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.review-rules-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.review-rule-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.review-rule-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background-color: var(--bg-secondary, #f8fafc);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 6px;
+    min-width: 0;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.review-rule-row.has-error {
+    border-color: var(--error-color, #ef4444);
+    background-color: var(--error-bg, #fef2f2);
+}
+
+.rule-label {
+    font-weight: 500;
+    color: var(--text-primary, #0f172a);
+    min-width: 70px;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.rule-role-select {
+    min-width: 140px;
+    max-width: 400px;
+    flex: 1 1 140px;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 4px;
+    background-color: var(--bg-primary, #ffffff);
+    color: var(--text-primary, #0f172a);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.rule-role-select:hover:not(:disabled) {
+    border-color: var(--accent, #3b82f6);
+}
+
+.rule-role-select:focus {
+    outline: none;
+    border-color: var(--accent, #3b82f6);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.rule-role-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: var(--bg-tertiary, #f1f5f9);
+}
+
+.rule-role-select.error {
+    border-color: var(--error-color, #ef4444);
+}
+
+.rule-role-select.error:focus {
+    border-color: var(--error-color, #ef4444);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.rule-count-input {
+    width: 300px;
+    min-width: 140px;
+    max-width: 100px;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 4px;
+    background-color: var(--bg-primary, #ffffff);
+    color: var(--text-primary, #0f172a);
+    font-size: 0.875rem;
+    text-align: center;
+    transition: border-color 0.2s;
+    flex-shrink: 0;
+}
+
+.rule-count-input:hover:not(:disabled) {
+    border-color: var(--accent, #3b82f6);
+}
+
+.rule-count-input:focus {
+    outline: none;
+    border-color: var(--accent, #3b82f6);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.rule-count-input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: var(--bg-tertiary, #f1f5f9);
+}
+
+.rule-count-input.error {
+    border-color: var(--error-color, #ef4444);
+}
+
+.rule-count-input.error:focus {
+    border-color: var(--error-color, #ef4444);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.rule-remove-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    background-color: transparent;
+    color: var(--text-muted, #94a3b8);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.rule-remove-button:hover:not(:disabled) {
+    background-color: var(--danger, #ef4444);
+    color: white;
+}
+
+.rule-remove-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.add-rule-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px dashed var(--border-color, #e2e8f0);
+    border-radius: 6px;
+    background-color: transparent;
+    color: var(--text-secondary, #64748b);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-rule-button:hover:not(:disabled) {
+    border-color: var(--accent, #3b82f6);
+    color: var(--accent, #3b82f6);
+    background-color: var(--bg-secondary, #f8fafc);
+}
+
+.add-rule-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.add-rule-button svg {
+    flex-shrink: 0;
+}
+
+.rule-error-message {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background-color: var(--error-bg, #fef2f2);
+    border: 1px solid var(--error-color, #ef4444);
+    border-radius: 6px;
+    margin-top: -0.25rem;
+}
+
+.error-text {
+    color: var(--error-color, #dc2626);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.merge-suggestion-button {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--error-color, #ef4444);
+    border-radius: 4px;
+    background-color: var(--error-color, #ef4444);
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    align-self: flex-start;
+}
+
+.merge-suggestion-button:hover:not(:disabled) {
+    background-color: var(--error-hover, #dc2626);
+    border-color: var(--error-hover, #dc2626);
+}
+
+.merge-suggestion-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@media (prefers-color-scheme: dark) {
+    .review-rule-row {
+        background-color: var(--bg-secondary, #242424);
+        border-color: var(--border-color, #404040);
+    }
+
+    .review-rule-row.has-error {
+        border-color: var(--error-color, #ef4444);
+        background-color: var(--error-bg-dark, #7f1d1d);
+    }
+
+    .rule-label {
+        color: var(--text-primary, rgba(255, 255, 255, 0.87));
+    }
+
+    .rule-role-select {
+        background-color: var(--bg-primary, #1a1a1a);
+        color: var(--text-primary, rgba(255, 255, 255, 0.87));
+        border-color: var(--border-color, #404040);
+    }
+
+    .rule-role-select:disabled {
+        background-color: var(--bg-tertiary, #2a2a2a);
+    }
+
+    .rule-count-input {
+        background-color: var(--bg-primary, #1a1a1a);
+        color: var(--text-primary, rgba(255, 255, 255, 0.87));
+        border-color: var(--border-color, #404040);
+    }
+
+    .rule-count-input:disabled {
+        background-color: var(--bg-tertiary, #2a2a2a);
+    }
+
+    .rule-remove-button {
+        color: var(--text-muted, rgba(255, 255, 255, 0.4));
+    }
+
+    .add-rule-button {
+        border-color: var(--border-color, #404040);
+        color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+    }
+
+    .add-rule-button:hover:not(:disabled) {
+        background-color: var(--bg-secondary, #242424);
+    }
+
+    .rule-error-message {
+        background-color: var(--error-bg-dark, #7f1d1d);
+        border-color: var(--error-color, #ef4444);
+    }
+
+    .error-text {
+        color: var(--error-color-light, #fca5a5);
+    }
+
+    .merge-suggestion-button {
+        background-color: var(--error-color, #ef4444);
+        border-color: var(--error-color, #ef4444);
+    }
+
+    .merge-suggestion-button:hover:not(:disabled) {
+        background-color: var(--error-hover, #dc2626);
+        border-color: var(--error-hover, #dc2626);
+    }
+}
+
+@media (max-width: 768px) {
+    .review-rule-row {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .rule-label {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .rule-role-select {
+        min-width: 120px;
+        flex: 1 1 auto;
+        max-width: 100%;
+    }
+
+    .rule-count-input {
+        width: 50px;
+    }
+
+    .rule-error-message {
+        padding: 0.625rem;
+    }
+
+    .merge-suggestion-button {
+        padding: 0.5rem;
+        font-size: 0.8125rem;
+        width: 100%;
+    }
+}

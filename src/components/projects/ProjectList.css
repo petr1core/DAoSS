@@ -1,0 +1,81 @@
+.project-list-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.project-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.project-list-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #333;
+}
+
+.create-project-button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.create-project-button:hover {
+  background: #0056b3;
+}
+
+.project-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.error {
+  background: #fee;
+  color: #c33;
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.retry-button {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: block;
+  margin: 0 auto;
+}
+
+.retry-button:hover {
+  background: #c82333;
+}

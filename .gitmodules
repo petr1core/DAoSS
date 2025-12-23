@@ -1,0 +1,3 @@
+[submodule "backend_and_parser"]
+	path = backend_and_parser
+	url = https://github.com/petr1core/DAoSS.git

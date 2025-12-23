@@ -1,0 +1,92 @@
+.member-form-container {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.member-form {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.member-form .form-group {
+  flex: 1;
+  margin: 0;
+}
+
+.member-form .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.member-form .form-group input,
+.member-form .form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.member-form .form-group input:focus,
+.member-form .form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.member-form .form-actions {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.member-form .cancel-button,
+.member-form .submit-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.member-form .cancel-button {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.member-form .cancel-button:hover:not(:disabled) {
+  background: #e0e0e0;
+}
+
+.member-form .submit-button {
+  background: #007bff;
+  color: white;
+}
+
+.member-form .submit-button:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.member-form .cancel-button:disabled,
+.member-form .submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background: #fee;
+  color: #c33;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  grid-column: 1 / -1;
+}

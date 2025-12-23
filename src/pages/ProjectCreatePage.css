@@ -1,0 +1,5 @@
+.project-create-page-container {
+  width: 100%;
+  min-height: calc(100vh - 120px);
+  padding: 2rem;
+}
