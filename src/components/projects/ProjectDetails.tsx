@@ -37,6 +37,10 @@ export default function ProjectDetails({
   const [userRole, setUserRole] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [ownerEmail, setOwnerEmail] = useState<string>('');
+  const [ownerName, setOwnerName] = useState<string>('');
+  const [ownerLogin, setOwnerLogin] = useState<string>('');
+  const [ownerLoading, setOwnerLoading] = useState<boolean>(true);
+  const [copySuccess, setCopySuccess] = useState<boolean>(false);
   const [languageName, setLanguageName] = useState<string>('');
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
@@ -76,22 +80,42 @@ export default function ProjectDetails({
 
   const loadUserRole = async () => {
     try {
-      const member = await api.getProjectMember(projectId, userId);
-      setUserRole(member.role);
+      const members = await api.getProjectMembers(projectId);
+      const member = members.find(m => m.userId === userId);
+      if (member) {
+        setUserRole(member.role);
+      } else {
+        // Проверяем, является ли пользователь владельцем
+        if (project?.ownerId === userId) {
+          setUserRole('owner');
+        } else {
+          setUserRole(null);
+        }
+      }
     } catch {
       // Пользователь не является участником или произошла ошибка
-      setUserRole(null);
+      if (project?.ownerId === userId) {
+        setUserRole('owner');
+      } else {
+        setUserRole(null);
+      }
     }
   };
 
   const loadOwnerEmail = async () => {
-    if (!project?.ownerId) return;
+    if (!project?.ownerId) {
+      setOwnerLoading(false);
+      return;
+    }
+    setOwnerLoading(true);
     try {
-      // Пытаемся получить email через участников проекта
+      // Пытаемся получить информацию через участников проекта
       const members = await api.getProjectMembers(projectId);
       const ownerMember = members.find(m => m.userId === project.ownerId);
       if (ownerMember?.email) {
         setOwnerEmail(ownerMember.email);
+        setOwnerName(ownerMember.name || '');
+        setOwnerLoading(false);
         return;
       }
 
@@ -99,44 +123,57 @@ export default function ProjectDetails({
       try {
         const user = await api.getUser(project.ownerId);
         setOwnerEmail(user.email);
+        setOwnerName(user.name || '');
+        setOwnerLogin(user.login || '');
       } catch {
-        // Если текущий пользователь - владелец, используем его email
+        // Если текущий пользователь - владелец, используем его данные
         if (project.ownerId === userId) {
           try {
             const me = await api.getMe();
             setOwnerEmail(me.email);
-            return;
+            setOwnerName(me.name || '');
           } catch {
-            // Fallback to ID
+            // Fallback
           }
         }
-        setOwnerEmail(project.ownerId); // Fallback to ID if user not found
       }
     } catch {
-      // Если текущий пользователь - владелец, используем его email
+      // Если текущий пользователь - владелец, используем его данные
       if (project.ownerId === userId) {
         try {
           const me = await api.getMe();
           setOwnerEmail(me.email);
-          return;
+          setOwnerName(me.name || '');
         } catch {
-          // Fallback to ID
+          // Fallback
         }
       }
-      setOwnerEmail(project.ownerId); // Fallback to ID if user not found
+    } finally {
+      setOwnerLoading(false);
+    }
+  };
+
+  const handleCopyEmail = async () => {
+    if (!ownerEmail) return;
+    try {
+      await navigator.clipboard.writeText(ownerEmail);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 1000);
+    } catch (err) {
+      console.error('Failed to copy email:', err);
     }
   };
 
   const loadLanguageName = async () => {
     if (!project?.defaultLanguageId || project.defaultLanguageId === '00000000-0000-0000-0000-000000000000') {
-      setLanguageName('Не указан');
+      setLanguageName(''); // Пустая строка означает "не отображать"
       return;
     }
     try {
       const language = await api.getLanguage(project.defaultLanguageId);
       setLanguageName(language.name);
     } catch {
-      setLanguageName('Неизвестный язык');
+      setLanguageName(''); // Если не удалось загрузить - не отображаем
     }
   };
 
@@ -177,7 +214,7 @@ export default function ProjectDetails({
     try {
       const dto: UpdateProjectDto = {
         name: editName,
-        description: editDescription.trim() || undefined,
+        description: editDescription.trim() || '',
         ownerId: project.ownerId,
         visibility: editVisibility,
         defaultLanguageId: project.defaultLanguageId,
@@ -375,8 +412,41 @@ export default function ProjectDetails({
             <h2>Информация о проекте</h2>
             <div className="info-section">
               <h3>Основная информация</h3>
-              <p><strong>Владелец:</strong> {ownerEmail || project.ownerId}</p>
-              <p><strong>Язык по умолчанию:</strong> {languageName}</p>
+              <p>
+                <strong>Владелец:</strong>{' '}
+                {ownerLoading ? (
+                  <span>Загрузка...</span>
+                ) : (
+                  <>
+                    <span>{ownerName || ownerLogin || ownerEmail || project.ownerId}</span>
+                    {ownerEmail && (
+                      <button
+                        onClick={handleCopyEmail}
+                        className="copy-email-button"
+                        title="Скопировать email"
+                        style={{
+                          marginLeft: '8px',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '4px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          color: copySuccess ? '#4caf50' : '#666',
+                          transition: 'color 0.2s'
+                        }}
+                      >
+                        {copySuccess ? (
+                          <span style={{ fontSize: '14px' }}>✓</span>
+                        ) : (
+                          <span style={{ fontSize: '14px' }}>👁</span>
+                        )}
+                      </button>
+                    )}
+                  </>
+                )}
+              </p>
+              {languageName && <p><strong>Язык по умолчанию:</strong> {languageName}</p>}
             </div>
             {project.requiredReviewersRules && (
               <div className="info-section">
@@ -431,5 +501,6 @@ export default function ProjectDetails({
     </div>
   );
 }
+
 
 

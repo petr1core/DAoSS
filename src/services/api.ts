@@ -85,6 +85,8 @@ export interface UpdateProjectDto {
 export interface Invitation {
   id: string;
   projectId: string;
+  invitedUserId: string;
+  invitedByUserId: string;
   role: 'admin' | 'reviewer';
   status: string;
   expiresAt: string;
@@ -117,7 +119,10 @@ export interface UpdateRoleDto {
 export interface Review {
   id: string;
   projectId: string;
+  targetType: string;
+  targetId: string;
   status: string;
+  createdBy: string;
   createdAt: string;
   updatedAt?: string;
 }
@@ -261,7 +266,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 async function fetchWithAuth<T>(url: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
-  
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
@@ -407,6 +412,276 @@ export const api = {
     return fetchWithAuth<{ success: boolean; code?: string; error?: string }>('/parser/generate', {
       method: 'POST',
       body: JSON.stringify({ Representation: representation, Language: language }),
+    });
+  },
+
+  // Project methods
+  async getProjects(userId: string): Promise<Project[]> {
+    return fetchWithAuth<Project[]>(`/projects?ownerId=${userId}`, {
+      method: 'GET',
+    });
+  },
+
+  async getProject(projectId: string): Promise<Project> {
+    return fetchWithAuth<Project>(`/projects/${projectId}`, {
+      method: 'GET',
+    });
+  },
+
+  async createProject(project: CreateProjectDto): Promise<Project> {
+    return fetchWithAuth<Project>('/projects', {
+      method: 'POST',
+      body: JSON.stringify(project),
+    });
+  },
+
+  async updateProject(projectId: string, project: UpdateProjectDto): Promise<void> {
+    return fetchWithAuth<void>(`/projects/${projectId}`, {
+      method: 'PUT',
+      body: JSON.stringify(project),
+    });
+  },
+
+  async deleteProject(projectId: string): Promise<void> {
+    return fetchWithAuth<void>(`/projects/${projectId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Invitation methods
+  async getUserInvitations(): Promise<Invitation[]> {
+    return fetchWithAuth<Invitation[]>('/invitations', {
+      method: 'GET',
+    });
+  },
+
+  async getProjectInvitations(projectId: string): Promise<Invitation[]> {
+    return fetchWithAuth<Invitation[]>(`/projects/${projectId}/invitations`, {
+      method: 'GET',
+    });
+  },
+
+  async sendInvitation(projectId: string, invitation: SendInvitationDto): Promise<Invitation> {
+    return fetchWithAuth<Invitation>(`/projects/${projectId}/invitations`, {
+      method: 'POST',
+      body: JSON.stringify(invitation),
+    });
+  },
+
+  async acceptInvitation(invitationId: string): Promise<Invitation> {
+    return fetchWithAuth<Invitation>(`/invitations/${invitationId}/accept`, {
+      method: 'POST',
+    });
+  },
+
+  async rejectInvitation(invitationId: string): Promise<Invitation> {
+    return fetchWithAuth<Invitation>(`/invitations/${invitationId}/reject`, {
+      method: 'POST',
+    });
+  },
+
+  async cancelInvitation(projectId: string, invitationId: string): Promise<void> {
+    return fetchWithAuth<void>(`/projects/${projectId}/invitations/${invitationId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Source Files methods
+  async getSourceFiles(projectId: string): Promise<SourceFile[]> {
+    return fetchWithAuth<SourceFile[]>(`/projects/${projectId}/source-files`, {
+      method: 'GET',
+    });
+  },
+
+  async getSourceFile(projectId: string, fileId: string): Promise<SourceFile> {
+    return fetchWithAuth<SourceFile>(`/projects/${projectId}/source-files/${fileId}`, {
+      method: 'GET',
+    });
+  },
+
+  async createSourceFile(projectId: string, file: CreateSourceFileDto): Promise<SourceFile> {
+    return fetchWithAuth<SourceFile>(`/projects/${projectId}/source-files`, {
+      method: 'POST',
+      body: JSON.stringify(file),
+    });
+  },
+
+  async getSourceFileVersions(projectId: string, fileId: string): Promise<SourceFileVersion[]> {
+    return fetchWithAuth<SourceFileVersion[]>(`/projects/${projectId}/source-files/${fileId}/versions`, {
+      method: 'GET',
+    });
+  },
+
+  // Reviews methods
+  async getReviews(projectId: string): Promise<Review[]> {
+    return fetchWithAuth<Review[]>(`/projects/${projectId}/reviews`, {
+      method: 'GET',
+    });
+  },
+
+  async getReview(projectId: string, reviewId: string): Promise<Review> {
+    return fetchWithAuth<Review>(`/projects/${projectId}/reviews/${reviewId}`, {
+      method: 'GET',
+    });
+  },
+
+  async createReview(projectId: string, review: CreateReviewDto): Promise<Review> {
+    return fetchWithAuth<Review>(`/projects/${projectId}/reviews`, {
+      method: 'POST',
+      body: JSON.stringify(review),
+    });
+  },
+
+  async updateReview(projectId: string, reviewId: string, review: UpdateReviewDto): Promise<void> {
+    return fetchWithAuth<void>(`/projects/${projectId}/reviews/${reviewId}`, {
+      method: 'PUT',
+      body: JSON.stringify(review),
+    });
+  },
+
+  async deleteReview(projectId: string, reviewId: string): Promise<void> {
+    return fetchWithAuth<void>(`/projects/${projectId}/reviews/${reviewId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // User methods
+  async getUser(userId: string): Promise<User> {
+    return fetchWithAuth<User>(`/users/${userId}`, {
+      method: 'GET',
+    });
+  },
+
+  // Project Members methods
+  async getProjectMembers(projectId: string): Promise<ProjectMember[]> {
+    return fetchWithAuth<ProjectMember[]>(`/projects/${projectId}/members`, {
+      method: 'GET',
+    });
+  },
+
+  async addProjectMember(projectId: string, member: CreateMemberDto): Promise<ProjectMember> {
+    return fetchWithAuth<ProjectMember>(`/projects/${projectId}/members`, {
+      method: 'POST',
+      body: JSON.stringify(member),
+    });
+  },
+
+  async updateMemberRole(projectId: string, userId: string, role: UpdateRoleDto): Promise<void> {
+    return fetchWithAuth<void>(`/projects/${projectId}/members/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify(role),
+    });
+  },
+
+  async removeProjectMember(projectId: string, userId: string): Promise<void> {
+    return fetchWithAuth<void>(`/projects/${projectId}/members/${userId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // User methods extended
+  async getUserByEmail(email: string): Promise<User> {
+    return fetchWithAuth<User>(`/users/by-email/${encodeURIComponent(email)}`, {
+      method: 'GET',
+    });
+  },
+
+  // Source File Version methods
+  async getSourceFileVersion(projectId: string, fileId: string, versionId: string): Promise<SourceFileVersion> {
+    return fetchWithAuth<SourceFileVersion>(`/projects/${projectId}/source-files/${fileId}/versions/${versionId}`, {
+      method: 'GET',
+    });
+  },
+
+  async createSourceFileVersion(projectId: string, fileId: string, version: CreateSourceFileVersionDto): Promise<SourceFileVersion> {
+    return fetchWithAuth<SourceFileVersion>(`/projects/${projectId}/source-files/${fileId}/versions`, {
+      method: 'POST',
+      body: JSON.stringify(version),
+    });
+  },
+
+  async deleteSourceFile(projectId: string, fileId: string): Promise<void> {
+    return fetchWithAuth<void>(`/projects/${projectId}/source-files/${fileId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Review Items methods
+  async getReviewItems(projectId: string, reviewId: string): Promise<ReviewItem[]> {
+    return fetchWithAuth<ReviewItem[]>(`/projects/${projectId}/reviews/${reviewId}/items`, {
+      method: 'GET',
+    });
+  },
+
+  async getReviewItem(projectId: string, reviewId: string, itemId: string): Promise<ReviewItem> {
+    return fetchWithAuth<ReviewItem>(`/projects/${projectId}/reviews/${reviewId}/items/${itemId}`, {
+      method: 'GET',
+    });
+  },
+
+  async createReviewItem(projectId: string, reviewId: string, item: CreateReviewItemDto): Promise<ReviewItem> {
+    return fetchWithAuth<ReviewItem>(`/projects/${projectId}/reviews/${reviewId}/items`, {
+      method: 'POST',
+      body: JSON.stringify(item),
+    });
+  },
+
+  async updateReviewItem(projectId: string, reviewId: string, itemId: string, item: UpdateReviewItemDto): Promise<void> {
+    return fetchWithAuth<void>(`/projects/${projectId}/reviews/${reviewId}/items/${itemId}`, {
+      method: 'PUT',
+      body: JSON.stringify(item),
+    });
+  },
+
+  async deleteReviewItem(projectId: string, reviewId: string, itemId: string): Promise<void> {
+    return fetchWithAuth<void>(`/projects/${projectId}/reviews/${reviewId}/items/${itemId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Comments methods
+  async getComments(projectId: string, reviewId: string, itemId: string): Promise<Comment[]> {
+    return fetchWithAuth<Comment[]>(`/projects/${projectId}/reviews/${reviewId}/items/${itemId}/comments`, {
+      method: 'GET',
+    });
+  },
+
+  async getComment(projectId: string, reviewId: string, itemId: string, commentId: string): Promise<Comment> {
+    return fetchWithAuth<Comment>(`/projects/${projectId}/reviews/${reviewId}/items/${itemId}/comments/${commentId}`, {
+      method: 'GET',
+    });
+  },
+
+  async createComment(projectId: string, reviewId: string, itemId: string, comment: CreateCommentDto): Promise<Comment> {
+    return fetchWithAuth<Comment>(`/projects/${projectId}/reviews/${reviewId}/items/${itemId}/comments`, {
+      method: 'POST',
+      body: JSON.stringify(comment),
+    });
+  },
+
+  async updateComment(projectId: string, reviewId: string, itemId: string, commentId: string, comment: UpdateCommentDto): Promise<void> {
+    return fetchWithAuth<void>(`/projects/${projectId}/reviews/${reviewId}/items/${itemId}/comments/${commentId}`, {
+      method: 'PUT',
+      body: JSON.stringify(comment),
+    });
+  },
+
+  async deleteComment(projectId: string, reviewId: string, itemId: string, commentId: string): Promise<void> {
+    return fetchWithAuth<void>(`/projects/${projectId}/reviews/${reviewId}/items/${itemId}/comments/${commentId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Language methods
+  async getLanguage(languageId: string): Promise<Language> {
+    return fetchWithAuth<Language>(`/languages/${languageId}`, {
+      method: 'GET',
+    });
+  },
+
+  async getLanguages(): Promise<Language[]> {
+    return fetchWithAuth<Language[]>('/languages', {
+      method: 'GET',
     });
   },
 };

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../../services/api';
+import { api, Language } from '../../services/api';
 import ReviewRulesEditor from './ReviewRulesEditor';
 import './ProjectForm.css';
 
@@ -15,17 +15,27 @@ export default function ProjectForm({ userId, projectId, onSave, onCancel }: Pro
     const [description, setDescription] = useState('');
     const [visibility, setVisibility] = useState<string>('private');
     const [requiredReviewersRules, setRequiredReviewersRules] = useState<string>('');
+    const [defaultLanguageId, setDefaultLanguageId] = useState<string>('');
+    const [languages, setLanguages] = useState<Language[]>([]);
     const [ownerId, setOwnerId] = useState<string>(userId);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        loadLanguages();
         if (projectId) {
-            // Загрузка данных проекта для редактирования
-            // TODO: Реализовать загрузку данных проекта
             loadProject(projectId);
         }
     }, [projectId]);
+
+    const loadLanguages = async () => {
+        try {
+            const data = await api.getLanguages();
+            setLanguages(data);
+        } catch (err) {
+            console.error('Failed to load languages:', err);
+        }
+    };
 
     const loadProject = async (id: string) => {
         setLoading(true);
@@ -35,6 +45,7 @@ export default function ProjectForm({ userId, projectId, onSave, onCancel }: Pro
             setDescription(project.description || '');
             setVisibility(project.visibility || 'private');
             setRequiredReviewersRules(project.requiredReviewersRules || '');
+            setDefaultLanguageId(project.defaultLanguageId || '');
             setOwnerId(project.ownerId);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Не удалось загрузить проект');
@@ -52,17 +63,19 @@ export default function ProjectForm({ userId, projectId, onSave, onCancel }: Pro
             if (projectId) {
                 await api.updateProject(projectId, {
                     name,
-                    description: description.trim() || undefined,
+                    description: description.trim() || '',
                     ownerId,
                     visibility,
+                    defaultLanguageId: defaultLanguageId || undefined,
                     requiredReviewersRules: requiredReviewersRules || undefined
                 });
             } else {
                 await api.createProject({
                     name,
-                    description: description.trim() || undefined,
+                    description: description.trim() || '',
                     ownerId: userId,
                     visibility,
+                    defaultLanguageId: defaultLanguageId || undefined,
                     requiredReviewersRules: requiredReviewersRules || undefined
                 });
             }
@@ -118,6 +131,24 @@ export default function ProjectForm({ userId, projectId, onSave, onCancel }: Pro
                         <option value="public">Публичный</option>
                     </select>
                     <small>Приватный проект виден только участникам, публичный - всем пользователям</small>
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="defaultLanguageId">Язык по умолчанию</label>
+                    <select
+                        id="defaultLanguageId"
+                        value={defaultLanguageId}
+                        onChange={(e) => setDefaultLanguageId(e.target.value)}
+                        disabled={loading}
+                    >
+                        <option value="">Не указывать</option>
+                        {languages.map((lang) => (
+                            <option key={lang.id} value={lang.id}>
+                                {lang.name}
+                            </option>
+                        ))}
+                    </select>
+                    <small>Язык программирования, используемый в проекте по умолчанию</small>
                 </div>
 
                 <div className="form-group">
