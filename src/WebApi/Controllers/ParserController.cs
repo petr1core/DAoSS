@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using DAOSS.Application.DTOs;
 using DAOSS.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -156,6 +157,60 @@ public class ParserController : ControllerBase
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Unexpected error while validating code (simple)");
+			return StatusCode(StatusCodes.Status500InternalServerError, 
+				new { error = "An unexpected error occurred" });
+		}
+	}
+
+	/// <summary>
+	/// Генерирует код из представления программы (AST/SPR)
+	/// </summary>
+	[HttpPost("generate")]
+	[ProducesResponseType(typeof(GenerateCodeResponse), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+	[ProducesResponseType(StatusCodes.Status504GatewayTimeout)]
+	public async Task<ActionResult<GenerateCodeResponse>> Generate(
+		[FromBody] GenerateCodeRequest request,
+		CancellationToken cancellationToken)
+	{
+		_logger.LogInformation("Generate endpoint called. Language: {Language}", request?.Language ?? "null");
+		
+		if (!ModelState.IsValid)
+		{
+			_logger.LogWarning("ModelState is invalid. Errors: {Errors}", 
+				string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+			return BadRequest(ModelState);
+		}
+
+		try
+		{
+			_logger.LogDebug("Calling GenerateCodeAsync with language: {Language}", request.Language);
+			var result = await _parserService.GenerateCodeAsync(
+				request.Representation,
+				request.Language,
+				cancellationToken);
+
+			_logger.LogInformation("Code generation completed successfully. Code length: {Length}", 
+				result?.Code?.Length ?? 0);
+			return Ok(result);
+		}
+		catch (HttpRequestException ex)
+		{
+			_logger.LogError(ex, "HTTP error while generating code");
+			
+			if (ex.Message.Contains("timed out", StringComparison.OrdinalIgnoreCase))
+			{
+				return StatusCode(StatusCodes.Status504GatewayTimeout, 
+					new { error = "Parser service request timed out" });
+			}
+			
+			return StatusCode(StatusCodes.Status503ServiceUnavailable, 
+				new { error = "Parser service is unavailable", details = ex.Message });
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Unexpected error while generating code");
 			return StatusCode(StatusCodes.Status500InternalServerError, 
 				new { error = "An unexpected error occurred" });
 		}
