@@ -2,6 +2,7 @@ using DAOSS.Application.Repositories;
 using DAOSS.Domain.Entities;
 using DAOSS.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace DAOSS.Infrastructure.Repositories;
 
@@ -16,8 +17,22 @@ public class ProjectRepository : EfRepository<Project>, IProjectRepository
 
 	public async System.Threading.Tasks.Task<IReadOnlyList<Project>> GetByUserIdAsync(Guid userId, System.Threading.CancellationToken cancellationToken = default)
 	{
-		return await _dbContext.Projects
+		// Возвращаем проекты, где пользователь является владельцем или участником
+		var ownedProjects = await _dbContext.Projects
 			.Where(p => p.OwnerId == userId)
+			.Select(p => p.Id)
+			.ToListAsync(cancellationToken);
+
+		var memberProjectIds = await _dbContext.ProjectMembers
+			.Where(pm => pm.UserId == userId)
+			.Select(pm => pm.ProjectId)
+			.Distinct()
+			.ToListAsync(cancellationToken);
+
+		var allProjectIds = ownedProjects.Union(memberProjectIds).Distinct().ToList();
+
+		return await _dbContext.Projects
+			.Where(p => allProjectIds.Contains(p.Id))
 			.ToListAsync(cancellationToken);
 	}
 }

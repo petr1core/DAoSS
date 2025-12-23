@@ -117,6 +117,11 @@ builder.Services.AddScoped<IAuthorizationHandler>(sp =>
 
 var app = builder.Build();
 
+app.Urls.Clear();
+app.Urls.Add("http://0.0.0.0:5143");
+app.Urls.Add("https://0.0.0.0:7143");
+
+
 // Автоматическое применение миграций при старте (только в Development)
 if (app.Environment.IsDevelopment())
 {
