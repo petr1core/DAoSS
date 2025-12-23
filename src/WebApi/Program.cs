@@ -47,7 +47,7 @@ builder.Services.AddCors(options =>
 {
 	options.AddPolicy("AllowFrontend", policy =>
 	{
-		policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5173")
+		policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174", "http://127.0.0.1:5174")
 			.AllowAnyMethod()
 			.AllowAnyHeader()
 			.AllowCredentials();
@@ -118,8 +118,8 @@ builder.Services.AddScoped<IAuthorizationHandler>(sp =>
 var app = builder.Build();
 
 app.Urls.Clear();
-app.Urls.Add("http://0.0.0.0:5143");
-app.Urls.Add("https://0.0.0.0:7143");
+app.Urls.Add("http://localhost:5143");
+app.Urls.Add("https://localhost:7143");
 
 
 // Автоматическое применение миграций при старте (только в Development)

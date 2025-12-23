@@ -105,7 +105,7 @@ public class InvitationsController : ControllerBase
 	}
 
 	[HttpGet("api/projects/{projectId:guid}/invitations")]
-	[Authorize(Policy = "ProjectAdmin")]
+	[Authorize(Policy = "ProjectRead")]
 	public async Task<ActionResult<IReadOnlyList<InvitationResponseDto>>> GetProjectInvitations(
 		Guid projectId,
 		[FromQuery] string? status = null,
