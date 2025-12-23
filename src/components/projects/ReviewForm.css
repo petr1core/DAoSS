@@ -1,0 +1,90 @@
+.review-form-container {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.review-form .form-group {
+  margin: 0;
+}
+
+.review-form .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.review-form .form-group input,
+.review-form .form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.review-form .form-group input:focus,
+.review-form .form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.review-form .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.review-form .cancel-button,
+.review-form .submit-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.review-form .cancel-button {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.review-form .cancel-button:hover:not(:disabled) {
+  background: #e0e0e0;
+}
+
+.review-form .submit-button {
+  background: #007bff;
+  color: white;
+}
+
+.review-form .submit-button:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.review-form .cancel-button:disabled,
+.review-form .submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background: #fee;
+  color: #c33;
+  padding: 12px;
+  border-radius: 6px;
+}

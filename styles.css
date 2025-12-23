@@ -20,6 +20,66 @@
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
 }
 
+.dark {
+    --bg-primary: #1e293b;
+    --bg-secondary: #0f172a;
+    --bg-tertiary: #1e293b;
+    --border-color: #334155;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --success: #10b981;
+    --danger: #ef4444;
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4);
+}
+
+/* Темные версии заливки нод для темной темы */
+.dark .node-start,
+.dark .node-end {
+    background: #166534; /* Темно-зеленый */
+    color: #f1f5f9;
+}
+
+.dark .node-process {
+    background: #7c3aed; /* Темно-фиолетовый */
+    color: #f1f5f9;
+}
+
+/* Темная тема для функций */
+.dark .node-process.function-node {
+    background: #1e3a8a;
+    border-color: #3b82f6;
+}
+
+.dark .node-process.function-node.function-prototype {
+    background: #3730a3;
+    border-color: #818cf8;
+    opacity: 0.9;
+}
+
+.dark .node-decision {
+    background: #ca8a04; /* Темно-желтый/оранжевый */
+    color: #f1f5f9;
+}
+
+.dark .node-input,
+.dark .node-output {
+    background: #164e63; /* Темно-бирюзовый */
+    border-color: #06b6d4;
+    color: #f1f5f9;
+}
+
+.dark .flowchart-node .node-text {
+    color: #f1f5f9;
+}
+
+.dark .flowchart-node textarea.node-edit {
+    color: #f1f5f9;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
         'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
@@ -119,6 +179,10 @@ body {
 .zoom-indicator {
     font-size: 0.875rem;
     color: var(--text-secondary);
+}
+
+.theme-toggle-text {
+    font-size: 0.875rem;
 }
 
 .canvas-wrapper {
@@ -240,6 +304,38 @@ body {
     border-radius: 0.375rem;
 }
 
+/* Стилизация для функций (реализации) */
+.node-process.function-node {
+    background: #bfdbfe;
+    border: 2px solid #3b82f6;
+}
+
+.node-process.function-node.function-prototype {
+    background: #e0e7ff;
+    border: 2px dashed #818cf8;
+    opacity: 0.9;
+}
+
+/* Особенная стилизация для main функции (приоритет выше, чем function-node) */
+.node-process.main-function {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    border: 3px solid #d97706;
+    box-shadow: 0 4px 6px -1px rgb(217 119 6 / 0.3);
+    font-weight: 600;
+}
+
+.dark .node-process.main-function {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    border: 3px solid #d97706;
+    box-shadow: 0 4px 6px -1px rgb(217 119 6 / 0.5);
+    color: #1f2937;
+}
+
+.dark .node-process.main-function .node-text {
+    color: #1f2937;
+    font-weight: 600;
+}
+
 .node-decision {
     background: #fef9c3;
     clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
@@ -252,7 +348,8 @@ body {
 
 .node-input,
 .node-output {
-    background: #dbeafe;
+    background: #cffafe;
+    border: 2px solid #06b6d4;
     clip-path: polygon(10% 0%, 100% 0%, 90% 100%, 0% 100%);
 }
 
@@ -297,11 +394,11 @@ body {
     position: absolute;
     display: flex;
     gap: 0.25rem;
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
+    background: white; /* Всегда светлый фон, не зависит от темы */
+    border: 1px solid #e5e7eb;
     border-radius: 0.375rem;
     padding: 0.25rem;
-    box-shadow: var(--shadow);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     z-index: 1000;
 }
 
@@ -309,18 +406,18 @@ body {
     position: absolute;
     display: flex;
     gap: 0.25rem;
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
+    background: white; /* Всегда светлый фон, как у node-controls */
+    border: 1px solid #e5e7eb;
     border-radius: 0.375rem;
     padding: 0.25rem;
-    box-shadow: var(--shadow);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     z-index: 1000;
 }
 
 .node-control-btn {
     padding: 0.375rem;
     background: transparent;
-    color: black;
+    color: #1f2937; /* Всегда темный цвет, не зависит от темы */
     border: none;
     cursor: pointer;
     border-radius: 0.25rem;
@@ -331,11 +428,11 @@ body {
 }
 
 .node-control-btn:hover {
-    background: var(--bg-tertiary);
+    background: #f3f4f6; /* Светлый фон при наведении */
 }
 
 .node-control-btn.delete:hover {
-    color: var(--danger);
+    color: #ef4444; /* Красный цвет при наведении на кнопку удаления */
 }
 
 .node-comment-badge {
@@ -350,7 +447,7 @@ body {
 /* Right Sidebar */
 .sidebar-right {
     width: 380px;
-    color: black;
+    color: var(--text-primary);
     background: var(--bg-primary);
     border-left: 1px solid var(--border-color);
     display: flex;
@@ -402,6 +499,7 @@ body {
     font-size: 1rem;
     margin-bottom: 0.75rem;
     font-weight: 600;
+    color: var(--text-primary);
 }
 
 .tab-description {
@@ -437,12 +535,27 @@ body {
     font-size: 0.875rem;
     font-weight: 500;
     margin-bottom: 0.625rem;
+    color: var(--text-primary);
+}
+
+.form-group label:has(input[type="checkbox"]) {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: 0.25rem;
+}
+
+.form-group label input[type="checkbox"] {
+    width: auto;
+    margin-right: 0.5rem;
+    cursor: pointer;
+    accent-color: var(--accent);
 }
 
 .form-group input[type="text"],
 .form-group textarea {
     width: 100%;
-    color: black;
+    color: var(--text-primary);
     padding: 0.75rem;
     border: 1px solid var(--border-color);
     border-radius: 0.375rem;
@@ -472,6 +585,8 @@ body {
 #code-editor {
     font-family: 'Courier New', monospace;
     font-size: 0.8125rem;
+    color: var(--text-primary);
+    background: var(--bg-primary);
 }
 
 .primary-btn {
@@ -564,6 +679,7 @@ body {
     border-radius: 0.375rem;
     cursor: pointer;
     font-size: 0.875rem;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -663,7 +779,7 @@ body {
 }
 
 .history-item:hover {
-    background: #e2e8f0;
+    background: var(--bg-tertiary);
 }
 
 .history-header {
@@ -678,6 +794,7 @@ body {
     flex: 1;
     font-size: 0.875rem;
     word-break: break-word;
+    color: var(--text-primary);
 }
 
 .history-restore-btn {

@@ -1,0 +1,117 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define PI 3.1415926
+#define MAX_SIZE 100
+int addNumbers(int a, int b);
+void greetUser(char* name);
+float calculateCircleArea(float radius);
+
+const float PI_CONST = 3.1415926f;
+int globalCounter = 0;
+
+struct Point {
+    int x;
+    int y;
+};
+
+typedef struct Point Point;
+
+int main() {
+    int num1, num2, i;
+    float res, d;
+    char res2[50];
+    int array[10];
+    Point p1;
+    printf("Enter a number: ");
+    scanf("%f", &res);
+    printf("From input: %.2f\n", res);
+    num1 = 12 / 2;
+    num2 = 15 % 4;
+    num1 = addNumbers(5, 3);
+    switch(num1) {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+            printf("Switch works\n");
+            break;
+        default:
+            printf("Switch no works\n");
+            break;
+    }
+    if (5 % 3 > 0) {
+        printf("Yes,if 1\n");
+        printf("Yes,if 2\n");
+    } else {
+        printf("No,else 1\n");
+        printf("No,else 2\n");
+    }
+    if (5 % 3 > 0) {
+        printf("Yes,if 1\n");
+        printf("Yes,if 2\n");
+    } else {
+        printf("No,else 1\n");
+        printf("No,else 2\n");
+    }
+    strcpy(res2, "Hello world");
+    num1 = 2;
+    if (5 % 3 == 0) {
+        printf("Yes,if 2\n");
+    } else {
+        printf("No,else 2\n");
+    }
+    printf("From table: %d\n", num1);
+    if (PI_CONST != num1) {
+        printf("Pim\n");
+        if (PI_CONST != num1) {
+            printf("Pam\n");
+        }
+    } else {
+        printf("Pum\n");
+    }
+    for (i = 1; i <= 8; i++) {
+        printf("3");
+    }
+    printf("\n");
+    while (num1 < 6) {
+        printf("Yes");
+        num1 = num1 + 1;
+    }
+    printf("\n");
+    do {
+        printf("3");
+        num1 = num1 + 1;
+    } while (num1 < 7);
+    printf("\n");
+    for (i = 0; i < 10; i++) {
+        array[i] = i * 2;
+    }
+    p1.x = 10;
+    p1.y = 20;
+    int* ptr = &num1;
+    *ptr = *ptr + 3;
+    num1 = num1 + 3;
+    num1 += 5;
+    num1++;
+    if (num1 > 10 && num2 < 20 || !(num1 == 15)) {
+        printf("Complex condition works\n");
+    }
+    num1 = num1 & 0xFF;
+    num2 = num1 | 0x0F;
+    int result = (num1 > num2) ? num1 : num2;
+    greetUser("John");
+    float area = calculateCircleArea(5.0f);
+    printf("Circle area: %.2f\n", area);
+    return 0;
+}
+int addNumbers(int a, int b) {
+    return a + b;
+}
+void greetUser(char* name) {
+    printf("Hello, %s!\n", name);
+}
+float calculateCircleArea(float radius) {
+    return PI_CONST * radius * radius;
+}

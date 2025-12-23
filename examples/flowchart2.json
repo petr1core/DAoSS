@@ -1,0 +1,1357 @@
+{
+  "error": null,
+  "representation": {
+    "body": {
+      "statements": [
+        {
+          "directive": "#include <stdio.h>",
+          "type": "PreprocessorDirective",
+          "value": "stdio.h"
+        },
+        {
+          "directive": "#include <stdlib.h>",
+          "type": "PreprocessorDirective",
+          "value": "stdlib.h"
+        },
+        {
+          "directive": "#include <string.h>",
+          "type": "PreprocessorDirective",
+          "value": "string.h"
+        },
+        {
+          "directive": "#define",
+          "type": "PreprocessorDirective",
+          "value": "PI 3.1415926"
+        },
+        {
+          "directive": "#define",
+          "type": "PreprocessorDirective",
+          "value": "MAX_SIZE 100"
+        },
+        {
+          "body": null,
+          "name": "addNumbers",
+          "parameters": [
+            {
+              "name": "a",
+              "type": "int"
+            },
+            {
+              "name": "b",
+              "type": "int"
+            }
+          ],
+          "returnType": "int",
+          "type": "FunctionDecl"
+        },
+        {
+          "body": null,
+          "name": "greetUser",
+          "parameters": [
+            {
+              "name": "name",
+              "type": "char*"
+            }
+          ],
+          "returnType": "void",
+          "type": "FunctionDecl"
+        },
+        {
+          "body": null,
+          "name": "calculateCircleArea",
+          "parameters": [
+            {
+              "name": "radius",
+              "type": "float"
+            }
+          ],
+          "returnType": "float",
+          "type": "FunctionDecl"
+        },
+        {
+          "initializer": {
+            "type": "RealLiteral",
+            "value": 3.1415926
+          },
+          "name": "PI_CONST",
+          "type": "VarDeclStmt",
+          "varType": "const "
+        },
+        {
+          "initializer": {
+            "type": "IntLiteral",
+            "value": 0
+          },
+          "name": "globalCounter",
+          "type": "VarDeclStmt",
+          "varType": "int"
+        },
+        {
+          "fields": [
+            {
+              "name": "x",
+              "type": "VarDeclStmt",
+              "varType": "int"
+            },
+            {
+              "name": "y",
+              "type": "VarDeclStmt",
+              "varType": "int"
+            }
+          ],
+          "name": "struct Point",
+          "type": "StructDecl"
+        },
+        {
+          "alias": "Point",
+          "type": "TypedefDecl",
+          "typeName": "struct Point"
+        },
+        {
+          "body": {
+            "statements": [
+              {
+                "statements": [
+                  {
+                    "name": "num1",
+                    "type": "VarDeclStmt",
+                    "varType": "int"
+                  },
+                  {
+                    "name": "num2",
+                    "type": "VarDeclStmt",
+                    "varType": "int"
+                  },
+                  {
+                    "name": "i",
+                    "type": "VarDeclStmt",
+                    "varType": "int"
+                  }
+                ],
+                "type": "Block"
+              },
+              {
+                "statements": [
+                  {
+                    "name": "res",
+                    "type": "VarDeclStmt",
+                    "varType": "float"
+                  },
+                  {
+                    "name": "d",
+                    "type": "VarDeclStmt",
+                    "varType": "float"
+                  }
+                ],
+                "type": "Block"
+              },
+              {
+                "name": "res2",
+                "type": "VarDeclStmt",
+                "varType": "char[50]"
+              },
+              {
+                "name": "array",
+                "type": "VarDeclStmt",
+                "varType": "int[10]"
+              },
+              {
+                "name": "p1",
+                "type": "VarDeclStmt",
+                "varType": "Point"
+              },
+              {
+                "expression": {
+                  "arguments": [
+                    {
+                      "type": "StringLiteral",
+                      "value": "Enter a number: "
+                    }
+                  ],
+                  "callee": "printf",
+                  "type": "CallExpr"
+                },
+                "type": "ExprStmt"
+              },
+              {
+                "expression": {
+                  "arguments": [
+                    {
+                      "type": "StringLiteral",
+                      "value": "%f"
+                    },
+                    {
+                      "operand": {
+                        "name": "res",
+                        "type": "Identifier"
+                      },
+                      "operator": "&",
+                      "postfix": false,
+                      "type": "UnaryOp"
+                    }
+                  ],
+                  "callee": "scanf",
+                  "type": "CallExpr"
+                },
+                "type": "ExprStmt"
+              },
+              {
+                "expression": {
+                  "arguments": [
+                    {
+                      "type": "StringLiteral",
+                      "value": "From input: %.2f\\n"
+                    },
+                    {
+                      "name": "res",
+                      "type": "Identifier"
+                    }
+                  ],
+                  "callee": "printf",
+                  "type": "CallExpr"
+                },
+                "type": "ExprStmt"
+              },
+              {
+                "operator": "ASSIGN",
+                "target": "num1",
+                "type": "AssignStmt",
+                "value": {
+                  "left": {
+                    "type": "IntLiteral",
+                    "value": 12
+                  },
+                  "operator": "/",
+                  "right": {
+                    "type": "IntLiteral",
+                    "value": 2
+                  },
+                  "type": "BinaryOp"
+                }
+              },
+              {
+                "operator": "ASSIGN",
+                "target": "num2",
+                "type": "AssignStmt",
+                "value": {
+                  "left": {
+                    "type": "IntLiteral",
+                    "value": 15
+                  },
+                  "operator": "%",
+                  "right": {
+                    "type": "IntLiteral",
+                    "value": 4
+                  },
+                  "type": "BinaryOp"
+                }
+              },
+              {
+                "operator": "ASSIGN",
+                "target": "num1",
+                "type": "AssignStmt",
+                "value": {
+                  "arguments": [
+                    {
+                      "type": "IntLiteral",
+                      "value": 5
+                    },
+                    {
+                      "type": "IntLiteral",
+                      "value": 3
+                    }
+                  ],
+                  "callee": "addNumbers",
+                  "type": "CallExpr"
+                }
+              },
+              {
+                "cases": [
+                  {
+                    "body": [],
+                    "type": "CaseStmt",
+                    "value": {
+                      "type": "IntLiteral",
+                      "value": 1
+                    }
+                  },
+                  {
+                    "body": [],
+                    "type": "CaseStmt",
+                    "value": {
+                      "type": "IntLiteral",
+                      "value": 2
+                    }
+                  },
+                  {
+                    "body": [],
+                    "type": "CaseStmt",
+                    "value": {
+                      "type": "IntLiteral",
+                      "value": 3
+                    }
+                  },
+                  {
+                    "body": [],
+                    "type": "CaseStmt",
+                    "value": {
+                      "type": "IntLiteral",
+                      "value": 4
+                    }
+                  },
+                  {
+                    "body": [
+                      {
+                        "expression": {
+                          "arguments": [
+                            {
+                              "type": "StringLiteral",
+                              "value": "Switch works\\n"
+                            }
+                          ],
+                          "callee": "printf",
+                          "type": "CallExpr"
+                        },
+                        "type": "ExprStmt"
+                      },
+                      {
+                        "type": "BreakStmt"
+                      }
+                    ],
+                    "type": "CaseStmt",
+                    "value": {
+                      "type": "IntLiteral",
+                      "value": 5
+                    }
+                  },
+                  {
+                    "body": [
+                      {
+                        "expression": {
+                          "arguments": [
+                            {
+                              "type": "StringLiteral",
+                              "value": "Switch no works\\n"
+                            }
+                          ],
+                          "callee": "printf",
+                          "type": "CallExpr"
+                        },
+                        "type": "ExprStmt"
+                      },
+                      {
+                        "type": "BreakStmt"
+                      }
+                    ],
+                    "type": "DefaultStmt"
+                  }
+                ],
+                "condition": {
+                  "name": "num1",
+                  "type": "Identifier"
+                },
+                "type": "SwitchStmt"
+              },
+              {
+                "condition": {
+                  "left": {
+                    "left": {
+                      "type": "IntLiteral",
+                      "value": 5
+                    },
+                    "operator": "%",
+                    "right": {
+                      "type": "IntLiteral",
+                      "value": 3
+                    },
+                    "type": "BinaryOp"
+                  },
+                  "operator": ">",
+                  "right": {
+                    "type": "IntLiteral",
+                    "value": 0
+                  },
+                  "type": "BinaryOp"
+                },
+                "elseBranch": {
+                  "statements": [
+                    {
+                      "expression": {
+                        "arguments": [
+                          {
+                            "type": "StringLiteral",
+                            "value": "No,else 1\\n"
+                          }
+                        ],
+                        "callee": "printf",
+                        "type": "CallExpr"
+                      },
+                      "type": "ExprStmt"
+                    },
+                    {
+                      "expression": {
+                        "arguments": [
+                          {
+                            "type": "StringLiteral",
+                            "value": "No,else 2\\n"
+                          }
+                        ],
+                        "callee": "printf",
+                        "type": "CallExpr"
+                      },
+                      "type": "ExprStmt"
+                    }
+                  ],
+                  "type": "Block"
+                },
+                "thenBranch": {
+                  "statements": [
+                    {
+                      "expression": {
+                        "arguments": [
+                          {
+                            "type": "StringLiteral",
+                            "value": "Yes,if 1\\n"
+                          }
+                        ],
+                        "callee": "printf",
+                        "type": "CallExpr"
+                      },
+                      "type": "ExprStmt"
+                    },
+                    {
+                      "expression": {
+                        "arguments": [
+                          {
+                            "type": "StringLiteral",
+                            "value": "Yes,if 2\\n"
+                          }
+                        ],
+                        "callee": "printf",
+                        "type": "CallExpr"
+                      },
+                      "type": "ExprStmt"
+                    }
+                  ],
+                  "type": "Block"
+                },
+                "type": "IfStmt"
+              },
+              {
+                "condition": {
+                  "left": {
+                    "left": {
+                      "type": "IntLiteral",
+                      "value": 5
+                    },
+                    "operator": "%",
+                    "right": {
+                      "type": "IntLiteral",
+                      "value": 3
+                    },
+                    "type": "BinaryOp"
+                  },
+                  "operator": ">",
+                  "right": {
+                    "type": "IntLiteral",
+                    "value": 0
+                  },
+                  "type": "BinaryOp"
+                },
+                "elseBranch": {
+                  "statements": [
+                    {
+                      "expression": {
+                        "arguments": [
+                          {
+                            "type": "StringLiteral",
+                            "value": "No,else 1\\n"
+                          }
+                        ],
+                        "callee": "printf",
+                        "type": "CallExpr"
+                      },
+                      "type": "ExprStmt"
+                    },
+                    {
+                      "expression": {
+                        "arguments": [
+                          {
+                            "type": "StringLiteral",
+                            "value": "No,else 2\\n"
+                          }
+                        ],
+                        "callee": "printf",
+                        "type": "CallExpr"
+                      },
+                      "type": "ExprStmt"
+                    }
+                  ],
+                  "type": "Block"
+                },
+                "thenBranch": {
+                  "statements": [
+                    {
+                      "expression": {
+                        "arguments": [
+                          {
+                            "type": "StringLiteral",
+                            "value": "Yes,if 1\\n"
+                          }
+                        ],
+                        "callee": "printf",
+                        "type": "CallExpr"
+                      },
+                      "type": "ExprStmt"
+                    },
+                    {
+                      "expression": {
+                        "arguments": [
+                          {
+                            "type": "StringLiteral",
+                            "value": "Yes,if 2\\n"
+                          }
+                        ],
+                        "callee": "printf",
+                        "type": "CallExpr"
+                      },
+                      "type": "ExprStmt"
+                    }
+                  ],
+                  "type": "Block"
+                },
+                "type": "IfStmt"
+              },
+              {
+                "expression": {
+                  "arguments": [
+                    {
+                      "name": "res2",
+                      "type": "Identifier"
+                    },
+                    {
+                      "type": "StringLiteral",
+                      "value": "Hello world"
+                    }
+                  ],
+                  "callee": "strcpy",
+                  "type": "CallExpr"
+                },
+                "type": "ExprStmt"
+              },
+              {
+                "operator": "ASSIGN",
+                "target": "num1",
+                "type": "AssignStmt",
+                "value": {
+                  "type": "IntLiteral",
+                  "value": 2
+                }
+              },
+              {
+                "condition": {
+                  "left": {
+                    "left": {
+                      "type": "IntLiteral",
+                      "value": 5
+                    },
+                    "operator": "%",
+                    "right": {
+                      "type": "IntLiteral",
+                      "value": 3
+                    },
+                    "type": "BinaryOp"
+                  },
+                  "operator": "==",
+                  "right": {
+                    "type": "IntLiteral",
+                    "value": 0
+                  },
+                  "type": "BinaryOp"
+                },
+                "elseBranch": {
+                  "statements": [
+                    {
+                      "expression": {
+                        "arguments": [
+                          {
+                            "type": "StringLiteral",
+                            "value": "No,else 2\\n"
+                          }
+                        ],
+                        "callee": "printf",
+                        "type": "CallExpr"
+                      },
+                      "type": "ExprStmt"
+                    }
+                  ],
+                  "type": "Block"
+                },
+                "thenBranch": {
+                  "statements": [
+                    {
+                      "expression": {
+                        "arguments": [
+                          {
+                            "type": "StringLiteral",
+                            "value": "Yes,if 2\\n"
+                          }
+                        ],
+                        "callee": "printf",
+                        "type": "CallExpr"
+                      },
+                      "type": "ExprStmt"
+                    }
+                  ],
+                  "type": "Block"
+                },
+                "type": "IfStmt"
+              },
+              {
+                "expression": {
+                  "arguments": [
+                    {
+                      "type": "StringLiteral",
+                      "value": "From table: %d\\n"
+                    },
+                    {
+                      "name": "num1",
+                      "type": "Identifier"
+                    }
+                  ],
+                  "callee": "printf",
+                  "type": "CallExpr"
+                },
+                "type": "ExprStmt"
+              },
+              {
+                "condition": {
+                  "left": {
+                    "name": "PI_CONST",
+                    "type": "Identifier"
+                  },
+                  "operator": "!=",
+                  "right": {
+                    "name": "num1",
+                    "type": "Identifier"
+                  },
+                  "type": "BinaryOp"
+                },
+                "elseBranch": {
+                  "statements": [
+                    {
+                      "expression": {
+                        "arguments": [
+                          {
+                            "type": "StringLiteral",
+                            "value": "Pum\\n"
+                          }
+                        ],
+                        "callee": "printf",
+                        "type": "CallExpr"
+                      },
+                      "type": "ExprStmt"
+                    }
+                  ],
+                  "type": "Block"
+                },
+                "thenBranch": {
+                  "statements": [
+                    {
+                      "expression": {
+                        "arguments": [
+                          {
+                            "type": "StringLiteral",
+                            "value": "Pim\\n"
+                          }
+                        ],
+                        "callee": "printf",
+                        "type": "CallExpr"
+                      },
+                      "type": "ExprStmt"
+                    },
+                    {
+                      "condition": {
+                        "left": {
+                          "name": "PI_CONST",
+                          "type": "Identifier"
+                        },
+                        "operator": "!=",
+                        "right": {
+                          "name": "num1",
+                          "type": "Identifier"
+                        },
+                        "type": "BinaryOp"
+                      },
+                      "thenBranch": {
+                        "statements": [
+                          {
+                            "expression": {
+                              "arguments": [
+                                {
+                                  "type": "StringLiteral",
+                                  "value": "Pam\\n"
+                                }
+                              ],
+                              "callee": "printf",
+                              "type": "CallExpr"
+                            },
+                            "type": "ExprStmt"
+                          }
+                        ],
+                        "type": "Block"
+                      },
+                      "type": "IfStmt"
+                    }
+                  ],
+                  "type": "Block"
+                },
+                "type": "IfStmt"
+              },
+              {
+                "body": {
+                  "statements": [
+                    {
+                      "expression": {
+                        "arguments": [
+                          {
+                            "type": "StringLiteral",
+                            "value": "3"
+                          }
+                        ],
+                        "callee": "printf",
+                        "type": "CallExpr"
+                      },
+                      "type": "ExprStmt"
+                    }
+                  ],
+                  "type": "Block"
+                },
+                "condition": {
+                  "left": {
+                    "name": "i",
+                    "type": "Identifier"
+                  },
+                  "operator": "<=",
+                  "right": {
+                    "type": "IntLiteral",
+                    "value": 8
+                  },
+                  "type": "BinaryOp"
+                },
+                "increment": {
+                  "operand": {
+                    "name": "i",
+                    "type": "Identifier"
+                  },
+                  "operator": "++",
+                  "postfix": true,
+                  "type": "UnaryOp"
+                },
+                "init": {
+                  "operator": "ASSIGN",
+                  "target": "i",
+                  "type": "AssignStmt",
+                  "value": {
+                    "type": "IntLiteral",
+                    "value": 1
+                  }
+                },
+                "type": "ForStmt"
+              },
+              {
+                "expression": {
+                  "arguments": [
+                    {
+                      "type": "StringLiteral",
+                      "value": "\\n"
+                    }
+                  ],
+                  "callee": "printf",
+                  "type": "CallExpr"
+                },
+                "type": "ExprStmt"
+              },
+              {
+                "body": {
+                  "statements": [
+                    {
+                      "expression": {
+                        "arguments": [
+                          {
+                            "type": "StringLiteral",
+                            "value": "Yes"
+                          }
+                        ],
+                        "callee": "printf",
+                        "type": "CallExpr"
+                      },
+                      "type": "ExprStmt"
+                    },
+                    {
+                      "operator": "ASSIGN",
+                      "target": "num1",
+                      "type": "AssignStmt",
+                      "value": {
+                        "left": {
+                          "name": "num1",
+                          "type": "Identifier"
+                        },
+                        "operator": "+",
+                        "right": {
+                          "type": "IntLiteral",
+                          "value": 1
+                        },
+                        "type": "BinaryOp"
+                      }
+                    }
+                  ],
+                  "type": "Block"
+                },
+                "condition": {
+                  "left": {
+                    "name": "num1",
+                    "type": "Identifier"
+                  },
+                  "operator": "<",
+                  "right": {
+                    "type": "IntLiteral",
+                    "value": 6
+                  },
+                  "type": "BinaryOp"
+                },
+                "type": "WhileStmt"
+              },
+              {
+                "expression": {
+                  "arguments": [
+                    {
+                      "type": "StringLiteral",
+                      "value": "\\n"
+                    }
+                  ],
+                  "callee": "printf",
+                  "type": "CallExpr"
+                },
+                "type": "ExprStmt"
+              },
+              {
+                "body": {
+                  "statements": [
+                    {
+                      "expression": {
+                        "arguments": [
+                          {
+                            "type": "StringLiteral",
+                            "value": "3"
+                          }
+                        ],
+                        "callee": "printf",
+                        "type": "CallExpr"
+                      },
+                      "type": "ExprStmt"
+                    },
+                    {
+                      "operator": "ASSIGN",
+                      "target": "num1",
+                      "type": "AssignStmt",
+                      "value": {
+                        "left": {
+                          "name": "num1",
+                          "type": "Identifier"
+                        },
+                        "operator": "+",
+                        "right": {
+                          "type": "IntLiteral",
+                          "value": 1
+                        },
+                        "type": "BinaryOp"
+                      }
+                    }
+                  ],
+                  "type": "Block"
+                },
+                "condition": {
+                  "left": {
+                    "name": "num1",
+                    "type": "Identifier"
+                  },
+                  "operator": "<",
+                  "right": {
+                    "type": "IntLiteral",
+                    "value": 7
+                  },
+                  "type": "BinaryOp"
+                },
+                "type": "DoWhileStmt"
+              },
+              {
+                "expression": {
+                  "arguments": [
+                    {
+                      "type": "StringLiteral",
+                      "value": "\\n"
+                    }
+                  ],
+                  "callee": "printf",
+                  "type": "CallExpr"
+                },
+                "type": "ExprStmt"
+              },
+              {
+                "body": {
+                  "statements": [
+                    {
+                      "operator": "ASSIGN",
+                      "target": "array[i]",
+                      "type": "AssignStmt",
+                      "value": {
+                        "left": {
+                          "name": "i",
+                          "type": "Identifier"
+                        },
+                        "operator": "*",
+                        "right": {
+                          "type": "IntLiteral",
+                          "value": 2
+                        },
+                        "type": "BinaryOp"
+                      }
+                    }
+                  ],
+                  "type": "Block"
+                },
+                "condition": {
+                  "left": {
+                    "name": "i",
+                    "type": "Identifier"
+                  },
+                  "operator": "<",
+                  "right": {
+                    "type": "IntLiteral",
+                    "value": 10
+                  },
+                  "type": "BinaryOp"
+                },
+                "increment": {
+                  "operand": {
+                    "name": "i",
+                    "type": "Identifier"
+                  },
+                  "operator": "++",
+                  "postfix": true,
+                  "type": "UnaryOp"
+                },
+                "init": {
+                  "operator": "ASSIGN",
+                  "target": "i",
+                  "type": "AssignStmt",
+                  "value": {
+                    "type": "IntLiteral",
+                    "value": 0
+                  }
+                },
+                "type": "ForStmt"
+              },
+              {
+                "operator": "ASSIGN",
+                "target": "p1.x",
+                "type": "AssignStmt",
+                "value": {
+                  "type": "IntLiteral",
+                  "value": 10
+                }
+              },
+              {
+                "operator": "ASSIGN",
+                "target": "p1.y",
+                "type": "AssignStmt",
+                "value": {
+                  "type": "IntLiteral",
+                  "value": 20
+                }
+              },
+              {
+                "initializer": {
+                  "operand": {
+                    "name": "num1",
+                    "type": "Identifier"
+                  },
+                  "operator": "&",
+                  "postfix": false,
+                  "type": "UnaryOp"
+                },
+                "name": "ptr",
+                "type": "VarDeclStmt",
+                "varType": "int*"
+              },
+              {
+                "operator": "ASSIGN",
+                "target": "*ptr",
+                "type": "AssignStmt",
+                "value": {
+                  "left": {
+                    "operand": {
+                      "name": "ptr",
+                      "type": "Identifier"
+                    },
+                    "operator": "*",
+                    "postfix": false,
+                    "type": "UnaryOp"
+                  },
+                  "operator": "+",
+                  "right": {
+                    "type": "IntLiteral",
+                    "value": 3
+                  },
+                  "type": "BinaryOp"
+                }
+              },
+              {
+                "operator": "ASSIGN",
+                "target": "num1",
+                "type": "AssignStmt",
+                "value": {
+                  "left": {
+                    "name": "num1",
+                    "type": "Identifier"
+                  },
+                  "operator": "+",
+                  "right": {
+                    "type": "IntLiteral",
+                    "value": 3
+                  },
+                  "type": "BinaryOp"
+                }
+              },
+              {
+                "operator": "PLUSASSIGN",
+                "target": "num1",
+                "type": "AssignStmt",
+                "value": {
+                  "type": "IntLiteral",
+                  "value": 5
+                }
+              },
+              {
+                "operator": "INCREMENT",
+                "target": "num1",
+                "type": "AssignStmt",
+                "value": {
+                  "operand": {
+                    "name": "num1",
+                    "type": "Identifier"
+                  },
+                  "operator": "++",
+                  "postfix": true,
+                  "type": "UnaryOp"
+                }
+              },
+              {
+                "condition": {
+                  "left": {
+                    "left": {
+                      "left": {
+                        "name": "num1",
+                        "type": "Identifier"
+                      },
+                      "operator": ">",
+                      "right": {
+                        "type": "IntLiteral",
+                        "value": 10
+                      },
+                      "type": "BinaryOp"
+                    },
+                    "operator": "&&",
+                    "right": {
+                      "left": {
+                        "name": "num2",
+                        "type": "Identifier"
+                      },
+                      "operator": "<",
+                      "right": {
+                        "type": "IntLiteral",
+                        "value": 20
+                      },
+                      "type": "BinaryOp"
+                    },
+                    "type": "BinaryOp"
+                  },
+                  "operator": "||",
+                  "right": {
+                    "operand": {
+                      "left": {
+                        "name": "num1",
+                        "type": "Identifier"
+                      },
+                      "operator": "==",
+                      "right": {
+                        "type": "IntLiteral",
+                        "value": 15
+                      },
+                      "type": "BinaryOp"
+                    },
+                    "operator": "!",
+                    "postfix": false,
+                    "type": "UnaryOp"
+                  },
+                  "type": "BinaryOp"
+                },
+                "thenBranch": {
+                  "statements": [
+                    {
+                      "expression": {
+                        "arguments": [
+                          {
+                            "type": "StringLiteral",
+                            "value": "Complex condition works\\n"
+                          }
+                        ],
+                        "callee": "printf",
+                        "type": "CallExpr"
+                      },
+                      "type": "ExprStmt"
+                    }
+                  ],
+                  "type": "Block"
+                },
+                "type": "IfStmt"
+              },
+              {
+                "operator": "ASSIGN",
+                "target": "num1",
+                "type": "AssignStmt",
+                "value": {
+                  "left": {
+                    "name": "num1",
+                    "type": "Identifier"
+                  },
+                  "operator": "&",
+                  "right": {
+                    "type": "IntLiteral",
+                    "value": 255
+                  },
+                  "type": "BinaryOp"
+                }
+              },
+              {
+                "operator": "ASSIGN",
+                "target": "num2",
+                "type": "AssignStmt",
+                "value": {
+                  "left": {
+                    "name": "num1",
+                    "type": "Identifier"
+                  },
+                  "operator": "|",
+                  "right": {
+                    "type": "IntLiteral",
+                    "value": 15
+                  },
+                  "type": "BinaryOp"
+                }
+              },
+              {
+                "initializer": {
+                  "condition": {
+                    "left": {
+                      "name": "num1",
+                      "type": "Identifier"
+                    },
+                    "operator": ">",
+                    "right": {
+                      "name": "num2",
+                      "type": "Identifier"
+                    },
+                    "type": "BinaryOp"
+                  },
+                  "elseExpr": {
+                    "name": "num2",
+                    "type": "Identifier"
+                  },
+                  "thenExpr": {
+                    "name": "num1",
+                    "type": "Identifier"
+                  },
+                  "type": "TernaryOp"
+                },
+                "name": "result",
+                "type": "VarDeclStmt",
+                "varType": "int"
+              },
+              {
+                "expression": {
+                  "arguments": [
+                    {
+                      "type": "StringLiteral",
+                      "value": "John"
+                    }
+                  ],
+                  "callee": "greetUser",
+                  "type": "CallExpr"
+                },
+                "type": "ExprStmt"
+              },
+              {
+                "initializer": {
+                  "arguments": [
+                    {
+                      "type": "RealLiteral",
+                      "value": 5.0
+                    }
+                  ],
+                  "callee": "calculateCircleArea",
+                  "type": "CallExpr"
+                },
+                "name": "area",
+                "type": "VarDeclStmt",
+                "varType": "float"
+              },
+              {
+                "expression": {
+                  "arguments": [
+                    {
+                      "type": "StringLiteral",
+                      "value": "Circle area: %.2f\\n"
+                    },
+                    {
+                      "name": "area",
+                      "type": "Identifier"
+                    }
+                  ],
+                  "callee": "printf",
+                  "type": "CallExpr"
+                },
+                "type": "ExprStmt"
+              },
+              {
+                "type": "ReturnStmt",
+                "value": {
+                  "type": "IntLiteral",
+                  "value": 0
+                }
+              }
+            ],
+            "type": "Block"
+          },
+          "name": "main",
+          "parameters": [],
+          "returnType": "int",
+          "type": "FunctionDecl"
+        },
+        {
+          "body": {
+            "statements": [
+              {
+                "type": "ReturnStmt",
+                "value": {
+                  "left": {
+                    "name": "a",
+                    "type": "Identifier"
+                  },
+                  "operator": "+",
+                  "right": {
+                    "name": "b",
+                    "type": "Identifier"
+                  },
+                  "type": "BinaryOp"
+                }
+              }
+            ],
+            "type": "Block"
+          },
+          "name": "addNumbers",
+          "parameters": [
+            {
+              "name": "a",
+              "type": "int"
+            },
+            {
+              "name": "b",
+              "type": "int"
+            }
+          ],
+          "returnType": "int",
+          "type": "FunctionDecl"
+        },
+        {
+          "body": {
+            "statements": [
+              {
+                "expression": {
+                  "arguments": [
+                    {
+                      "type": "StringLiteral",
+                      "value": "Hello, %s!\\n"
+                    },
+                    {
+                      "name": "name",
+                      "type": "Identifier"
+                    }
+                  ],
+                  "callee": "printf",
+                  "type": "CallExpr"
+                },
+                "type": "ExprStmt"
+              }
+            ],
+            "type": "Block"
+          },
+          "name": "greetUser",
+          "parameters": [
+            {
+              "name": "name",
+              "type": "char*"
+            }
+          ],
+          "returnType": "void",
+          "type": "FunctionDecl"
+        },
+        {
+          "body": {
+            "statements": [
+              {
+                "type": "ReturnStmt",
+                "value": {
+                  "left": {
+                    "left": {
+                      "name": "PI_CONST",
+                      "type": "Identifier"
+                    },
+                    "operator": "*",
+                    "right": {
+                      "name": "radius",
+                      "type": "Identifier"
+                    },
+                    "type": "BinaryOp"
+                  },
+                  "operator": "*",
+                  "right": {
+                    "name": "radius",
+                    "type": "Identifier"
+                  },
+                  "type": "BinaryOp"
+                }
+              }
+            ],
+            "type": "Block"
+          },
+          "name": "calculateCircleArea",
+          "parameters": [
+            {
+              "name": "radius",
+              "type": "float"
+            }
+          ],
+          "returnType": "float",
+          "type": "FunctionDecl"
+        }
+      ],
+      "type": "Block"
+    },
+    "name": "test_program_by_C",
+    "type": "Program"
+  },
+  "representationType": "AST",
+  "success": true
+}

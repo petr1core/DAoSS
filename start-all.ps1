@@ -1,4 +1,4 @@
-# Скрипт для последовательного запуска всех модулей проекта
+﻿# Скрипт для последовательного запуска всех модулей проекта
 # Запускает: Parser -> Backend -> Frontend
 #
 # Параметры:
@@ -169,7 +169,7 @@ function Update-BackendMigrations {
     param([string]$BackendPath)
     
     Write-Info "=== Применение миграций Backend ==="
-    
+    $env:Path = "D:\DevLeb\DAoSS\eftools;" + $env:Path
     $dotnetCommand = Get-Command dotnet -ErrorAction SilentlyContinue
     if (-not $dotnetCommand) {
         Write-Error-Custom "Ошибка: .NET SDK не найден. Установите .NET SDK для применения миграций."

@@ -1,0 +1,323 @@
+{
+  "error": null,
+  "representation": {
+    "program": {
+      "name": "program qq",
+      "sections": {
+        "constantBlock": {
+          "expr2": "PI : real = 3.1415926;"
+        },
+        "functionBlock": {
+          "expr0": {
+            "body": {
+              "expr0": {
+                "type": "assign",
+                "value": "AddNumbers := a + b"
+              }
+            },
+            "declaration": "function AddNumbers ( a , b : integer ) : integer",
+            "type": "function"
+          },
+          "expr1": {
+            "body": {
+              "expr0": {
+                "type": "io",
+                "value": "Writeln ( 'Hello,' , name , '!' )"
+              }
+            },
+            "declaration": "procedure GreetUser ( name : string )",
+            "type": "procedure"
+          }
+        },
+        "mainBlock": {
+          "expr10": {
+            "body": {
+              "expr0": {
+                "type": "io",
+                "value": "Writeln ( 'Yes,if 1' )"
+              },
+              "expr1": {
+                "type": "io",
+                "value": "Writeln ( 'Yes,if 2' )"
+              }
+            },
+            "condition": "if 5 mod 3 > 0 then",
+            "type": "if"
+          },
+          "expr11": {
+            "body": {
+              "branch 0": {
+                "conditionValues": "1 2 3",
+                "todo": {
+                  "expr0": {
+                    "type": "io",
+                    "value": "Writeln ( 'Switch works 1' )"
+                  }
+                }
+              },
+              "branch 1": {
+                "conditionValues": "4 5",
+                "todo": {
+                  "expr0": {
+                    "type": "io",
+                    "value": "Writeln ( 'Switch works 2' )"
+                  }
+                }
+              },
+              "branch 2": {
+                "conditionValues": "else",
+                "todo": {
+                  "expr0": {
+                    "type": "io",
+                    "value": "Writeln ( 'Switch no works' )"
+                  }
+                }
+              }
+            },
+            "compareValue": "num1",
+            "type": "caseOf"
+          },
+          "expr12": {
+            "body": {
+              "expr0": {
+                "type": "io",
+                "value": "Writeln ( 'Yes,if 1' )"
+              },
+              "expr1": {
+                "type": "io",
+                "value": "Writeln ( 'Yes,if 2' )"
+              }
+            },
+            "condition": "if 5 mod 3 > 0 then",
+            "type": "if"
+          },
+          "expr13": {
+            "body": {
+              "expr0": {
+                "type": "io",
+                "value": "Writeln ( 'No,else 1' )"
+              },
+              "expr1": {
+                "type": "io",
+                "value": "Writeln ( 'No,else 2' )"
+              }
+            },
+            "condition": "else",
+            "type": "else"
+          },
+          "expr14": {
+            "body": {
+              "expr0": {
+                "type": "io",
+                "value": "Writeln ( 'Yes,if 1' )"
+              },
+              "expr1": {
+                "type": "io",
+                "value": "Writeln ( 'Yes,if 2' )"
+              }
+            },
+            "condition": "if 5 mod 3 > 0 then",
+            "type": "if"
+          },
+          "expr15": {
+            "body": {
+              "expr0": {
+                "type": "io",
+                "value": "Writeln ( 'No,else 1' )"
+              },
+              "expr1": {
+                "type": "io",
+                "value": "Writeln ( 'No,else 2' )"
+              }
+            },
+            "condition": "else",
+            "type": "else"
+          },
+          "expr16": {
+            "type": "assign",
+            "value": "res2 := 'Hello world'"
+          },
+          "expr17": {
+            "type": "assign",
+            "value": "num1 := 2"
+          },
+          "expr18": {
+            "type": "io",
+            "value": "Writeln ( 'From table ' , num1 )"
+          },
+          "expr19": {
+            "body": {
+              "expr0": {
+                "type": "io",
+                "value": "Writeln ( 'Pim' )"
+              },
+              "expr1": {
+                "body": {
+                  "expr0": {
+                    "type": "io",
+                    "value": "Writeln ( 'Pam' )"
+                  }
+                },
+                "condition": "if PI <> num1 then",
+                "type": "if"
+              }
+            },
+            "condition": "if PI <> num1 then",
+            "type": "if"
+          },
+          "expr20": {
+            "body": {
+              "expr0": {
+                "type": "io",
+                "value": "Writeln ( 'Pum' )"
+              }
+            },
+            "condition": "else",
+            "type": "else"
+          },
+          "expr21": {
+            "body": {
+              "expr0": {
+                "type": "io",
+                "value": "Writeln ( 'Pim' )"
+              },
+              "expr1": {
+                "body": {
+                  "expr0": {
+                    "type": "io",
+                    "value": "Writeln ( 'Yes,if 1' )"
+                  },
+                  "expr1": {
+                    "type": "io",
+                    "value": "Writeln ( 'Yes,if 2' )"
+                  }
+                },
+                "condition": "if 5 mod 3 > 0 then",
+                "type": "if"
+              },
+              "expr2": {
+                "body": {
+                  "expr0": {
+                    "type": "io",
+                    "value": "Writeln ( 'No,else 1' )"
+                  },
+                  "expr1": {
+                    "type": "io",
+                    "value": "Writeln ( 'No,else 2' )"
+                  }
+                },
+                "condition": "else",
+                "type": "else"
+              }
+            },
+            "condition": "if PI <> num1 then",
+            "type": "if"
+          },
+          "expr22": {
+            "body": {
+              "expr0": {
+                "type": "io",
+                "value": "Writeln ( 'Pum' )"
+              }
+            },
+            "condition": "else",
+            "type": "else"
+          },
+          "expr23": {
+            "body": {
+              "expr0": {
+                "type": "io",
+                "value": "Write ( '3' )"
+              }
+            },
+            "condition": "for i := 1 to 8 do",
+            "type": "for"
+          },
+          "expr24": {
+            "body": {
+              "expr0": {
+                "type": "io",
+                "value": "Write ( 'Yes' )"
+              },
+              "expr1": {
+                "type": "assign",
+                "value": "num1 := num1 + 1"
+              }
+            },
+            "condition": "while num1 < 6 do",
+            "type": "while"
+          },
+          "expr25": {
+            "body": {
+              "expr0": {
+                "type": "io",
+                "value": "Writeln ( 'Yes,if 1' )"
+              },
+              "expr1": {
+                "type": "io",
+                "value": "Writeln ( 'Yes,if 2' )"
+              }
+            },
+            "condition": "if 5 mod 3 > 0 then",
+            "type": "if"
+          },
+          "expr26": {
+            "body": {
+              "expr0": {
+                "type": "io",
+                "value": "Writeln ( 'No,else 1' )"
+              },
+              "expr1": {
+                "type": "io",
+                "value": "Writeln ( 'No,else 2' )"
+              }
+            },
+            "condition": "else",
+            "type": "else"
+          },
+          "expr27": {
+            "body": {
+              "expr0": {
+                "type": "io",
+                "value": "Write ( '3' )"
+              },
+              "expr1": {
+                "type": "assign",
+                "value": "num1 := num1 + 1"
+              }
+            },
+            "condition": "until num1 < 7",
+            "type": "until"
+          },
+          "expr28": {
+            "type": "assign",
+            "value": "num1 := num1 + 3"
+          },
+          "expr6": {
+            "type": "io",
+            "value": "Read ( Res )"
+          },
+          "expr7": {
+            "type": "io",
+            "value": "Writeln ( 'From Read ' , Res )"
+          },
+          "expr8": {
+            "type": "assign",
+            "value": "num1 := 12 div 2"
+          },
+          "expr9": {
+            "type": "assign",
+            "value": "num1 := AddNumbers ( PI , PI )"
+          }
+        },
+        "variableBlock": {
+          "expr3": "num1 , num2 , i : integer;",
+          "expr4": "Res , d : real;",
+          "expr5": "res2 : string;"
+        }
+      }
+    }
+  },
+  "representationType": "SPR",
+  "success": true
+}

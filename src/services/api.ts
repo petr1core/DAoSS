@@ -79,9 +79,9 @@ async function handleResponse<T>(response: Response): Promise<T> {
 async function fetchWithAuth<T>(url: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
   
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
+    ...(options.headers as Record<string, string>),
   };
   
   if (token) {
@@ -197,6 +197,13 @@ export const api = {
     return fetchWithAuth<SimpleValidationResponse>('/parser/validate/simple', {
       method: 'POST',
       body: JSON.stringify({ Code: code, Language: language }),
+    });
+  },
+
+  async generateCode(representation: any, language: string): Promise<{ success: boolean; code?: string; error?: string }> {
+    return fetchWithAuth<{ success: boolean; code?: string; error?: string }>('/parser/generate', {
+      method: 'POST',
+      body: JSON.stringify({ Representation: representation, Language: language }),
     });
   },
 };

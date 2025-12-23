@@ -212,9 +212,142 @@ npm run dev
 .\start-all.ps1 -BuildParser -BuildBackend -UpdateMigrations -Verbose
 ```
 
+## API Эндпоинты
+
+### Базовый URL
+
+- **Backend API**: `http://localhost:5143/api` (HTTP) или `https://localhost:7143/api` (HTTPS)
+- **Parser Service**: `http://localhost:8080/api` (внутренний, используется через Backend)
+
+### Аутентификация
+
+Все эндпоинты (кроме `/api/auth/login` и `/api/auth/register`) требуют JWT токен в заголовке:
+
+```
+Authorization: Bearer <token>
+```
+
+#### Аутентификация и пользователи
+
+- `POST /api/auth/register` — регистрация нового пользователя
+- `POST /api/auth/login` — вход в систему
+- `GET /api/auth/me` — получение информации о текущем пользователе
+- `GET /api/auth/validate` — проверка валидности токена
+
+### Проекты
+
+- `GET /api/projects?ownerId={guid}` — получение списка проектов пользователя
+- `GET /api/projects/{id}` — получение проекта по ID
+- `POST /api/projects` — создание нового проекта
+- `PUT /api/projects/{id}` — обновление проекта
+- `DELETE /api/projects/{id}` — удаление проекта
+
+### Участники проекта
+
+- `GET /api/projects/{projectId}/members` — получение списка участников проекта
+- `POST /api/projects/{projectId}/members` — добавление участника в проект
+- `PUT /api/projects/{projectId}/members/{memberId}` — изменение роли участника
+- `DELETE /api/projects/{projectId}/members/{memberId}` — удаление участника из проекта
+
+### Приглашения
+
+- `POST /api/projects/{projectId}/invitations` — отправка приглашения в проект
+- `GET /api/projects/{projectId}/invitations` — получение приглашений проекта
+- `GET /api/invitations` — получение приглашений текущего пользователя
+- `POST /api/invitations/{invitationId}/accept` — принятие приглашения
+- `POST /api/invitations/{invitationId}/reject` — отклонение приглашения
+- `DELETE /api/projects/{projectId}/invitations/{invitationId}` — отмена приглашения
+
+### Исходные файлы
+
+- `POST /api/projects/{projectId}/source-files` — загрузка нового исходного файла
+- `GET /api/projects/{projectId}/source-files` — получение списка исходных файлов проекта
+- `GET /api/projects/{projectId}/source-files/{fileId}` — получение информации о файле
+- `GET /api/projects/{projectId}/source-files/{fileId}/versions` — получение всех версий файла
+- `GET /api/projects/{projectId}/source-files/{fileId}/versions/{versionId}` — получение конкретной версии
+- `POST /api/projects/{projectId}/source-files/{fileId}/versions` — создание новой версии файла
+- `DELETE /api/projects/{projectId}/source-files/{fileId}` — удаление файла
+
+### Диаграммы
+
+- `POST /api/projects/{projectId}/diagrams/generate` — генерация диаграммы из кода
+- `GET /api/projects/{projectId}/diagrams` — получение списка диаграмм проекта
+- `GET /api/projects/{projectId}/diagrams/{diagramId}` — получение информации о диаграмме
+- `GET /api/projects/{projectId}/diagrams/{diagramId}/versions` — получение всех версий диаграммы
+- `POST /api/projects/{projectId}/diagrams/{diagramId}/versions` — создание новой версии диаграммы
+- `PUT /api/projects/{projectId}/diagrams/{diagramId}` — обновление диаграммы
+- `DELETE /api/projects/{projectId}/diagrams/{diagramId}` — удаление диаграммы
+
+### Ревью
+
+- `POST /api/projects/{projectId}/reviews` — создание ревью
+- `GET /api/projects/{projectId}/reviews` — получение списка ревью проекта
+- `GET /api/projects/{projectId}/reviews/{reviewId}` — получение ревью по ID
+- `PUT /api/projects/{projectId}/reviews/{reviewId}` — обновление статуса ревью
+- `DELETE /api/projects/{projectId}/reviews/{reviewId}` — удаление ревью
+
+#### Элементы ревью
+
+- `POST /api/projects/{projectId}/reviews/{reviewId}/items` — создание элемента ревью
+- `GET /api/projects/{projectId}/reviews/{reviewId}/items` — получение элементов ревью
+- `GET /api/projects/{projectId}/reviews/{reviewId}/items/{itemId}` — получение элемента ревью
+- `PUT /api/projects/{projectId}/reviews/{reviewId}/items/{itemId}` — обновление элемента ревью
+- `DELETE /api/projects/{projectId}/reviews/{reviewId}/items/{itemId}` — удаление элемента ревью
+
+#### Комментарии
+
+- `POST /api/projects/{projectId}/reviews/{reviewId}/items/{itemId}/comments` — добавление комментария
+- `GET /api/projects/{projectId}/reviews/{reviewId}/items/{itemId}/comments` — получение комментариев элемента
+
+### Парсинг кода
+
+- `POST /api/parser/parse` — парсинг кода в AST/SPR представление
+- `POST /api/parser/validate` — валидация синтаксиса кода с детальными ошибками
+- `POST /api/parser/validate/simple` — упрощенная валидация кода
+
+**Поддерживаемые языки:** `pascal`, `c`, `cpp`
+
+### Swagger документация
+
+В режиме Development доступна автоматическая документация API:
+
+- **Swagger UI**: `http://localhost:5143/swagger` (HTTP) или `https://localhost:7143/swagger` (HTTPS)
+
+## Адреса страниц Frontend
+
+### Базовый URL
+
+- **Development**: `http://localhost:5173`
+- **Preview**: `http://localhost:4173`
+
+### Публичные страницы
+
+- `/` — главная страница (редирект на `/projects` для авторизованных)
+- `/login` — страница входа в систему
+- `/register` — страница регистрации (редирект на `/login?mode=register`)
+
+### Защищенные страницы
+
+Требуют авторизации (JWT токен):
+
+- `/projects` — список проектов пользователя
+- `/projects/new` — создание нового проекта
+- `/projects/:id` — детальная информация о проекте
+  - Вкладки: Обзор, Участники, Приглашения, Ревью
+- `/invitations` — список приглашений текущего пользователя
+- `/editor` — редактор блок-схем
+
+### Навигация
+
+После авторизации доступны следующие разделы:
+
+- **Проекты** — управление проектами
+- **Приглашения** — просмотр и управление приглашениями
+
 ## Документация
 
 ### Основная документация
+
 - [Backend README](backend_and_parser/README.md) — подробная документация Backend
 - [Parser README](backend_and_parser/src/parser/Parser/README.md) — документация парсер-сервиса
 - [Some explanations](backend_and_parser/Some%20explanations.md) — нюансы работы с бэкендом
