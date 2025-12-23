@@ -53,4 +53,3 @@ export default function InvitationCard({ invitation, onAccept, onReject }: Invit
 }
 
 
-

@@ -253,4 +253,3 @@ export default function ReviewDetails({ projectId, reviewId, canManage, onBack, 
   );
 }
 
-

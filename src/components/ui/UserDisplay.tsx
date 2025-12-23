@@ -89,4 +89,3 @@ export default function UserDisplay({ userId, userName, userEmail }: UserDisplay
   );
 }
 
-

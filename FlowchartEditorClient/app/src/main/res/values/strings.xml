@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Block diagram editor</string>
+    <string name="invitations_title">Мои приглашения</string>
+    <string name="project_invitations_title">Приглашения проекта</string>
+    <string name="edit_project_title">Редактировать проект</string>
+    <string name="accept_invitation">Принять</string>
+    <string name="reject_invitation">Отклонить</string>
+    <string name="cancel_invitation">Отменить</string>
+    <string name="change_role">Изменить роль</string>
+    <string name="edit_project">Редактировать</string>
+    <string name="delete_project">Удалить</string>
+    <string name="save">Сохранить</string>
+    <string name="invitation_accepted">Приглашение принято</string>
+    <string name="invitation_rejected">Приглашение отклонено</string>
+    <string name="invitation_canceled">Приглашение отменено</string>
+    <string name="role_updated">Роль обновлена</string>
+    <string name="project_updated">Проект обновлен</string>
+    <string name="project_deleted">Проект удален</string>
+    <string name="no_invitations">Нет приглашений</string>
+    <string name="no_project_invitations">В этом проекте пока нет приглашений</string>
+</resources>

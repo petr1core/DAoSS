@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Frontend Color Scheme - Light Theme -->
+    <!-- Primary: Dark blue/black from frontend -->
+    <color name="colorPrimary">#030213</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="colorPrimaryContainer">#E0E7FF</color>
+    <color name="colorOnPrimaryContainer">#030213</color>
+
+    <!-- Secondary: Light purple/gray from frontend -->
+    <color name="colorSecondary">#ECEFF4</color>
+    <color name="colorOnSecondary">#030213</color>
+    <color name="colorSecondaryContainer">#ECEFF4</color>
+    <color name="colorOnSecondaryContainer">#030213</color>
+
+    <!-- Tertiary: Accent blue from frontend -->
+    <color name="colorTertiary">#3B82F6</color>
+    <color name="colorOnTertiary">#FFFFFF</color>
+    <color name="colorTertiaryContainer">#DBEAFE</color>
+    <color name="colorOnTertiaryContainer">#1E40AF</color>
+
+    <!-- Background: White from frontend -->
+    <color name="colorBackground">#FFFFFF</color>
+    <color name="colorOnBackground">#242424</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorOnSurface">#242424</color>
+    <!-- Surface variant: Muted gray from frontend -->
+    <color name="colorSurfaceVariant">#ECECF0</color>
+    <color name="colorOnSurfaceVariant">#717182</color>
+    <!-- Outline: Border color from frontend -->
+    <color name="colorOutline">#1A000000</color>
+
+    <!-- Error: Destructive red from frontend -->
+    <color name="colorError">#D4183D</color>
+    <color name="colorOnError">#FFFFFF</color>
+    <color name="colorErrorContainer">#FEE2E2</color>
+    <color name="colorOnErrorContainer">#991F1F</color>
+
+    <!-- Additional colors from frontend -->
+    <color name="accent">#3B82F6</color>
+    <color name="accentHover">#2563EB</color>
+    <color name="inputBackground">#F3F3F5</color>
+    <color name="muted">#ECECF0</color>
+    <color name="mutedForeground">#717182</color>
+</resources>
