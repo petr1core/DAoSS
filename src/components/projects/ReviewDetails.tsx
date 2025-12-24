@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import type { Review, UpdateReviewDto, ReviewItem, CreateReviewItemDto, UpdateReviewItemDto, Comment, CreateCommentDto, UpdateCommentDto } from '../../services/api';
+import type { Review, UpdateReviewDto, ReviewItem, CreateReviewItemDto, UpdateReviewItemDto } from '../../services/api';
 import { api } from '../../services/api';
+import { parseAnchorRef } from '../../services/editorReviewService';
 import ReviewItemEditor from './ReviewItemEditor';
 import './ReviewDetails.css';
 
@@ -19,20 +20,60 @@ export default function ReviewDetails({ projectId, reviewId, canManage, onBack, 
   const [error, setError] = useState<string | null>(null);
   const [showAddItem, setShowAddItem] = useState(false);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [targetFileName, setTargetFileName] = useState<string>('');
+  const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
     loadReview();
     loadItems();
   }, [projectId, reviewId]);
 
+  // Закрываем меню при клике вне его
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.menu-container')) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [showMenu]);
+
   const loadReview = async () => {
     try {
       const data = await api.getReview(projectId, reviewId);
       setReview(data);
+      // Загружаем имя файла для targetId
+      if (data.targetType === 'source_file_version') {
+        loadTargetFileName(data.targetId);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось загрузить ревью');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Загружает имя файла по ID версии
+  const loadTargetFileName = async (versionId: string) => {
+    try {
+      const files = await api.getSourceFiles(projectId);
+      for (const file of files) {
+        const versions = await api.getSourceFileVersions(projectId, file.id);
+        const found = versions.find(v => v.id === versionId);
+        if (found) {
+          setTargetFileName(file.path);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error('Ошибка загрузки имени файла:', err);
     }
   };
 
@@ -45,8 +86,14 @@ export default function ReviewDetails({ projectId, reviewId, canManage, onBack, 
     }
   };
 
-  const handleUpdateStatus = async (status: 'approved' | 'changes_requested') => {
-    if (!confirm(`Изменить статус на "${status === 'approved' ? 'Одобрено' : 'Требуются изменения'}"?`)) {
+  const handleUpdateStatus = async (status: 'pending' | 'approved' | 'changes_requested') => {
+    const statusLabels: Record<string, string> = {
+      'pending': 'Ожидает',
+      'approved': 'Одобрено',
+      'changes_requested': 'Требуются изменения'
+    };
+    
+    if (!confirm(`Изменить статус на "${statusLabels[status]}"?`)) {
       return;
     }
 
@@ -132,6 +179,12 @@ export default function ReviewDetails({ projectId, reviewId, canManage, onBack, 
     }
   };
 
+  // Получает отображаемый текст для anchorRef
+  const getAnchorDisplayText = (anchorRef: string): string => {
+    const data = parseAnchorRef(anchorRef);
+    return data?.nodeText || anchorRef;
+  };
+
   if (loading) {
     return <div className="review-details-container">Загрузка...</div>;
   }
@@ -149,20 +202,45 @@ export default function ReviewDetails({ projectId, reviewId, canManage, onBack, 
     <div className="review-details-container">
       <div className="review-details-header">
         <button onClick={onBack} className="back-button">← Назад</button>
-        {canManage && review.status === 'pending' && (
+        {canManage && (
           <div className="status-actions">
-            <button
-              onClick={() => handleUpdateStatus('approved')}
-              className="approve-button"
-            >
-              Одобрить
-            </button>
-            <button
-              onClick={() => handleUpdateStatus('changes_requested')}
-              className="request-changes-button"
-            >
-              Требуются изменения
-            </button>
+            {review.status !== 'approved' && (
+              <button
+                onClick={() => handleUpdateStatus('approved')}
+                className="approve-button"
+                title="Одобрить ревью"
+              >
+                Одобрить
+              </button>
+            )}
+            {review.status !== 'changes_requested' && (
+              <div className="menu-container">
+                <button
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="menu-button"
+                  title="Дополнительные действия"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="1"></circle>
+                    <circle cx="12" cy="5" r="1"></circle>
+                    <circle cx="12" cy="19" r="1"></circle>
+                  </svg>
+                </button>
+                {showMenu && (
+                  <div className="menu-dropdown">
+                    <button
+                      onClick={() => {
+                        handleUpdateStatus('changes_requested');
+                        setShowMenu(false);
+                      }}
+                      className="menu-item"
+                    >
+                      Требуются изменения
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -171,7 +249,7 @@ export default function ReviewDetails({ projectId, reviewId, canManage, onBack, 
         <h2>Ревью</h2>
         <div className="review-meta">
           <p><strong>Тип:</strong> {review.targetType === 'diagram_version' ? 'Версия диаграммы' : 'Версия файла'}</p>
-          <p><strong>ID цели:</strong> {review.targetId}</p>
+          <p><strong>Файл:</strong> {targetFileName || 'Загрузка...'}</p>
           <p><strong>Статус:</strong>
             <span className={`status-badge ${getStatusClass(review.status)}`}>
               {getStatusLabel(review.status)}
@@ -216,9 +294,9 @@ export default function ReviewDetails({ projectId, reviewId, canManage, onBack, 
                   </span>
                 </div>
                 <div className="review-item-body">
-                  <p><strong>Тип якоря:</strong> {item.anchorType === 'code' ? 'Код' : 'Диаграмма'}</p>
-                  <p><strong>Ссылка:</strong> {item.anchorRef}</p>
-                  <p><strong>Текст:</strong> {item.body}</p>
+                  <p><strong>Тип:</strong> {item.anchorType === 'code' ? 'Код' : 'Диаграмма'}</p>
+                  <p><strong>Блок:</strong> {getAnchorDisplayText(item.anchorRef)}</p>
+                  <p><strong>Комментарий:</strong> {item.body}</p>
                 </div>
                 {selectedItem === item.id ? (
                   <ReviewItemEditor

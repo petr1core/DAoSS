@@ -53,9 +53,11 @@ export default function ProjectList({ userId, onProjectClick, onCreateProject }:
     <div className="project-list-container">
       <div className="project-list-header">
         <h1>Мои проекты</h1>
-        <button onClick={onCreateProject} className="create-project-button">
-          + Создать проект
-        </button>
+        {projects.length > 0 && (
+          <button onClick={onCreateProject} className="create-project-button">
+            + Создать проект
+          </button>
+        )}
       </div>
 
       {projects.length === 0 ? (

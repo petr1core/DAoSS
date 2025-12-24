@@ -133,7 +133,7 @@ export interface CreateReviewDto {
 }
 
 export interface UpdateReviewDto {
-  status?: 'approved' | 'changes_requested';
+  status?: 'pending' | 'approved' | 'changes_requested';
 }
 
 export interface ReviewItem {
@@ -144,7 +144,8 @@ export interface ReviewItem {
   anchorRef: string;
   body: string;
   status: 'open' | 'resolved';
-  createdAt?: string;
+  createdBy: string;
+  createdAt: string;
   updatedAt?: string;
 }
 

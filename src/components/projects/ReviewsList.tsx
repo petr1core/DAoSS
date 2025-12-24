@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Review, CreateReviewDto } from '../../services/api';
+import type { Review, CreateReviewDto, SourceFile } from '../../services/api';
 import { api } from '../../services/api';
 import ReviewForm from './ReviewForm';
 import ReviewDetails from './ReviewDetails';
@@ -10,16 +10,56 @@ interface ReviewsListProps {
   canManage: boolean;
 }
 
+// Кэш для хранения соответствия versionId -> имя файла
+interface TargetNameCache {
+  [versionId: string]: string;
+}
+
 export default function ReviewsList({ projectId, canManage }: ReviewsListProps) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedReview, setSelectedReview] = useState<string | null>(null);
+  const [targetNames, setTargetNames] = useState<TargetNameCache>({});
 
   useEffect(() => {
     loadReviews();
   }, [projectId]);
+
+  // Загружает имена файлов для всех targetId
+  const loadTargetNames = async (reviewsList: Review[]) => {
+    const newCache: TargetNameCache = { ...targetNames };
+    const versionIds = reviewsList
+      .filter(r => r.targetType === 'source_file_version')
+      .map(r => r.targetId)
+      .filter(id => !newCache[id]);
+
+    if (versionIds.length === 0) return;
+
+    try {
+      // Загружаем все файлы проекта
+      const files = await api.getSourceFiles(projectId);
+      
+      // Для каждого файла загружаем версии и ищем соответствие
+      for (const file of files) {
+        try {
+          const versions = await api.getSourceFileVersions(projectId, file.id);
+          for (const version of versions) {
+            if (versionIds.includes(version.id)) {
+              newCache[version.id] = file.path;
+            }
+          }
+        } catch {
+          // Игнорируем ошибки загрузки версий
+        }
+      }
+
+      setTargetNames(newCache);
+    } catch (err) {
+      console.error('Ошибка загрузки имён файлов:', err);
+    }
+  };
 
   const loadReviews = async () => {
     try {
@@ -27,11 +67,21 @@ export default function ReviewsList({ projectId, canManage }: ReviewsListProps) 
       setError(null);
       const data = await api.getReviews(projectId);
       setReviews(data);
+      // Загружаем имена файлов для ревью
+      loadTargetNames(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось загрузить ревью');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Получает отображаемое имя для targetId
+  const getTargetDisplayName = (review: Review): string => {
+    if (review.targetType === 'source_file_version') {
+      return targetNames[review.targetId] || 'Загрузка...';
+    }
+    return review.targetId; // Для diagram_version пока оставляем ID
   };
 
   const handleCreateReview = async (dto: CreateReviewDto) => {
@@ -155,7 +205,7 @@ export default function ReviewsList({ projectId, canManage }: ReviewsListProps) 
                 </span>
               </div>
               <div className="review-card-info">
-                <p><strong>ID цели:</strong> {review.targetId}</p>
+                <p><strong>Файл:</strong> {getTargetDisplayName(review)}</p>
                 <p><strong>Создано:</strong> {formatDate(review.createdAt)}</p>
                 {review.updatedAt && (
                   <p><strong>Обновлено:</strong> {formatDate(review.updatedAt)}</p>

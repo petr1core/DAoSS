@@ -48,11 +48,29 @@ export default function ProjectDetails({
   const [editVisibility, setEditVisibility] = useState('');
   const [editRequiredReviewersRules, setEditRequiredReviewersRules] = useState('');
   const [editLoading, setEditLoading] = useState(false);
+  const [showProjectMenu, setShowProjectMenu] = useState(false);
 
   useEffect(() => {
     loadProject();
     loadUserRole();
   }, [projectId, userId]);
+
+  // Закрываем меню проекта при клике вне его
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.project-menu-container')) {
+        setShowProjectMenu(false);
+      }
+    };
+
+    if (showProjectMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [showProjectMenu]);
 
   useEffect(() => {
     if (project) {
@@ -266,11 +284,6 @@ export default function ProjectDetails({
       <div className="project-details-header">
         <button onClick={onBack} className="back-button">← Назад</button>
         <div className="project-actions">
-          {canEdit && !isEditing && (
-            <button onClick={handleEditClick} className="edit-button">
-              Редактировать
-            </button>
-          )}
           {canDelete && (
             <button onClick={handleDeleteClick} className="delete-button">
               Удалить
@@ -280,6 +293,34 @@ export default function ProjectDetails({
       </div>
 
       <div className="project-info">
+        {canEdit && !isEditing && (
+          <div className="project-menu-container">
+            <button
+              onClick={() => setShowProjectMenu(!showProjectMenu)}
+              className="project-menu-button"
+              title="Дополнительные действия"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="1"></circle>
+                <circle cx="12" cy="5" r="1"></circle>
+                <circle cx="12" cy="19" r="1"></circle>
+              </svg>
+            </button>
+            {showProjectMenu && (
+              <div className="project-menu-dropdown">
+                <button
+                  onClick={() => {
+                    handleEditClick();
+                    setShowProjectMenu(false);
+                  }}
+                  className="project-menu-item"
+                >
+                  Редактировать
+                </button>
+              </div>
+            )}
+          </div>
+        )}
         {isEditing ? (
           <div className="edit-form">
             <div className="form-group">
