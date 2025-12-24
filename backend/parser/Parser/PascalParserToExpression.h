@@ -4,11 +4,9 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <string>
-#include <vector>
+
 #include <utility>
-#include <stdexcept>
-#include <iostream>
+#include "stdexcept"
 #include "../Scripts/Lexer.h"
 #include "../Scripts/Token.h"
 #include "../Scripts/HierarchyList.h"
@@ -25,13 +23,15 @@ private:
     std::string title;
     TPostfixCalc calc;
     std::vector<Token> tokenList;
-    std::vector<std::pair<Expression *, std::string>> expressionList;
+    std::vector<std::pair<Expression *, string>> expressionList;
     std::vector<Expression *> expressionOnly;
     std::vector<Token> localList;
     int currentPos = 0;
     LangType type;
+
 public:
-    PascalParserToExpression(Lexer lexer, LangType type) {
+    PascalParserToExpression(Lexer lexer, LangType type)
+    {
         this->tokenList = lexer.getTokenList();
         this->type=type;
     }
@@ -40,10 +40,15 @@ public:
     }
     // Парсинг без выполнения - только структура
     void parseOnly() {
+        std::cout << "[HYPOTHESIS 3] parseOnly: Starting, tokenList size: " << tokenList.size() << std::endl;
         try {
             initDeclaration();
+            std::cout << "[HYPOTHESIS 3] parseOnly: initDeclaration completed successfully" << std::endl;
+        } catch (const std::bad_alloc& e) {
+            std::cerr << "[HYPOTHESIS 3] parseOnly: bad_alloc in initDeclaration: " << e.what() << std::endl;
+            throw;
         } catch (const std::exception& e) {
-            std::cerr << "[PARSER] Exception in initDeclaration: " << e.what() << std::endl;
+            std::cerr << "[HYPOTHESIS 3] parseOnly: exception in initDeclaration: " << e.what() << std::endl;
             throw;
         }
         // Не вызываем calc.ChangeEquation - только парсим структуру
@@ -51,7 +56,7 @@ public:
     
     void parse() {
         initDeclaration();
-        std::vector<std::vector<Token>> copyIf;
+        vector<vector<Token>> copyIf;
         for (const auto& item: expressionList) {
             if (auto statementExpr = dynamic_cast<StatementExpression *>(item.first)) {
                 calc.ChangeEquation(*statementExpr); // Вызов метода для StatementExpression
@@ -60,7 +65,7 @@ public:
                     copyIf.push_back((*conditionExpr).getCondition());
                 }
                 if ((*conditionExpr).getCondition().front().getValue() == "else") {
-                    std::vector<Token> newCon;
+                    vector<Token> newCon;
                     newCon.push_back((*conditionExpr).getCondition().front());
                     for (auto item: copyIf.back()) {
                         newCon.push_back(item);
@@ -98,51 +103,104 @@ public:
     std::string getTitle() { return title; }
 
     void initDeclaration() {
+        std::cout << "[HYPOTHESIS 3] initDeclaration: Starting, currentPos=" << currentPos 
+                  << ", tokenList.size()=" << tokenList.size() << std::endl;
+        
         if (isTypeToken("TITLE")) {
-            // Извлекаем только имя программы из токена "program <name>"
-            std::string titleValue = tokenList[currentPos].getValue();
-            // Убираем "program " в начале, оставляем только имя
-            if (titleValue.length() > 8 && titleValue.substr(0, 8) == "program ") {
-                setTitle(titleValue.substr(8)); // Пропускаем "program "
-            } else {
-                setTitle(titleValue); // Fallback: если формат неожиданный
-            }
-            // Пропускаем токен TITLE и точку с запятой
-            currentPos++; // Пропускаем токен TITLE
-            if (isTypeToken("SEMICOLON")) {
-                currentPos++; // Пропускаем SEMICOLON после названия программы
-            }
-        }
-        if (isTypeToken("FUNCTION")) {
-            auto *sw = new Function(currentPos, tokenList);
-            currentPos = sw->getPos();
-            std::pair t{sw, "Var"};
-            calc.add(sw);
-            expressionList.emplace_back(t);
-        }
-        if (isTypeToken("PROCEDURE")) {
-            auto *sw = new Procedure(currentPos, tokenList);
-            currentPos = sw->getPos();
-            std::pair t{sw, "Var"};
-            calc.add(sw);
-            expressionList.emplace_back(t);
-        }
-        if (isTypeToken("CONST")) {
+            std::cout << "[HYPOTHESIS 3] initDeclaration: Processing TITLE" << std::endl;
+            setTitle(tokenList[currentPos].getValue());
+            while (!isTypeToken("SEMICOLON")) { currentPos++; } //скип названия, чтобы дойти до разделов Const или Var
             currentPos++;
-            while (!isTypeToken("VAR") && !isTypeToken("BEGIN") && !isTypeToken("ENDofPROGRAM")) {
-                initRowStatement("Const");
-                if (currentPos >= tokenList.size()) break;
+        }
+        
+        // ИСПРАВЛЕНО: обрабатываем все функции/процедуры в цикле до CONST/VAR/BEGIN
+        // В Pascal функции могут идти ДО секций const/var
+        std::cout << "[HYPOTHESIS 3] initDeclaration: Starting function/procedure loop" << std::endl;
+        int funcCount = 0;
+        while (currentPos < tokenList.size() && 
+               (isTypeToken("FUNCTION") || isTypeToken("PROCEDURE"))) {
+            funcCount++;
+            std::cout << "[HYPOTHESIS 3] initDeclaration: Processing function/procedure #" << funcCount 
+                      << " at pos=" << currentPos << std::endl;
+            
+            try {
+                if (isTypeToken("FUNCTION")) {
+                    std::cout << "[HYPOTHESIS 3] initDeclaration: Creating Function object" << std::endl;
+                    auto *sw = new Function(currentPos, tokenList);
+                    currentPos = sw->getPos();
+                    std::pair t{sw, "Var"};
+                    calc.add(sw);
+                    expressionList.emplace_back(t);
+                    std::cout << "[HYPOTHESIS 3] initDeclaration: Function created, new pos=" << currentPos << std::endl;
+                } else if (isTypeToken("PROCEDURE")) {
+                    std::cout << "[HYPOTHESIS 3] initDeclaration: Creating Procedure object" << std::endl;
+                    auto *sw = new Procedure(currentPos, tokenList);
+                    currentPos = sw->getPos();
+                    std::pair t{sw, "Var"};
+                    calc.add(sw);
+                    expressionList.emplace_back(t);
+                    std::cout << "[HYPOTHESIS 3] initDeclaration: Procedure created, new pos=" << currentPos << std::endl;
+                }
+            } catch (const std::bad_alloc& e) {
+                std::cerr << "[ERROR] [HYPOTHESIS 3] initDeclaration: bad_alloc at function/procedure #" << funcCount 
+                          << ", pos=" << currentPos << ": " << e.what() << std::endl;
+                throw;
+            } catch (const std::exception& e) {
+                std::cerr << "[ERROR] [HYPOTHESIS 3] initDeclaration: exception at function/procedure #" << funcCount 
+                          << ", pos=" << currentPos << ": " << e.what() << std::endl;
+                throw;
             }
+        }
+        
+        std::cout << "[HYPOTHESIS 3] initDeclaration: Functions/procedures processed: " << funcCount << std::endl;
+        std::cout << "[HYPOTHESIS 3] initDeclaration: Processing CONST section, currentPos=" << currentPos << std::endl;
+        if (isTypeToken("CONST")) {
+            std::cout << "[HYPOTHESIS 3] initDeclaration: Processing CONST section" << std::endl;
+            currentPos++;
+            int constCount = 0;
+            while (currentPos < tokenList.size() && !isTypeToken("VAR") && !isTypeToken("BEGIN")) {
+                constCount++;
+                std::cout << "[HYPOTHESIS 3] initDeclaration: Processing CONST statement #" << constCount 
+                          << " at pos=" << currentPos << std::endl;
+                try {
+                    initRowStatement("Const");
+                } catch (const std::bad_alloc& e) {
+                    std::cerr << "[ERROR] [HYPOTHESIS 3] initDeclaration: bad_alloc in CONST statement #" << constCount 
+                              << ": " << e.what() << std::endl;
+                    throw;
+                }
+            }
+            std::cout << "[HYPOTHESIS 3] initDeclaration: CONST statements processed: " << constCount << std::endl;
         }
         if (isTypeToken("VAR")) {
+            std::cout << "[HYPOTHESIS 3] initDeclaration: Processing VAR section, currentPos=" << currentPos << std::endl;
             currentPos++;
-            while (!isTypeToken("BEGIN") && !isTypeToken("ENDofPROGRAM")) {
-                initRowStatement("Var");
-                if (currentPos >= tokenList.size()) break;
+            int varCount = 0;
+            while (currentPos < tokenList.size() && !isTypeToken("BEGIN")) {
+                varCount++;
+                std::cout << "[HYPOTHESIS 3] initDeclaration: Processing VAR statement #" << varCount 
+                          << " at pos=" << currentPos << std::endl;
+                try {
+                    initRowStatement("Var");
+                } catch (const std::bad_alloc& e) {
+                    std::cerr << "[ERROR] [HYPOTHESIS 3] initDeclaration: bad_alloc in VAR statement #" << varCount 
+                              << ": " << e.what() << std::endl;
+                    throw;
+                }
             }
-            currentPos++;
+            std::cout << "[HYPOTHESIS 3] initDeclaration: VAR statements processed: " << varCount << std::endl;
+            if (currentPos < tokenList.size() && isTypeToken("BEGIN")) {
+                currentPos++;
+            }
         }
-        initBegin();
+        std::cout << "[HYPOTHESIS 3] initDeclaration: Starting initBegin(), currentPos=" << currentPos << std::endl;
+        try {
+            initBegin();
+        } catch (const std::bad_alloc& e) {
+            std::cerr << "[ERROR] [HYPOTHESIS 3] initDeclaration: bad_alloc in initBegin: " << e.what() << std::endl;
+            throw;
+        }
+        std::cout << "[HYPOTHESIS 3] initDeclaration: Completed successfully" << std::endl;
         return;
     }
 
@@ -152,78 +210,103 @@ public:
         }
     }
 
-    void initRowStatement(const std::string& chapter) {//метод чтобы строчку кода (не условие и не цикл) переводить в StatementExpression
-        // Проверяем, не пустое ли тело (сразу END)
-        if (isTypeToken("ENDofPROGRAM")) {
-            return;
-        }
+    void initRowStatement(const string& chapter) {//метод чтобы строчку кода (не условие и не цикл) переводить в StatementExpression
+        size_t startPos = currentPos;
+        int tokenCount = 0;
         
-        while (!isTypeToken("SEMICOLON") && !isTypeToken("ENDofPROGRAM")) {
+        while (!isTypeToken("SEMICOLON")) {
             if (currentPos >= tokenList.size()) {
-                throw std::runtime_error("Reached end of tokens without finding SEMICOLON or ENDofPROGRAM");
+                std::cerr << "[ERROR] [HYPOTHESIS 3] initRowStatement: Reached end of tokenList before SEMICOLON at pos=" 
+                          << currentPos << ", chapter=" << chapter << std::endl;
+                throw std::runtime_error("Unexpected end of tokens in initRowStatement");
             }
             localList.push_back(tokenList[currentPos]);
+            tokenCount++;
             currentPos++;
+            
+            // Защита от бесконечного цикла
+            if (tokenCount > 10000) {
+                std::cerr << "[ERROR] [HYPOTHESIS 3] initRowStatement: Too many tokens without SEMICOLON! pos=" 
+                          << currentPos << ", chapter=" << chapter << std::endl;
+                throw std::runtime_error("Too many tokens in statement");
+            }
         }
         
-        // Если localList пустой (не было операторов), не создаем StatementExpression
-        if (!localList.empty()) {
-            auto *rx = new StatementExpression(localList);
+        try {
+            // ИСПРАВЛЕНО: используем move для передачи localList
+            auto *rx = new StatementExpression(std::move(localList));
             std::pair t = {rx, chapter};
             expressionList.emplace_back(t);
+        } catch (const std::bad_alloc& e) {
+            std::cerr << "[ERROR] [HYPOTHESIS 3] initRowStatement: bad_alloc creating StatementExpression" 
+                      << ", chapter=" << chapter << ", tokens=" << tokenCount 
+                      << ", startPos=" << startPos << ": " << e.what() << std::endl;
+            throw;
         }
         
         localList.clear();
-        
-        // Пропускаем SEMICOLON, если он есть
-        if (isTypeToken("SEMICOLON")) {
-            currentPos++;
-        }
-        
+        currentPos++;
         return;
     }
 
     void initBegin() {
-        std::vector<Token> condition;
-        int iterations = 0;
-        const int MAX_ITERATIONS = 100; // Уменьшено с 1000 для быстрого обнаружения проблем
+        std::cout << "[HYPOTHESIS 3] initBegin: Starting, currentPos=" << currentPos 
+                  << ", tokenList.size()=" << tokenList.size() << std::endl;
         
+        std::vector<Token> condition;
+        int statementCount = 0;
         while (!isTypeToken("ENDofPROGRAM")) {
-            // Ранняя проверка: если вышли за границы токенов, сразу выбрасываем ошибку
-            if (currentPos >= tokenList.size()) {
-                throw std::runtime_error("Reached end of tokens without finding ENDofPROGRAM");
+            statementCount++;
+            if (statementCount % 10 == 0) {
+                std::cout << "[HYPOTHESIS 3] initBegin: Processed " << statementCount 
+                          << " statements, currentPos=" << currentPos << std::endl;
             }
             
-            iterations++;
-            if (iterations > MAX_ITERATIONS) {
-                throw std::runtime_error("Too many iterations in initBegin loop - possible infinite loop or invalid syntax");
-            }
-            
-            if (isTypeToken("SWITCH")) {
-                auto *sw = new CaseOf(currentPos, tokenList);
-                currentPos = sw->getPos();
-                std::pair t{sw, "Body"};
-                expressionList.push_back(t);
-                continue;
-            }
-            if ((isTypeToken("CONDITION")) || (isTypeToken("UNCONDITION")) || (isTypeToken("CYCLEFOR")) ||
-                (isTypeToken("CYCLEWHILE")) || (isTypeToken("CYCLEDOWHILE"))) {
-                auto *cx = new ConditionExpression(currentPos, tokenList);
-                currentPos = cx->getGlobalPos();
-                std::pair t = {cx, "Body"};
-                expressionList.push_back(t);
-                continue;
-            } else {
-                initRowStatement("Body");
+            try {
+                if (isTypeToken("SWITCH")) {
+                    std::cout << "[HYPOTHESIS 3] initBegin: Creating CaseOf at pos=" << currentPos << std::endl;
+                    auto *sw = new CaseOf(currentPos, tokenList);
+                    currentPos = sw->getPos();
+                    std::pair t{sw, "Body"};
+                    expressionList.push_back(t);
+                    std::cout << "[HYPOTHESIS 3] initBegin: CaseOf created, new pos=" << currentPos << std::endl;
+                    continue;
+                }
+                if ((isTypeToken("CONDITION")) || (isTypeToken("UNCONDITION")) || (isTypeToken("CYCLEFOR")) ||
+                    (isTypeToken("CYCLEWHILE")) || (isTypeToken("CYCLEDOWHILE"))) {
+                    std::cout << "[HYPOTHESIS 3] initBegin: Creating ConditionExpression at pos=" << currentPos 
+                              << ", type=" << tokenList[currentPos].getType() << std::endl;
+                    auto *cx = new ConditionExpression(currentPos, tokenList);
+                    currentPos = cx->getGlobalPos();
+                    std::pair t = {cx, "Body"};
+                    expressionList.push_back(t);
+                    std::cout << "[HYPOTHESIS 3] initBegin: ConditionExpression created, new pos=" << currentPos << std::endl;
+                    continue;
+
+                } else {
+                    if (statementCount <= 5 || statementCount % 20 == 0) {
+                        std::cout << "[HYPOTHESIS 3] initBegin: Processing row statement #" << statementCount 
+                                  << " at pos=" << currentPos << std::endl;
+                    }
+                    initRowStatement("Body");
+                }
+            } catch (const std::bad_alloc& e) {
+                std::cerr << "[ERROR] [HYPOTHESIS 3] initBegin: bad_alloc at statement #" << statementCount 
+                          << ", pos=" << currentPos << ", token type=" << tokenList[currentPos].getType() 
+                          << ", token value=\"" << tokenList[currentPos].getValue() << "\": " << e.what() << std::endl;
+                throw;
+            } catch (const std::exception& e) {
+                std::cerr << "[ERROR] [HYPOTHESIS 3] initBegin: exception at statement #" << statementCount 
+                          << ", pos=" << currentPos << ": " << e.what() << std::endl;
+                throw;
             }
         }
+
+        std::cout << "[HYPOTHESIS 3] initBegin: Completed, processed " << statementCount << " statements total" << std::endl;
         return;
     }
 
-    bool isTypeToken(const std::string &typeToken) {
-        if (currentPos >= tokenList.size()) {
-            return false;
-        }
+    bool isTypeToken(const string &typeToken) {
         return tokenList[currentPos].getType() == typeToken;
     }
 };

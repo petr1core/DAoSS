@@ -6,9 +6,8 @@
 #define RUNNABLEEXPRESSION_H
 #include <utility>
 #include <vector>
-#include <iostream>
-#include <stdexcept>
 #include "Expression.h"
+#include "stdexcept"
 #include "../Scripts/Token.h"
 static int i=0;
 class StatementExpression : public Expression {
@@ -16,6 +15,8 @@ private:
     int i1;
     std::vector<Token> list;
 public:
+    // ИСПРАВЛЕНО: принимаем vector по значению для поддержки move семантики
+    // Это критично для избежания bad_alloc при большом количестве statement-ов
     StatementExpression(std::vector<Token> _list)
     {
         i1=++i;
@@ -30,17 +31,17 @@ public:
         this->list=other.list;
         return *this;
     }
-    std::vector<Token>getList(){return list;}
+    vector<Token>getList(){return list;}
     void add(Token t){list.push_back(t);}
     void print(int tab) override{
         for(int j=0;j<tab;j++){
-            std::cout<<"   ";
+            cout<<"   ";
         }
         std::cout<<"StateExpression "<<i1<<" = ";
         for(auto token:list){
           std::cout<<token.getValue()<<" ";
         }
-        std::cout<<std::endl;
+        std::cout<<endl;
     }
 };
 #endif //RUNNABLEEXPRESSION_H

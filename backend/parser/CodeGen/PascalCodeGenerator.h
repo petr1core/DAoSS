@@ -159,14 +159,7 @@ private:
             }
 
             indentLevel--;
-            out << getIndent() << "end";
-
-            // Добавляем точку с запятой если нет else ветки
-            if (!statement.contains("elseBranch")) {
-                out << ";\n";
-            } else {
-                out << "\n";
-            }
+            out << getIndent() << "end\n";
         } else if (type == "while") {
             std::string condition = cleanStatement(statement["condition"]);
             // Убираем лишний "while" если он уже есть в условии
@@ -239,7 +232,7 @@ private:
         }
 
         indentLevel--;
-        out << getIndent() << "end;\n";
+        out << getIndent() << "end;\n";  // else всегда заканчивается на end;
     }
 
     void generateCaseStatement(const nlohmann::json &statement) {

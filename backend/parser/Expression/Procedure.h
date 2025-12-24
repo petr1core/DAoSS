@@ -11,7 +11,6 @@
 #include "StatementExpression.h"
 #include <utility>
 #include <vector>
-#include <iostream>
 
 static int p = 0;
 
@@ -24,7 +23,8 @@ private:
     std::vector<Token> localList;
     int globalPosProc;
 public:
-    Procedure(int pos, std::vector<Token> list) {
+    // ИСПРАВЛЕНО: передаем vector по константной ссылке
+    Procedure(int pos, const vector<Token>& list) {
         p1 = ++p;
         doProcedure(pos, list);
     }
@@ -35,7 +35,8 @@ public:
         this->expressionList = ex.expressionList;
     }
 
-    void doProcedure(int pos, std::vector<Token> list) {
+    // ИСПРАВЛЕНО: передаем vector по константной ссылке
+    void doProcedure(int pos, const vector<Token>& list) {
         globalPosProc = pos;
         while (list[globalPosProc].getType() != "SEMICOLON") {
             declaration.push_back(list[globalPosProc]);
@@ -60,7 +61,8 @@ public:
                     localList.push_back(list[globalPosProc]);
                     globalPosProc++;
                 }
-                auto *rx = new StatementExpression(localList);
+                // ИСПРАВЛЕНО: используем move для передачи localList
+                auto *rx = new StatementExpression(std::move(localList));
                 expressionList.push_back(rx);
                 localList.clear();
                 globalPosProc++;
@@ -70,15 +72,15 @@ public:
         return;
     }
 
-    std::vector<Expression *> getBody() { return expressionList; }
+    vector<Expression *> getBody() { return expressionList; }
 
-    std::vector<Token> getHead() { return declaration; }
+    vector<Token> getHead() { return declaration; }
 
     Token getName() { return name; }
 
     void print(int tab) override {
         for (int j = 0; j < tab; j++) {
-            std::cout << "   ";
+            cout << "   ";
         }
         std::cout << "Procedure " << p1 << " = ";
         for (auto token: declaration) {
@@ -86,7 +88,7 @@ public:
                 std::cout << token.getValue() << " ";
             }
         }
-        std::cout << std::endl;
+        std::cout << endl;
 
         if (!expressionList.empty()) {
             ++tab;

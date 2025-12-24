@@ -564,26 +564,20 @@ public:
         printNode("Parameters");
         indentLevel++;
         for (auto& param : decl.parameters) {
-            printNode("Parameter", param.typeName + " " + param.name +
-                                   (param.defaultValue.empty() ? "" : " = " + param.defaultValue));
+            printNode("Parameter", param.typeName + " " + param.name);
         }
         indentLevel--;
+
+        // 🔥 ПРОСТАЯ ПРОВЕРКА
+        std::cout << "DEBUG VISUALIZER: Constructor has " << decl.initializers.size()
+                  << " initializers" << std::endl;
 
         if (!decl.initializers.empty()) {
             printNode("Initializers");
             indentLevel++;
             for (auto& init : decl.initializers) {
-                std::string initStr = init.memberName;
-                if (init.isBaseClass) {
-                    initStr = "base " + initStr;
-                }
-                if (init.value) {
-                    initStr += "(";
-                    std::cout<<"TODO: добавить вывод выражения инициализации ";
-                    initStr += "...";
-                    initStr += ")";
-                }
-                printNode("Initializer", initStr);
+                // Просто выведем имя члена
+                printNode("Initializer", init.memberName);
             }
             indentLevel--;
         }
@@ -594,10 +588,12 @@ public:
         }
         indentLevel--;
     }
+
     void visit(CppFieldDecl& decl) override {
         printNode("CppFieldDecl", accessSpecifierToString(decl.access) + ": " +
                   decl.typeName + " " + decl.name +
-                  (decl.isMutable ? " mutable" : ""));
+                  (decl.isMutable ? " mutable" : "")+
+                  (decl.isStatic ? " static" : ""));
         if (decl.initializer) {
             indentLevel++;
             printNode("Initializer");

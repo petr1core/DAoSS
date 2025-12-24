@@ -11,10 +11,8 @@
 #include <stdexcept>
 #include <cctype>
 #include <algorithm>
-#include <unordered_set>
 #include "../Ast/Expr.h"
 #include "../Ast/Stmt.h"
-#include "../Ast/ExprAcceptImpl.h"
 #include "../Scripts/Lexer.h"
 
 class CParserToAST {
@@ -22,16 +20,46 @@ public:
     std::unique_ptr<Program> parse(const std::string &code) {
         Lexer lexer(code, LangType::LANG_C);
         tokens = lexer.getTokenList();
-        //lexer.printTokenList();
+        
+        std::cout << "[CParser::parse] Lexer created " << tokens.size() << " tokens" << std::endl;
+        if (tokens.size() > 0) {
+            std::cout << "[CParser::parse] First token: " << tokens[0].getType() 
+                      << " = \"" << tokens[0].getValue() << "\"" << std::endl;
+            if (tokens.size() > 10) {
+                std::cout << "[CParser::parse] Token #10: " << tokens[10].getType() 
+                          << " = \"" << tokens[10].getValue() << "\"" << std::endl;
+            }
+            if (tokens.size() > 50) {
+                std::cout << "[CParser::parse] Token #50: " << tokens[50].getType() 
+                          << " = \"" << tokens[50].getValue() << "\"" << std::endl;
+            }
+            std::cout << "[CParser::parse] Last token: " << tokens[tokens.size()-1].getType() 
+                      << " = \"" << tokens[tokens.size()-1].getValue() << "\"" << std::endl;
+        }
+        
+        // Включаем полный вывод первых 50 токенов для отладки
+        std::cout << "[CParser::parse] First 50 tokens:" << std::endl;
+        for (size_t i = 0; i < std::min(size_t(50), tokens.size()); i++) {
+            std::cout << "  [" << i << "] " << tokens[i].getType() 
+                      << " = \"" << tokens[i].getValue() << "\"" << std::endl;
+        }
+        if (tokens.size() > 50) {
+            std::cout << "  ... and " << (tokens.size() - 50) << " more tokens" << std::endl;
+        }
+        
         // Фильтруем пробелы и комментарии, если они вдруг остались
         std::vector<Token> filtered;
         filtered.reserve(tokens.size());
+        int filteredCount = 0;
         for (const auto &token: tokens) {
             if (token.getType() == "SPACE" || token.getType() == "COMMENT") {
+                filteredCount++;
                 continue;
             }
             filtered.push_back(token);
         }
+        std::cout << "[CParser::parse] Filtered out " << filteredCount 
+                  << " SPACE/COMMENT tokens, remaining: " << filtered.size() << std::endl;
         tokens.swap(filtered);
         current = 0;
 
@@ -227,24 +255,57 @@ private:
     std::unique_ptr<Block> parseTranslationUnit() {
         auto block = std::make_unique<Block>();
 
-        std::cout << "Starting parseTranslationUnit with " << tokens.size() << " tokens" << std::endl;
+        std::cout << "[CParser] Starting parseTranslationUnit with " << tokens.size() << " tokens" << std::endl;
+        
+        if (tokens.empty()) {
+            std::cerr << "[WARNING] [CParser] parseTranslationUnit: tokens list is empty!" << std::endl;
+            return block;
+        }
 
-        while (!isAtEnd()) {
+        int iterationCount = 0;
+        const int MAX_ITERATIONS = 100000; // Защита от бесконечного цикла
+
+        while (!isAtEnd() && current < tokens.size()) {
+            if (iterationCount++ > MAX_ITERATIONS) {
+                std::cerr << "[ERROR] [CParser] parseTranslationUnit: Too many iterations (> " 
+                          << MAX_ITERATIONS << "), breaking loop" << std::endl;
+                break;
+            }
+            
             std::string tmp = peekType();
-            std::cout << "Current token " << current << ": " << tmp << " [" << peek().getValue() << "]" << std::endl;
+            std::cout << "[CParser] Current token " << current << ": " << tmp 
+                      << " [" << peek().getValue() << "]" << std::endl;
 
             // Пропускаем комментарии
             if (tmp == "COMMENT") {
-                std::cout << "Skipping: " << tmp << std::endl;
-                advance();
+                std::cout << "[CParser] Skipping: " << tmp << std::endl;
+                if (current < tokens.size()) {
+                    advance();
+                } else {
+                    break;
+                }
                 continue;
             }
             if (isPreprocessor(tmp)) {
                 // Для каждой препроцессорной директивы создаем отдельный узел
-                while (!isAtEnd() && isPreprocessor(peekType())) {
-                    auto pp = parsePreprocessor();
-                    if (pp) {
-                        block->statements.push_back(std::move(pp));
+                int ppCount = 0;
+                const int MAX_PP_DIRECTIVES = 1000;
+                while (!isAtEnd() && current < tokens.size() && isPreprocessor(peekType()) && ppCount++ < MAX_PP_DIRECTIVES) {
+                    try {
+                        auto pp = parsePreprocessor();
+                        if (pp) {
+                            block->statements.push_back(std::move(pp));
+                            std::cout << "[CParser] Added preprocessor directive, total statements: " 
+                                      << block->statements.size() << std::endl;
+                        }
+                    } catch (const std::exception& e) {
+                        std::cerr << "[ERROR] [CParser] Error parsing preprocessor directive: " 
+                                  << e.what() << std::endl;
+                        if (current < tokens.size()) {
+                            advance();
+                        } else {
+                            break;
+                        }
                     }
                 }
                 continue;
@@ -252,36 +313,59 @@ private:
             // Функции (прототипы и определения)
             if (isFunctionStart()) {
                 try {
+                    std::cout << "[CParser] Detected function start at token " << current << std::endl;
                     auto func = parseFunction();
 
                     if (func) {
                         if (auto functionDecl = dynamic_cast<FunctionDecl *>(func.get())) {
+                            std::cout << "[CParser] Parsed function: " << functionDecl->name 
+                                      << ", returnType: " << functionDecl->returnType << std::endl;
                             if (functionDecl->name == "main") {
                                 // Основная функция распарсена, остальной код - это другие функции
-                                std::cout << "Main function parsed, continuing with other functions..." << std::endl;
+                                std::cout << "[CParser] Main function parsed, continuing with other functions..." << std::endl;
                             }
                         }
                         block->statements.push_back(std::move(func));
-                        std::cout << "Successfully added function to block. Current position: " << current << std::endl;
+                        std::cout << "[CParser] Successfully added function to block. Current position: " 
+                                  << current << ", total statements: " << block->statements.size() << std::endl;
 
-                        if (isAtEnd()) {
-                            std::cout << "Reached end after parsing function" << std::endl;
+                        if (isAtEnd() || current >= tokens.size()) {
+                            std::cout << "[CParser] Reached end after parsing function" << std::endl;
                             break;
                         }
                         continue;
+                    } else {
+                        std::cerr << "[ERROR] [CParser] parseFunction() returned nullptr" << std::endl;
                     }
                 } catch (const std::exception &e) {
-                    std::cerr << "Error parsing function: " << e.what() << std::endl;
-                    if (!isAtEnd()) advance();
+                    std::cerr << "[ERROR] [CParser] Error parsing function: " << e.what() << std::endl;
+                    if (!isAtEnd() && current < tokens.size()) {
+                        advance();
+                    } else {
+                        break;
+                    }
                 }
                 continue;
             }
             if (tmp == "STRUCT" || tmp == "UNION") {
-                auto structDecl = parseStruct();
+                try {
+                    auto structDecl = parseStruct();
 
-                consume("SEMICOLON", "Ожидался ';' после struct");
+                    if (current < tokens.size()) {
+                        consume("SEMICOLON", "Ожидался ';' после struct");
+                    }
 
-                block->statements.push_back(std::move(structDecl));
+                    block->statements.push_back(std::move(structDecl));
+                    std::cout << "[CParser] Added struct/union, total statements: " 
+                              << block->statements.size() << std::endl;
+                } catch (const std::exception& e) {
+                    std::cerr << "[ERROR] [CParser] Error parsing struct/union: " << e.what() << std::endl;
+                    if (current < tokens.size()) {
+                        advance();
+                    } else {
+                        break;
+                    }
+                }
                 continue;
             }
 
@@ -376,12 +460,54 @@ private:
                 continue;
             }
 
+            // Попытка распознать как начало функции (fallback для случаев, когда isFunctionStart() не сработал)
+            if (isTypeToken(tmp)) {
+                size_t savePos = current;
+                try {
+                    std::cout << "[CParser] Trying to parse as function (fallback), type token: " << tmp << std::endl;
+                    // Пробуем распарсить тип
+                    std::string typeName = parseTypeName();
+                    std::cout << "[CParser] Parsed type name: " << typeName << std::endl;
+                    
+                    // Проверяем, что следующий токен - идентификатор
+                    if (check("IDENTIFIER")) {
+                        std::string funcName = peek().getValue();
+                        std::cout << "[CParser] Found identifier after type: " << funcName << std::endl;
+                        
+                        // Проверяем, что после идентификатора идет '('
+                        size_t nextPos = current + 1;
+                        if (nextPos < tokens.size() && tokens[nextPos].getType() == "OPENPARENTHESES") {
+                            std::cout << "[CParser] Detected function signature, parsing function..." << std::endl;
+                            current = savePos; // Откатываемся к началу
+                            auto func = parseFunction();
+                            if (func) {
+                                block->statements.push_back(std::move(func));
+                                std::cout << "[CParser] Successfully parsed function (fallback)" << std::endl;
+                                continue;
+                            }
+                        }
+                    }
+                    // Если не получилось, откатываемся
+                    current = savePos;
+                } catch (const std::exception& e) {
+                    std::cerr << "[ERROR] [CParser] Error in function fallback parsing: " << e.what() << std::endl;
+                    current = savePos;
+                }
+            }
+            
             // Если ничего не распарсилось, пропускаем токен
-            std::cout << "No rule for token, skipping: " << tmp << std::endl;
-            advance();
+            std::cerr << "[WARNING] [CParser] No rule for token, skipping: " << tmp 
+                      << " [" << peek().getValue() << "]" << std::endl;
+            if (current < tokens.size()) {
+                advance();
+            } else {
+                break;
+            }
         }
 
-        std::cout << "Finished parseTranslationUnit. Total statements: " << block->statements.size() << std::endl;
+        std::cout << "[CParser] Finished parseTranslationUnit. Total statements: " 
+                  << block->statements.size() << ", final position: " << current 
+                  << ", tokens.size(): " << tokens.size() << std::endl;
         return block;
     }
 
@@ -504,33 +630,49 @@ private:
 
     std::unique_ptr<Block> parseBlockBody() {
         auto block = std::make_unique<Block>();
-        std::cout << "Starting parseBlockBody at token " << current << std::endl;
+        std::cout << "[CParser] Starting parseBlockBody at token " << current 
+                  << ", tokens.size()=" << tokens.size() << std::endl;
 
-        while (!isAtEnd() && !check("CLOSECURLY")) {
+        int statementCount = 0;
+        const int MAX_STATEMENTS = 10000; // Защита от бесконечного цикла
+        
+        while (!isAtEnd() && current < tokens.size() && !check("CLOSECURLY")) {
+            if (statementCount++ > MAX_STATEMENTS) {
+                std::cerr << "[ERROR] [CParser] parseBlockBody: Too many statements (> " 
+                          << MAX_STATEMENTS << "), breaking loop" << std::endl;
+                break;
+            }
+            
             try {
                 if (auto stmt = parseStatement()) {
                     block->statements.push_back(std::move(stmt));
                 } else {
                     // Если не удалось распарсить оператор, пропускаем токен
-                    if (!isAtEnd()) {
-                        std::cout << "Skipping in block: " << peekType() << " [" << peek().getValue() << "]"
-                                  << std::endl;
+                    if (!isAtEnd() && current < tokens.size()) {
+                        std::cout << "[CParser] Skipping in block: " << peekType() 
+                                  << " [" << peek().getValue() << "]" << std::endl;
                         advance();
                     } else {
                         break;
                     }
                 }
             } catch (const std::exception &e) {
-                std::cerr << "Error in parseBlockBody: " << e.what() << std::endl;
-                if (!isAtEnd()) advance();
+                std::cerr << "[ERROR] [CParser] Error in parseBlockBody: " << e.what() << std::endl;
+                if (!isAtEnd() && current < tokens.size()) {
+                    advance();
+                } else {
+                    break;
+                }
             }
         }
 
-        if (!isAtEnd() && check("CLOSECURLY")) {
+        if (!isAtEnd() && current < tokens.size() && check("CLOSECURLY")) {
             consume("CLOSECURLY", "Ожидался символ '}'");
-            std::cout << "Closed block body" << std::endl;
+            std::cout << "[CParser] Closed block body, parsed " 
+                      << block->statements.size() << " statements" << std::endl;
         } else {
-            std::cout << "WARNING: Block body not properly closed" << std::endl;
+            std::cerr << "[WARNING] [CParser] Block body not properly closed, current=" 
+                      << current << ", tokens.size()=" << tokens.size() << std::endl;
         }
 
         return block;
@@ -965,10 +1107,23 @@ private:
     std::string parseTypeName() {
         std::string typeName;
 
-        // Базовый тип
-        while (!isAtEnd() && isTypeToken(peekType())) {
-            if (!typeName.empty()) typeName += " ";
+        // Обрабатываем const в начале типа (const int, const float и т.д.)
+        bool isConst = false;
+        if (match("CONST")) {
+            isConst = true;
+            typeName = "const ";
+        }
+
+        // Базовый тип - читаем только один токен типа за раз (не цикл!)
+        if (!isAtEnd() && isTypeToken(peekType())) {
             typeName += advance().getValue();
+            
+            // Модификаторы типа (static и т.д.) - но только если они идут сразу после типа
+            // НЕ читаем несколько базовых типов подряд!
+        } else if (isConst && !typeName.empty()) {
+            // Если был const, но тип не распознан, возвращаем пустую строку
+            // (это ошибка, но не ломаем парсинг)
+            return "";
         }
 
         // Указатели и ссылки
@@ -1378,16 +1533,24 @@ private:
     }
 
     bool isFunctionStart() {
-        if (isAtEnd()) return false;
+        if (isAtEnd() || tokens.empty() || current >= tokens.size()) {
+            return false;
+        }
 
         size_t save = current;
+        const size_t MAX_LOOKAHEAD = 100; // Защита от чрезмерного lookahead
 
         try {
             // Парсим тип возвращаемого значения
             std::string type = parseTypeName();
+            
+            if (current >= tokens.size()) {
+                current = save;
+                return false;
+            }
 
             // Должен быть идентификатор
-            if (isAtEnd() || !check("IDENTIFIER")) {
+            if (isAtEnd() || current >= tokens.size() || !check("IDENTIFIER")) {
                 current = save;
                 return false;
             }
@@ -1401,9 +1564,26 @@ private:
 
             // Проверяем, что это не вызов функции (после скобок должна быть { или ;)
             size_t afterParen = next + 1;
-            while (afterParen < tokens.size() && tokens[afterParen].getType() != "CLOSEPARENTHESES") {
-                afterParen++;
+            int parenDepth = 1;
+            int searchCount = 0;
+            while (afterParen < tokens.size() && parenDepth > 0 && searchCount++ < MAX_LOOKAHEAD) {
+                std::string tokenType = tokens[afterParen].getType();
+                if (tokenType == "OPENPARENTHESES") {
+                    parenDepth++;
+                } else if (tokenType == "CLOSEPARENTHESES") {
+                    parenDepth--;
+                }
+                if (parenDepth > 0) {
+                    afterParen++;
+                }
             }
+            
+            if (searchCount >= MAX_LOOKAHEAD) {
+                // Не удалось найти закрывающую скобку в пределах разумного
+                current = save;
+                return false;
+            }
+            
             if (afterParen + 1 < tokens.size()) {
                 std::string afterType = tokens[afterParen + 1].getType();
                 if (afterType != "OPENCURLY" && afterType != "SEMICOLON") {
@@ -1442,34 +1622,33 @@ private:
     }
 
     bool check(const std::string &type) {
-        if (isAtEnd()) {
+        if (tokens.empty() || current >= tokens.size()) {
             return false;
         }
-        if (current >= tokens.size()) {
-            std::cerr << "ERROR: current >= tokens.size() (" << current << " >= " << tokens.size() << ")" << std::endl;
-            return false;
-        }
+        // isAtEnd() проверяет current >= tokens.size(), так что эта проверка избыточна, но оставляем для ясности
         return tokens[current].getType() == type;
     }
 
     Token advance() {
-        if (isAtEnd() || tokens.empty()) {
-            std::cerr << "WARNING: advance() called at end" << std::endl;
+        if (tokens.empty() || current >= tokens.size()) {
+            std::cerr << "[ERROR] [CParser] advance() called with invalid state: current=" 
+                      << current << ", tokens.size()=" << tokens.size() << std::endl;
             static const Token dummy;
             return dummy;
         }
-        if (current >= tokens.size()) {
-            std::cerr << "ERROR: current out of bounds in advance()" << std::endl;
+        if (isAtEnd()) {
+            std::cerr << "[WARNING] [CParser] advance() called at end, current=" 
+                      << current << ", tokens.size()=" << tokens.size() << std::endl;
             static const Token dummy;
             return dummy;
         }
-        std::cout << "Advancing from " << current << " to " << (current + 1) << std::endl;
-        return tokens[current++];
+        Token result = tokens[current++];
+        return result;
     }
 
     Token &peek() {
         static Token dummy;
-        if (tokens.empty() || isAtEnd()) {
+        if (tokens.empty() || current >= tokens.size()) {
             return dummy;
         }
         if (current >= tokens.size()) {
@@ -1480,7 +1659,7 @@ private:
     }
 
     std::string peekType() {
-        if (isAtEnd() || tokens.empty()) {
+        if (tokens.empty() || current >= tokens.size()) {
             static const std::string empty;
             return empty;
         }
@@ -1495,7 +1674,7 @@ private:
         return tokens[current - 1];
     }
 
-    bool isAtEnd() {
+    bool isAtEnd() const {
         bool atEnd = current >= tokens.size();
         if (atEnd) {
             std::cout << "Reached end of tokens at position " << current << std::endl;
@@ -1504,10 +1683,18 @@ private:
     }
 
     Token consume(const std::string &type, const std::string &message) {
+        if (tokens.empty() || current >= tokens.size()) {
+            throw std::runtime_error(message + " (reached end of tokens, current=" + 
+                                   std::to_string(current) + ", tokens.size()=" + 
+                                   std::to_string(tokens.size()) + ")");
+        }
         if (check(type)) {
             return advance();
         }
-        throw std::runtime_error(message);
+        std::string actualType = current < tokens.size() ? tokens[current].getType() : "EOF";
+        std::string actualValue = current < tokens.size() ? tokens[current].getValue() : "";
+        throw std::runtime_error(message + " (got " + actualType + " [" + actualValue + 
+                               "] at token " + std::to_string(current) + ")");
     }
 
     std::unique_ptr<Stmt> parseStructVarDecl() {

@@ -27,11 +27,19 @@ public:
         this->value = std::move(value);
         this->pos = pos;
     }
+    // Оптимизированный конструктор копирования с move семантикой для строк
     Token(const Token& other) {
-        this->type = other.type;
+        this->type = other.type;  // std::string имеет эффективное копирование
         this->value = other.value;
         this->pos = other.pos;
-    };
+    }
+    
+    // Move конструктор для оптимизации
+    Token(Token&& other) noexcept {
+        this->type = std::move(other.type);
+        this->value = std::move(other.value);
+        this->pos = other.pos;
+    }
     
     std::string getType() const {
         return this->type;
@@ -45,7 +53,15 @@ public:
     Token& operator=(const Token& other) {
         this->type = other.type;
         this->value = other.value;
-        this->pos=other.pos;
+        this->pos = other.pos;
+        return *this;
+    }
+    
+    // Move assignment operator
+    Token& operator=(Token&& other) noexcept {
+        this->type = std::move(other.type);
+        this->value = std::move(other.value);
+        this->pos = other.pos;
         return *this;
     }
     friend std::ostream& operator<<(std::ostream& ostr, const Token& v)

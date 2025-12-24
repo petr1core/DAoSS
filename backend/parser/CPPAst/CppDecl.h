@@ -34,6 +34,7 @@ struct CppFunctionDecl : CppDecl {
     std::string returnType;
     std::string name;
     std::vector<CppParameter> parameters;
+    std::vector<CppInitializer> initializers;
     std::unique_ptr<CppCompoundStmt> body;
     bool isVirtual{false};
     bool isOverride{false};
@@ -70,6 +71,8 @@ struct CppMethodDecl : CppDecl {
     bool isOverride = false;
     bool isConst = false;
     bool isStatic = false;
+    bool isFinal = false;
+
     CppAccessSpecifier access;
     void accept(CppVisitor &v) override;
 
@@ -92,6 +95,8 @@ struct CppFieldDecl : CppDecl {
     CppAccessSpecifier access{CppAccessSpecifier::Private};
     CppCVQualifier cvQualifier{CppCVQualifier::None};
     bool isMutable{false};
+    bool isStatic{false};
+
 
     void accept(CppVisitor &v) override;
 };

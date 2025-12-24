@@ -75,15 +75,33 @@ public:
                       << input_string.substr(pos, 50) << "...\"" << std::endl;
         }
         
-        // 2. Затем проверяем паттерны (исключая SPACE, так как пробелы уже пропущены)
+        // ГИПОТЕЗА 4: Логируем длину строки и позицию при каждой итерации
+        if (tokenList.size() % 100 == 0) {
+            std::cout << "[HYPOTHESIS 4] Token count: " << tokenList.size() 
+                      << ", pos: " << pos << "/" << s.length() 
+                      << ", remaining: " << (s.length() - pos) << " bytes" << std::endl;
+        }
+        
+        // 2. Для Pascal: проверяем := (оператор присваивания) ДО regex-обработки
+        // Это критично, чтобы := не разбился на : и =
+        if (pos + 1 < s.length() && s[pos] == ':' && s[pos + 1] == '=') {
+            tokenList.emplace_back("ASSIGN", ":=", pos); 
+            pos += 2; 
+            return true;
+        }
+        
+        // 3. Затем проверяем паттерны (исключая SPACE, так как пробелы уже пропущены)
+        // ИСПРАВЛЕНО: используем итераторы вместо substr для избежания копирования
         for (const auto &item: vector) {
             if (item.first == "SPACE") continue; // Пробелы уже обработаны
             
             std::regex rgx("^" + item.second);
             std::smatch match;
-            std::string remaining = s.substr(pos);
-            if (std::regex_search(remaining, match, rgx)) {
-                // КРИТИЧНО: проверяем, что совпадение начинается в позиции 0 (начало remaining строки)
+            // ИСПРАВЛЕНО: используем итераторы вместо substr - это избегает создания копии строки
+            // Это критично для больших строк, чтобы избежать bad_alloc
+            // Если регулярка начинается с ^, совпадение всегда будет в начале диапазона поиска
+            if (std::regex_search(s.begin() + pos, s.end(), match, rgx)) {
+                // Проверяем, что совпадение начинается в начале диапазона (позиция 0 относительно начала поиска)
                 if (match.position() != 0) {
                     continue; // Совпадение не в начале - пропускаем этот паттерн
                 }
@@ -106,7 +124,7 @@ public:
             }
         }
         
-        // 3. Если ничего не найдено, выводим предупреждение и пропускаем символ
+        // 4. Если ничего не найдено, выводим предупреждение и пропускаем символ
         std::cout << "[LEXER WARNING] Unknown character: '" << s[pos] << "' at position " << pos << std::endl;
         pos++;
         return true;
@@ -114,19 +132,27 @@ public:
     bool hasNext2() {
         if (pos >= input_string.length()) return false;
 
-        const std::string s = input_string;
+        const std::string& s = input_string; // ИСПРАВЛЕНО: используем ссылку вместо копии
 
-        // 1. Сначала пробелы
-        std::regex spaceRegex("^[ \\t\\n\\r]+");
-        std::smatch match;
-
-        if (std::regex_search(s.begin() + pos, s.end(), match, spaceRegex)) {
-            pos += match[0].length();
-            return true;
+        // Логирование первых 10 токенов для отладки
+        if (tokenList.size() < 10) {
+            std::cout << "[LEXER C DEBUG] hasNext2: pos=" << pos 
+                      << ", remaining: \"" << s.substr(pos, 50) << "...\"" << std::endl;
         }
+
+        // 1. Сначала пропускаем пробелы быстро (без regex, как в hasNext для Pascal)
+        while (pos < s.length() && (s[pos] == ' ' || s[pos] == '\t' || s[pos] == '\n' || s[pos] == '\r')) {
+            pos++;
+        }
+        if (pos >= s.length()) return false;
+
+        std::smatch match;
 
         // 2. Затем строковые литералы (ОСОБАЯ ОБРАБОТКА)
         if (s[pos] == '"') {
+            if (tokenList.size() < 10) {
+                std::cout << "[LEXER C DEBUG] Found string literal at pos=" << pos << std::endl;
+            }
             size_t end_pos = pos + 1;
             bool escaped = false;
 
@@ -145,6 +171,9 @@ public:
             if (end_pos < s.length()) {
                 std::string res = s.substr(pos, end_pos - pos + 1);
                 tokenList.emplace_back("VALUESTRING", res, pos);
+                if (tokenList.size() < 10) {
+                    std::cout << "[LEXER C DEBUG] Created VALUESTRING token: \"" << res << "\"" << std::endl;
+                }
                 pos = end_pos + 1;
                 return true;
             }
@@ -199,7 +228,20 @@ public:
 
             std::regex rgx("^" + item.second);
             if (std::regex_search(s.begin() + pos, s.end(), match, rgx)) {
+                // КРИТИЧЕСКИ ВАЖНО: проверяем, что совпадение начинается в начале диапазона (позиция 0)
+                if (match.position() != 0) {
+                    continue; // Совпадение не в начале - пропускаем этот паттерн
+                }
+                
                 std::string res = match[0];
+                if (res.empty()) {
+                    continue; // Пустое совпадение - пропускаем
+                }
+                
+                if (tokenList.size() < 20) {
+                    std::cout << "[LEXER C DEBUG] Matched pattern \"" << item.second 
+                              << "\" -> type=" << item.first << ", value=\"" << res << "\"" << std::endl;
+                }
                 pos += res.length();
                 tokenList.emplace_back(item.first, res, pos - res.length());
                 return true;
@@ -207,7 +249,11 @@ public:
         }
 
         // 6. Если ничего не найдено
-        std::cout << "Unknown character: '" << s[pos] << "' at position " << pos << std::endl;
+        if (tokenList.size() < 30) {
+            std::cout << "[LEXER C WARNING] Unknown character: '" << s[pos] 
+                      << "' (0x" << std::hex << static_cast<unsigned char>(s[pos]) << std::dec 
+                      << ") at position " << pos << std::endl;
+        }
         pos++;
         return true;
     }
@@ -277,7 +323,16 @@ public:
             }
         }
 
-        // 5. Быстрая проверка односимвольных токенов (без regex)
+        // 5. Быстрая проверка двухсимвольных операторов ДО односимвольных (важно для Pascal :=)
+        if (pos + 1 < s.length()) {
+            std::string two_chars = s.substr(pos, 2);
+            // Для Pascal проверяем := (оператор присваивания) перед обработкой отдельного :
+            if (two_chars == ":=") {
+                tokenList.emplace_back("ASSIGN", ":=", pos); pos += 2; return true;
+            }
+        }
+        
+        // 6. Быстрая проверка односимвольных токенов (без regex)
         char current_char = s[pos];
         switch (current_char) {
             case ';': tokenList.emplace_back("SEMICOLON", ";", pos); pos++; return true;
@@ -297,7 +352,7 @@ public:
             case '~': tokenList.emplace_back("BITNOT", "~", pos); pos++; return true;
         }
 
-        // 6. Многосимвольные операторы (быстрая проверка)
+        // 7. Многосимвольные операторы (быстрая проверка)
         if (pos + 1 < s.length()) {
             std::string two_chars = s.substr(pos, 2);
             std::string three_chars = pos + 2 < s.length() ? s.substr(pos, 3) : "";
@@ -333,7 +388,7 @@ public:
             if (two_chars == "||") { tokenList.emplace_back("OR", "||", pos); pos += 2; return true; }
         }
 
-        // 7. Односимвольные операторы (продолжение)
+        // 8. Односимвольные операторы (продолжение)
         switch (current_char) {
             case '+': tokenList.emplace_back("PLUS", "+", pos); pos++; return true;
             case '-': tokenList.emplace_back("MINUS", "-", pos); pos++; return true;
@@ -537,6 +592,7 @@ public:
 
         };
     }
+
     static std::vector<std::pair<std::string, std::string>> getTokenTypeC() {
         return {
                 // Препроцессорные директивы
@@ -635,12 +691,14 @@ public:
               //  {"COMMENT", "//[^\\n]*|/\\*.*?\\*/"}
         };
     }
+    
     static std::vector<std::pair<std::string, std::string>> getTokenTypePascal() {
         return {
             // TITLE должен быть первым, так как он более специфичный паттерн
             {"TITLE", "program [A-Za-z0-9_]+"},
             // Разделители проверяем ДО ключевых слов
             {"SEMICOLON", ";"},
+            {"ASSIGN", ":="},
             {"COLON", ":"},
             {"COMMA", ","},
             {"OPENPARENTHESES", "[(]"},
@@ -689,7 +747,7 @@ public:
             {"PLUS", "[+]"},
             {"MINUS","[-]"},
             {"MULTI","[*]"},
-            {"ASSIGN", ":="},
+           
             {"JGE", ">="},
             {"JLE", "<="},
             {"JNE", "<>"},
